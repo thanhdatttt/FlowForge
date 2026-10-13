@@ -1,2 +1,2 @@
-# ForgeFlow
+# FlowForge
 A modular project management platform
