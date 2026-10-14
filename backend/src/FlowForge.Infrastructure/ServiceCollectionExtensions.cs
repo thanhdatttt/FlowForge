@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using FlowForge.Infrastructure.Identity;
 
 namespace FlowForge.Infrastructure;
 
@@ -18,6 +19,7 @@ public static class ServiceCollectionExtensions
         }
 
         services.AddDbContext<FlowForgeDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddScoped<AuthService>();
         return services;
     }
 }

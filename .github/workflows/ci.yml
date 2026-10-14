@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - name: Restore
+        run: dotnet restore FlowForge.sln -m:1
+      - name: Build
+        run: dotnet build FlowForge.sln --no-restore -m:1 /p:UseSharedCompilation=false
+      - name: Test
+        run: dotnet test FlowForge.sln --no-restore -m:1 /p:UseSharedCompilation=false

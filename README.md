@@ -1,6 +1,6 @@
 # FlowForge
 
-A modular project management platform. The repository currently contains a runnable backend scaffold; product features and the frontend have not been implemented yet.
+A modular project management platform. The repository currently contains a runnable backend with authentication endpoints; the frontend and other product features have not been implemented yet.
 
 ## Run locally with Docker
 
@@ -9,7 +9,8 @@ Install Docker with the Compose plugin, then run these commands from the reposit
 ```sh
 cd backend
 test -f .env || cp .env.example .env
-# Set POSTGRES_PASSWORD in .env to a password for local development.
+# Set POSTGRES_PASSWORD and JWT_SIGNING_KEY in .env for local development.
+# Generate JWT_SIGNING_KEY with: openssl rand -base64 48
 docker compose up --build -d
 docker compose ps
 ```
@@ -20,7 +21,7 @@ Open or check:
 - PostgreSQL readiness: <http://localhost:8080/health/ready>
 - OpenAPI JSON: <http://localhost:8080/openapi/v1.json>
 
-Both health endpoints should return `Healthy`. The OpenAPI document has no product operations yet. The API and PostgreSQL ports are bound to localhost; edit `API_PORT` and `POSTGRES_PORT` in `backend/.env` if needed.
+Both health endpoints should return `Healthy`. The OpenAPI document includes the versioned authentication endpoints. The API and PostgreSQL ports are bound to localhost; edit `API_PORT` and `POSTGRES_PORT` in `backend/.env` if needed.
 
 Stop the containers from `backend/` with `docker compose down`. PostgreSQL data stays in a Docker volume; `docker compose down -v` also deletes that local data. If PostgreSQL has already initialized its volume, keep the existing password in `.env` unless you also change it in PostgreSQL.
 

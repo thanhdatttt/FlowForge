@@ -18,6 +18,7 @@ public sealed class ScaffoldSmokeTests
                 builder.UseSetting(
                     "ConnectionStrings:FlowForge",
                     "Host=localhost;Database=flowforge;Username=flowforge;Password=test");
+                builder.UseSetting("Jwt:SigningKey", "scaffold-test-signing-key-at-least-32-bytes");
             });
         using var client = factory.CreateClient();
 
@@ -28,5 +29,17 @@ public sealed class ScaffoldSmokeTests
         Assert.Equal(HttpStatusCode.OK, openApi.StatusCode);
         using var document = JsonDocument.Parse(await openApi.Content.ReadAsStringAsync());
         Assert.True(document.RootElement.TryGetProperty("openapi", out _));
+        var paths = document.RootElement.GetProperty("paths");
+        var registration = paths.GetProperty("/api/v1/auth/register").GetProperty("post");
+        var requestSchema = registration.GetProperty("requestBody").GetProperty("content")
+            .GetProperty("application/json").GetProperty("schema").GetProperty("$ref").GetString();
+        var responseSchema = registration.GetProperty("responses").GetProperty("201").GetProperty("content")
+            .GetProperty("application/json").GetProperty("schema").GetProperty("$ref").GetString();
+        Assert.EndsWith("/RegisterRequestDto", requestSchema);
+        Assert.EndsWith("/AuthTokenResponseDto", responseSchema);
+        Assert.True(paths.TryGetProperty("/api/v1/auth/login", out _));
+
+        var unauthorized = await client.GetAsync("/api/v1/auth/me");
+        Assert.Equal(HttpStatusCode.Unauthorized, unauthorized.StatusCode);
     }
 }
