@@ -41,5 +41,7 @@ public sealed class ScaffoldSmokeTests
 
         var unauthorized = await client.GetAsync("/api/v1/auth/me");
         Assert.Equal(HttpStatusCode.Unauthorized, unauthorized.StatusCode);
+        var unauthorizedWorkspaces = await client.GetAsync("/api/v1/workspaces");
+        Assert.Equal(HttpStatusCode.Unauthorized, unauthorizedWorkspaces.StatusCode);
     }
 }

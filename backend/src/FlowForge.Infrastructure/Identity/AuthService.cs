@@ -14,11 +14,13 @@ public sealed record AuthTokens(string AccessToken, DateTimeOffset AccessTokenEx
 
 public sealed class DuplicateEmailException : Exception;
 
+// Implements registration, login, token issuance, refresh rotation, and logout
 public sealed class AuthService(FlowForgeDbContext db, IConfiguration configuration)
 {
     private static readonly TimeSpan AccessLifetime = TimeSpan.FromMinutes(15);
     private static readonly TimeSpan RefreshLifetime = TimeSpan.FromDays(30);
 
+    // register
     public async Task<AuthTokens> RegisterAsync(string email, string password, string displayName, CancellationToken cancellationToken)
     {
         var normalizedEmail = NormalizeEmail(email);
@@ -43,6 +45,7 @@ public sealed class AuthService(FlowForgeDbContext db, IConfiguration configurat
         return CreateTokens(user, token);
     }
 
+    // login
     public async Task<AuthTokens?> LoginAsync(string email, string password, CancellationToken cancellationToken)
     {
         var user = await db.Users.SingleOrDefaultAsync(
@@ -55,8 +58,10 @@ public sealed class AuthService(FlowForgeDbContext db, IConfiguration configurat
         return CreateTokens(user, token);
     }
 
+    // refresh
     public async Task<AuthTokens?> RefreshAsync(string token, CancellationToken cancellationToken)
     {
+        // check valid token
         var hash = HashToken(token);
         var current = await db.RefreshSessions.AsNoTracking().Include(session => session.User)
             .SingleOrDefaultAsync(session => session.TokenHash == hash, cancellationToken);
@@ -68,6 +73,7 @@ public sealed class AuthService(FlowForgeDbContext db, IConfiguration configurat
         }
         if (current.ExpiresAt <= DateTimeOffset.UtcNow || !current.User.IsActive) return null;
 
+        // refresh rotation and gen new access token
         var (replacement, replacementToken) = NewSession(current.UserId, current.FamilyId);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         db.RefreshSessions.Add(replacement);
@@ -86,6 +92,7 @@ public sealed class AuthService(FlowForgeDbContext db, IConfiguration configurat
         return CreateTokens(current.User, replacementToken);
     }
 
+    // logout
     public async Task LogoutAsync(string token, CancellationToken cancellationToken)
     {
         var hash = HashToken(token);
@@ -94,12 +101,15 @@ public sealed class AuthService(FlowForgeDbContext db, IConfiguration configurat
         if (session is not null) await RevokeFamilyAsync(session.FamilyId, cancellationToken);
     }
 
+    // revoke token
     private async Task RevokeFamilyAsync(Guid familyId, CancellationToken cancellationToken)
     {
         await db.RefreshSessions.Where(session => session.FamilyId == familyId && session.RevokedAt == null)
             .ExecuteUpdateAsync(setters => setters.SetProperty(session => session.RevokedAt, DateTimeOffset.UtcNow), cancellationToken);
     }
 
+    // helpers
+    // access token
     private AuthTokens CreateTokens(User user, string refreshToken)
     {
         var expires = DateTimeOffset.UtcNow.Add(AccessLifetime);
@@ -116,6 +126,7 @@ public sealed class AuthService(FlowForgeDbContext db, IConfiguration configurat
         return new AuthTokens(new JwtSecurityTokenHandler().WriteToken(jwt), expires, refreshToken);
     }
 
+    // refresh token
     private static (RefreshSession Session, string Token) NewSession(Guid userId, Guid familyId)
     {
         var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));

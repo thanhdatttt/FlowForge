@@ -7,14 +7,17 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 
+// init builder with env config
 var builder = WebApplication.CreateBuilder(args);
 
+// jwt config
 var signingKey = builder.Configuration["Jwt:SigningKey"];
 if (string.IsNullOrWhiteSpace(signingKey) || Encoding.UTF8.GetByteCount(signingKey) < 32)
     throw new InvalidOperationException("Jwt:SigningKey must be configured with at least 32 bytes.");
 var issuer = builder.Configuration["Jwt:Issuer"] ?? "flowforge";
 var audience = builder.Configuration["Jwt:Audience"] ?? "flowforge-api";
 
+// sign services
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
@@ -50,18 +53,20 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddHealthChecks()
     .AddCheck<DatabaseHealthCheck>("postgresql", tags: ["ready"]);
 
+// build and migrate db
 var app = builder.Build();
-
 if (builder.Configuration.GetValue<bool>("Database:AutoMigrate"))
 {
     await using var scope = app.Services.CreateAsyncScope();
     await scope.ServiceProvider.GetRequiredService<FlowForgeDbContext>().Database.MigrateAsync();
 }
 
+// add middlewares
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
+/// map endpoints
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -76,6 +81,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
     Predicate = check => check.Tags.Contains("ready")
 });
 app.MapIdentityEndpoints();
+app.MapWorkspaceEndpoints();
 
 app.Run();
 

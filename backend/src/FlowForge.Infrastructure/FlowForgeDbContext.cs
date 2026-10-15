@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using FlowForge.Domain.Identity;
+using FlowForge.Domain.Workspaces;
 
 namespace FlowForge.Infrastructure;
 
@@ -8,6 +9,8 @@ public sealed class FlowForgeDbContext(DbContextOptions<FlowForgeDbContext> opti
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<RefreshSession> RefreshSessions => Set<RefreshSession>();
+    public DbSet<Workspace> Workspaces => Set<Workspace>();
+    public DbSet<WorkspaceMembership> WorkspaceMemberships => Set<WorkspaceMembership>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -42,6 +45,40 @@ public sealed class FlowForgeDbContext(DbContextOptions<FlowForgeDbContext> opti
             entity.Property(session => session.CreatedAt).HasColumnName("created_at");
             entity.HasOne(session => session.User).WithMany().HasForeignKey(session => session.UserId).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne<RefreshSession>().WithMany().HasForeignKey(session => session.ReplacedById).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Workspace>(entity =>
+        {
+            entity.ToTable("workspaces");
+            entity.HasKey(workspace => workspace.Id);
+            entity.Property(workspace => workspace.Id).HasColumnName("id");
+            entity.Property(workspace => workspace.Name).HasColumnName("name").HasMaxLength(100).IsRequired();
+            entity.Property(workspace => workspace.CreatedByUserId).HasColumnName("created_by_user_id");
+            entity.Property(workspace => workspace.CreatedAt).HasColumnName("created_at");
+            entity.Property(workspace => workspace.UpdatedAt).HasColumnName("updated_at");
+            entity.HasOne<User>().WithMany().HasForeignKey(workspace => workspace.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<WorkspaceMembership>(entity =>
+        {
+            entity.ToTable("workspace_memberships", table => table.HasCheckConstraint(
+                "CK_workspace_memberships_role", "role IN ('Owner', 'Admin', 'Manager', 'Developer', 'Viewer')"));
+            entity.HasKey(membership => membership.Id);
+            entity.Property(membership => membership.Id).HasColumnName("id");
+            entity.Property(membership => membership.WorkspaceId).HasColumnName("workspace_id");
+            entity.Property(membership => membership.UserId).HasColumnName("user_id");
+            entity.Property(membership => membership.Role).HasColumnName("role").HasConversion<string>().HasMaxLength(20);
+            entity.Property(membership => membership.JoinedAt).HasColumnName("joined_at");
+            entity.Property(membership => membership.RemovedAt).HasColumnName("removed_at");
+            entity.HasOne(membership => membership.Workspace).WithMany().HasForeignKey(membership => membership.WorkspaceId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(membership => membership.User).WithMany().HasForeignKey(membership => membership.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(membership => new { membership.WorkspaceId, membership.UserId })
+                .IsUnique().HasFilter("removed_at IS NULL");
+            entity.HasIndex(membership => membership.WorkspaceId)
+                .IsUnique().HasFilter("removed_at IS NULL AND role = 'Owner'");
         });
     }
 }

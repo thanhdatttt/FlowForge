@@ -58,6 +58,20 @@ Endpoints under `/api/v1/auth`:
 
 Registration requires a 12–128 character password. Access tokens expire after 15 minutes; refresh tokens expire after 30 days and rotate on use. The API stores only hashes of passwords and refresh tokens. Reusing a rotated refresh token revokes its entire session family. Logout revokes refresh sessions; issued access tokens remain valid until expiry. Use HTTPS outside local development and keep tokens out of logs.
 
+## Workspace access control
+
+Workspace routes under `/api/v1/workspaces` require a JWT. A new workspace's creator becomes Owner. Membership roles are loaded from PostgreSQL for every request, so role changes and removals take effect immediately. Non-members receive `404`; members without permission receive `403`.
+
+| Role | Read workspace and members | Edit workspace or manage members | Manage projects (future API) | Write work items (future API) |
+| --- | --- | --- | --- | --- |
+| Owner | Yes | Yes | Yes | Yes |
+| Admin | Yes | Yes, except Owner/Admin members | Yes | Yes |
+| Manager | Yes | No | Yes, within assigned projects | Yes |
+| Developer | Yes | No | No | Yes |
+| Viewer | Yes | No | No | No |
+
+Current routes support creating, listing, viewing, and renaming workspaces; listing and adding existing registered users as members; changing member roles; and removing members. Owners cannot be removed or demoted. Ownership transfer, email invitations, and project-scoped checks are future work; the permission matrix is defined for those APIs but they do not exist yet.
+
 ## Build and test
 
 GitHub Actions runs these commands on pushes and pull requests; the current tests do not need PostgreSQL or application secrets.

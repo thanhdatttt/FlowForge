@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FlowForge.Api;
 
+// Receives DTOs, validates requests, calls the auth service, and returns response DTOs and HTTP errors.
 public static class IdentityEndpoints
 {
     public static IEndpointRouteBuilder MapIdentityEndpoints(this IEndpointRouteBuilder app)
