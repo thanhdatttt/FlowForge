@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using FlowForge.Api.Contracts.Identity;
+using FlowForge.Api.Validation.Identity;
 using FlowForge.Infrastructure;
 using FlowForge.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -16,8 +16,8 @@ public static class IdentityEndpoints
 
         group.MapPost("/register", async (RegisterRequestDto request, AuthService auth, CancellationToken cancellationToken) =>
         {
-            var validation = Validate(request.Email, request.Password, request.DisplayName);
-            if (validation is not null) return validation;
+            var errors = RegisterRequestValidator.Validate(request);
+            if (errors.Count > 0) return Results.ValidationProblem(errors);
             try
             {
                 var tokens = await auth.RegisterAsync(request.Email!, request.Password!, request.DisplayName!, cancellationToken);
@@ -78,18 +78,6 @@ public static class IdentityEndpoints
             .Produces(StatusCodes.Status401Unauthorized);
 
         return app;
-    }
-
-    private static IResult? Validate(string? email, string? password, string? displayName)
-    {
-        var errors = new Dictionary<string, string[]>();
-        if (string.IsNullOrWhiteSpace(email) || email.Length > 320 || !new EmailAddressAttribute().IsValid(email.Trim()))
-            errors["email"] = ["A valid email address of at most 320 characters is required."];
-        if (string.IsNullOrWhiteSpace(displayName) || displayName.Trim().Length > 100)
-            errors["displayName"] = ["Display name must be between 1 and 100 characters."];
-        if (password is null || password.Length < 12 || password.Length > 128)
-            errors["password"] = ["Password must be between 12 and 128 characters."];
-        return errors.Count == 0 ? null : Results.ValidationProblem(errors);
     }
 
     private static AuthTokenResponseDto ToResponse(AuthTokens tokens) =>

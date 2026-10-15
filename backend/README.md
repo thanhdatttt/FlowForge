@@ -56,7 +56,7 @@ Endpoints under `/api/v1/auth`:
 | POST | `/logout` | `refreshToken` | 204; revokes that session family |
 | GET | `/me` | `Authorization: Bearer <accessToken>` | Current user |
 
-Registration requires a 12–128 character password. Access tokens expire after 15 minutes; refresh tokens expire after 30 days and rotate on use. The API stores only hashes of passwords and refresh tokens. Reusing a rotated refresh token revokes its entire session family. Logout revokes refresh sessions; issued access tokens remain valid until expiry. Use HTTPS outside local development and keep tokens out of logs.
+Registration requires an 8–128 character password containing an uppercase letter, a lowercase letter, a digit, and a special character (punctuation or symbol; whitespace does not count). Access tokens expire after 15 minutes; refresh tokens expire after 30 days and rotate on use. The API stores only hashes of passwords and refresh tokens. Reusing a rotated refresh token revokes its entire session family. Logout revokes refresh sessions; issued access tokens remain valid until expiry. Use HTTPS outside local development and keep tokens out of logs.
 
 ## Workspace access control
 
