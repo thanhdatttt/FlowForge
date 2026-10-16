@@ -1,42 +1,42 @@
 # Backend test results
 
-Tested on 2026-10-16 20:04 +07.
+Retested after the fix on 2026-10-16 20:13 +07.
 
-The API was built and tested with .NET SDK 10.0.112 and PostgreSQL 17 in an isolated, disposable Docker container. Existing project data was not used. Tests applied all four EF Core migrations. No application source was changed.
+The API was built and tested with .NET SDK 10.0.112 and PostgreSQL 17 in an isolated, disposable Docker container. Existing project data was not used. Tests applied all four EF Core migrations. The exception handler was updated to preserve request-binding HTTP error statuses; the six regression tests also verify the JSON problem response.
 
 ## Results
 
 | Run | Passed | Failed | Skipped | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Original automated suite | 82 | 0 | 0 | 82 |
-| Expanded automated suite | 95 | 6 | 0 | 101 |
-| Live HTTP checks, Development | 73 | 6 | 0 | 79 |
-| Live HTTP checks, Production | 8 | 0 | 0 | 8 |
+| Automated suite before fix (historical) | 95 | 6 | 0 | 101 |
+| Automated suite after fix | 101 | 0 | 0 | 101 |
+| Live HTTP checks after fix, Development | 79 | 0 | 0 | 79 |
+| Live HTTP checks after fix, Production | 8 | 0 | 0 | 8 |
 
-The six HTTP failures reproduce the same six automated failures; they are not twelve separate defects. Restore and build passed with zero warnings and zero errors. The expanded suite adds 19 cases for sessions, rate limits, CRUD operations, project queries, host configuration, and malformed input.
+Build passed with zero warnings and zero errors. All six previously failing cases now pass in the automated suite and over real HTTP. The 101 automated cases include the original 82 cases and 19 added coverage cases.
 
 All **34 current endpoint operations** were exercised over real HTTP: 31 business operations, two health endpoints, and Development OpenAPI. Every business operation also has automated API coverage. The HTTP operation list was checked against the running API's OpenAPI document; no described operation was missing. This is endpoint exercise coverage, not a claim of exhaustive input, security, or line coverage.
 
-## Failed cases
+## Fixed regression cases
 
-All failures below occur in **Development**, including the environment configured by `backend/compose.yaml`. Every case returned `500 application/problem+json` instead of the expected `400`. Production returned `400` for the same six requests.
+There are **no failed cases in the latest run**. These six cases previously returned 500 in Development (the environment configured by `backend/compose.yaml`). All now return `400 application/problem+json` with `status: 400`. Production still returns the expected 400.
 
-| Operation | Input | Expected | Development actual | Production actual |
+| Operation | Input | Before: Development | After: Development | After: Production |
 | --- | --- | ---: | ---: | ---: |
-| PUT `/api/v1/workspaces/{workspaceId}` | Incomplete JSON: `{` | 400 | 500 | 400 |
-| PUT `/api/v1/workspaces/{workspaceId}` | Wrong field type: `{"name":123}` | 400 | 500 | 400 |
-| PUT `/api/v1/workspaces/{workspaceId}` | JSON body: `null` | 400 | 500 | 400 |
-| GET `/api/v1/workspaces/{workspaceId}/projects` | `?page=abc` | 400 | 500 | 400 |
-| GET `/api/v1/workspaces/{workspaceId}/projects` | `?archived=invalid` | 400 | 500 | 400 |
-| GET `/api/v1/workspaces/{workspaceId}/projects` | `?leadUserId=not-a-uuid` | 400 | 500 | 400 |
+| PUT `/api/v1/workspaces/{workspaceId}` | Incomplete JSON: `{` | 500 | 400 | 400 |
+| PUT `/api/v1/workspaces/{workspaceId}` | Wrong field type: `{"name":123}` | 500 | 400 | 400 |
+| PUT `/api/v1/workspaces/{workspaceId}` | JSON body: `null` | 500 | 400 | 400 |
+| GET `/api/v1/workspaces/{workspaceId}/projects` | `?page=abc` | 500 | 400 | 400 |
+| GET `/api/v1/workspaces/{workspaceId}/projects` | `?archived=invalid` | 500 | 400 | 400 |
+| GET `/api/v1/workspaces/{workspaceId}/projects` | `?leadUserId=not-a-uuid` | 500 | 400 | 400 |
 
-The malformed workspace requests did not alter the workspace; that state assertion passed before the response-status assertions failed.
+The malformed workspace requests leave workspace data unchanged, as verified by subsequent GET requests in the regression tests.
 
-### Failure cause and reproduction
+### Cause and correction
 
-Captured server exceptions are `Microsoft.AspNetCore.Http.BadHttpRequestException` from JSON/body or query parameter binding. In Development these exceptions reach the generic exception handler. The middleware in [Program.cs](src/FlowForge.Api/Program.cs#L68) handles `ApiFailure` and database conflicts, but does not preserve the binding exception's client status. The generic handler returns 500. Production handles these binding failures as 400 without throwing through that path.
+In Development, malformed JSON/body or query values throw `Microsoft.AspNetCore.Http.BadHttpRequestException`. The generic exception handler previously returned 500 for these exceptions. [Program.cs](src/FlowForge.Api/Program.cs#L68) now configures `ExceptionHandlerOptions.StatusCodeSelector` to use `BadHttpRequestException.StatusCode`; unexpected exceptions retain the 500 fallback. This preserves the framework's client error status and the existing problem-details response format.
 
-With a valid Owner/Admin token and an existing workspace in Development:
+With a valid Owner/Admin token and an existing workspace, these requests now return 400 in both Development and Production:
 
 ```sh
 curl -i -X PUT "$BASE/api/v1/workspaces/$WORKSPACE_ID" \
@@ -46,8 +46,6 @@ curl -i -X PUT "$BASE/api/v1/workspaces/$WORKSPACE_ID" \
 curl -i "$BASE/api/v1/workspaces/$WORKSPACE_ID/projects?page=abc" \
   -H "Authorization: Bearer $OWNER_TOKEN"
 ```
-
-Both currently return 500. Suggested correction: preserve `BadHttpRequestException.StatusCode` in the exception handling configuration, then rerun the six regression cases. The failing tests remain in the suite to make the issue reproducible.
 
 ## Passing coverage
 
@@ -62,7 +60,7 @@ Both currently return 500. Suggested correction: preserve `BadHttpRequestExcepti
 
 | Test class | Passed | Failed |
 | --- | ---: | ---: |
-| `BackendCoverageTests` | 10 | 6 |
+| `BackendCoverageTests` | 16 | 0 |
 | `EmailVerificationMigrationTests` | 1 | 0 |
 | `HostConfigurationTests` | 3 | 0 |
 | `PasswordHashingTests` | 1 | 0 |
@@ -75,7 +73,7 @@ Both currently return 500. Suggested correction: preserve `BadHttpRequestExcepti
 
 ## Live endpoint results
 
-PASS means the exercised responses matched expectations. FAIL indicates a malformed-input case failed in Development; normal successful operations on that endpoint passed. A 503 for missing SMTP and a 400 for OTP confirmation without a challenge are expected live checks, not successful Gmail delivery. Successful OTP delivery/confirmation paths use `TestEmailSender` in the integration suite.
+PASS means the exercised responses matched expectations. All endpoint operations and the previously failing malformed-input checks passed in this run. A 503 for missing SMTP and a 400 for OTP confirmation without a challenge are expected live checks, not successful Gmail delivery. Successful OTP delivery/confirmation paths use `TestEmailSender` in the integration suite.
 
 | Method | Route | HTTP checks passed / total | Result |
 | --- | --- | ---: | --- |
@@ -92,7 +90,7 @@ PASS means the exercised responses matched expectations. FAIL indicates a malfor
 | GET | `/api/v1/workspaces` | 1 / 1 | PASS |
 | POST | `/api/v1/workspaces` | 1 / 1 | PASS |
 | GET | `/api/v1/workspaces/{workspaceId}` | 4 / 4 | PASS |
-| PUT | `/api/v1/workspaces/{workspaceId}` | 3 / 6 | FAIL: malformed input |
+| PUT | `/api/v1/workspaces/{workspaceId}` | 6 / 6 | PASS |
 | GET | `/api/v1/workspaces/{workspaceId}/invitations` | 1 / 1 | PASS |
 | POST | `/api/v1/workspaces/{workspaceId}/invitations` | 3 / 3 | PASS |
 | POST | `/api/v1/workspaces/{workspaceId}/invitations/{invitationId}/revoke` | 1 / 1 | PASS |
@@ -101,7 +99,7 @@ PASS means the exercised responses matched expectations. FAIL indicates a malfor
 | DELETE | `/api/v1/workspaces/{workspaceId}/members/{userId}` | 1 / 1 | PASS |
 | PUT | `/api/v1/workspaces/{workspaceId}/members/{userId}/role` | 1 / 1 | PASS |
 | POST | `/api/v1/workspaces/{workspaceId}/ownership/transfer` | 1 / 1 | PASS |
-| GET | `/api/v1/workspaces/{workspaceId}/projects` | 1 / 4 | FAIL: malformed input |
+| GET | `/api/v1/workspaces/{workspaceId}/projects` | 4 / 4 | PASS |
 | POST | `/api/v1/workspaces/{workspaceId}/projects` | 1 / 1 | PASS |
 | GET | `/api/v1/workspaces/{workspaceId}/projects/{projectId}` | 4 / 4 | PASS |
 | PUT | `/api/v1/workspaces/{workspaceId}/projects/{projectId}` | 3 / 3 | PASS |
@@ -116,7 +114,7 @@ PASS means the exercised responses matched expectations. FAIL indicates a malfor
 
 ## Every automated test result
 
-The following outcomes were read from the final VSTest TRX output. Parameterized test rows are listed separately.
+Outcomes below were read from the after-fix VSTest TRX output. Parameterized test rows are listed separately.
 
 ### BackendCoverageTests
 
@@ -124,14 +122,14 @@ The following outcomes were read from the final VSTest TRX output. Parameterized
 | --- | --- |
 | PASSED | `Expired_refresh_and_inactive_accounts_cannot_authenticate` |
 | PASSED | `Healthy_database_is_reported_ready_and_invalid_routes_are_rejected` |
-| FAILED | `Invalid_query_value_types_return_a_client_error(query: "archived=invalid")` |
-| FAILED | `Invalid_query_value_types_return_a_client_error(query: "leadUserId=not-a-uuid")` |
-| FAILED | `Invalid_query_value_types_return_a_client_error(query: "page=abc")` |
+| PASSED | `Invalid_query_value_types_return_a_client_error(query: "archived=invalid")` |
+| PASSED | `Invalid_query_value_types_return_a_client_error(query: "leadUserId=not-a-uuid")` |
+| PASSED | `Invalid_query_value_types_return_a_client_error(query: "page=abc")` |
 | PASSED | `Invitation_pages_terminal_states_and_admin_role_restrictions_are_enforced` |
 | PASSED | `Login_refresh_replay_and_logout_enforce_session_family_boundaries` |
-| FAILED | `Malformed_json_returns_a_client_error_without_mutating_the_workspace(body: "null")` |
-| FAILED | `Malformed_json_returns_a_client_error_without_mutating_the_workspace(body: "{")` |
-| FAILED | `Malformed_json_returns_a_client_error_without_mutating_the_workspace(body: "{\"name\":123}")` |
+| PASSED | `Malformed_json_returns_a_client_error_without_mutating_the_workspace(body: "null")` |
+| PASSED | `Malformed_json_returns_a_client_error_without_mutating_the_workspace(body: "{")` |
+| PASSED | `Malformed_json_returns_a_client_error_without_mutating_the_workspace(body: "{\"name\":123}")` |
 | PASSED | `Project_filters_sorts_and_pagination_return_only_matching_authorized_rows` |
 | PASSED | `Project_lead_changes_member_removal_and_archive_idempotency_preserve_versions_and_history` |
 | PASSED | `Protected_endpoint_groups_reject_missing_expired_and_invalid_tokens` |
@@ -346,12 +344,12 @@ The following outcomes were read from the final VSTest TRX output. Parameterized
 | PASS | Development | Transfer ownership | 204 | 204 |
 | PASS | Development | Former owner becomes Admin | 200 | 200 |
 | PASS | Development | Transfer persisted former owner role | True | True |
-| FAIL | Development | Malformed JSON: { | 400 | 500 |
-| FAIL | Development | Malformed JSON: {"name":123} | 400 | 500 |
-| FAIL | Development | Malformed JSON: null | 400 | 500 |
-| FAIL | Development | Invalid query type: page=abc | 400 | 500 |
-| FAIL | Development | Invalid query type: archived=invalid | 400 | 500 |
-| FAIL | Development | Invalid query type: leadUserId=not-a-uuid | 400 | 500 |
+| PASS | Development | Malformed JSON: { | 400 | 400 |
+| PASS | Development | Malformed JSON: {"name":123} | 400 | 400 |
+| PASS | Development | Malformed JSON: null | 400 | 400 |
+| PASS | Development | Invalid query type: page=abc | 400 | 400 |
+| PASS | Development | Invalid query type: archived=invalid | 400 | 400 |
+| PASS | Development | Invalid query type: leadUserId=not-a-uuid | 400 | 400 |
 | PASS | Production | Malformed JSON: { | 400 | 400 |
 | PASS | Production | Malformed JSON: {"name":123} | 400 | 400 |
 | PASS | Production | Malformed JSON: null | 400 | 400 |
@@ -372,11 +370,11 @@ dotnet test FlowForge.sln --no-restore -m:1 /p:UseSharedCompilation=false \
   --logger 'trx;LogFileName=backend.trx' --results-directory /tmp/flowforge-backend-results
 ```
 
-Expect exit code 1 until the six Development binding-error cases are fixed. Without `FLOWFORGE_TEST_CONNECTION`, PostgreSQL-dependent tests are skipped, so that is not equivalent to this run.
+The after-fix run exits with code 0: 101 passed, 0 failed, 0 skipped. Without `FLOWFORGE_TEST_CONNECTION`, PostgreSQL-dependent tests are skipped, so that is not equivalent to this run.
 
 ## Limits
 
 - Real Gmail SMTP delivery and inbox receipt were not tested. The automated suite captures email in memory and simulates configuration/delivery failures. The live API was deliberately started without SMTP credentials.
 - For live invitation accept/reject/ownership checks, only the disposable database's recipient accounts were marked verified through SQL. That setup does not count as a successful live OTP flow; the OTP success flow is covered by integration tests.
 - These checks do not certify load capacity, penetration resistance, every possible input, or behavior on a deployed external host. No performance benchmark was run.
-- No business implementation was changed. The new test cases retain the observed failures rather than masking them.
+- The fix changes only exception-status selection. The six regression cases remain in the suite and now assert the 400 problem-details response.

@@ -332,6 +332,9 @@ public sealed class BackendCoverageTests(PhaseTwoFixture fixture) : IClassFixtur
         var response = await client.PutAsync(path, content);
         Assert.Equal(workspace.Name, (await client.GetFromJsonAsync<WorkspaceResponseDto>(path))!.Name);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
+        var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(400, problem.GetProperty("status").GetInt32());
     }
 
     [PostgresTheory]
@@ -343,8 +346,11 @@ public sealed class BackendCoverageTests(PhaseTwoFixture fixture) : IClassFixtur
         var owner = await fixture.UserAsync();
         var workspace = await fixture.WorkspaceAsync(owner);
         using var client = fixture.Client(owner);
-        Assert.Equal(HttpStatusCode.BadRequest,
-            (await client.GetAsync($"/api/v1/workspaces/{workspace.Id}/projects?{query}")).StatusCode);
+        var response = await client.GetAsync($"/api/v1/workspaces/{workspace.Id}/projects?{query}");
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
+        var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(400, problem.GetProperty("status").GetInt32());
     }
 
     private static async Task<AuthTokenResponseDto> RegisterAsync(HttpClient client, string email) =>

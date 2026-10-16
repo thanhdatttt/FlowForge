@@ -65,7 +65,13 @@ if (builder.Configuration.GetValue<bool>("Database:AutoMigrate"))
 }
 
 // add middlewares
-app.UseExceptionHandler();
+app.UseExceptionHandler(new ExceptionHandlerOptions
+{
+    // Development request binding throws for malformed input; preserve its HTTP status.
+    StatusCodeSelector = exception => exception is BadHttpRequestException badRequest
+        ? badRequest.StatusCode
+        : StatusCodes.Status500InternalServerError
+});
 app.Use(async (context, next) =>
 {
     try { await next(context); }
