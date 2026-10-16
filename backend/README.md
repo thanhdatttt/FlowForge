@@ -149,6 +149,7 @@ Request validators live under `FlowForge.Api/Validation`, grouped by Identity, W
 OTP format validation also uses a request validator, but malformed codes continue to consume an attempt inside the verification transaction. Logout remains idempotent for an empty refresh token. No database migration is needed for this validation refactor.
 
 ## Build and test
+Executed checks and individual pass/fail outcomes are recorded in [the backend test results](TEST_RESULTS.md).
 
 GitHub Actions runs these commands on pushes and pull requests with an isolated PostgreSQL service. Unit and smoke tests run without application secrets. PostgreSQL integration tests are skipped locally unless `FLOWFORGE_TEST_CONNECTION` is configured.
 

@@ -29,6 +29,15 @@ public sealed class PostgresFactAttribute : FactAttribute
     }
 }
 
+public sealed class PostgresTheoryAttribute : TheoryAttribute
+{
+    public PostgresTheoryAttribute()
+    {
+        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("FLOWFORGE_TEST_CONNECTION")))
+            Skip = "Set FLOWFORGE_TEST_CONNECTION to an isolated PostgreSQL server to run integration tests.";
+    }
+}
+
 public sealed class TestEmailSender : IEmailSender
 {
     public bool IsConfigured { get; set; } = true;
