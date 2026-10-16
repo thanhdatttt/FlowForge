@@ -22,6 +22,58 @@ namespace FlowForge.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("FlowForge.Domain.Identity.EmailVerificationToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<int>("FailedAttempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("failed_attempts");
+
+                    b.Property<string>("NormalizedEmail")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)")
+                        .HasColumnName("normalized_email");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("token_hash");
+
+                    b.Property<DateTimeOffset?>("UsedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("used_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("email_verification_tokens", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_email_verification_failed_attempts", "failed_attempts BETWEEN 0 AND 5");
+                        });
+                });
+
             modelBuilder.Entity("FlowForge.Domain.Identity.RefreshSession", b =>
                 {
                     b.Property<Guid>("Id")
@@ -96,6 +148,10 @@ namespace FlowForge.Infrastructure.Migrations
                         .HasColumnType("character varying(320)")
                         .HasColumnName("email");
 
+                    b.Property<DateTimeOffset?>("EmailVerifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("email_verified_at");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
@@ -121,6 +177,118 @@ namespace FlowForge.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("users", (string)null);
+                });
+
+            modelBuilder.Entity("FlowForge.Domain.Projects.Project", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("ArchivedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("archived_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("description");
+
+                    b.Property<Guid?>("LeadMembershipId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lead_membership_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("ProjectKey")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("project_key");
+
+                    b.Property<DateOnly?>("StartsOn")
+                        .HasColumnType("date")
+                        .HasColumnName("starts_on");
+
+                    b.Property<DateOnly?>("TargetOn")
+                        .HasColumnType("date")
+                        .HasColumnName("target_on");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint")
+                        .HasColumnName("version");
+
+                    b.Property<Guid>("WorkspaceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("workspace_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkspaceId", "LeadMembershipId");
+
+                    b.HasIndex("WorkspaceId", "ProjectKey")
+                        .IsUnique();
+
+                    b.ToTable("projects", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_project_dates", "starts_on IS NULL OR target_on IS NULL OR starts_on <= target_on");
+
+                            t.HasCheckConstraint("CK_project_key", "project_key ~ '^[A-Z][A-Z0-9]{1,9}$'");
+                        });
+                });
+
+            modelBuilder.Entity("FlowForge.Domain.Projects.ProjectMembership", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("JoinedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("joined_at");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("project_id");
+
+                    b.Property<DateTimeOffset?>("RemovedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("removed_at");
+
+                    b.Property<Guid>("WorkspaceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("workspace_id");
+
+                    b.Property<Guid>("WorkspaceMembershipId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("workspace_membership_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId", "WorkspaceMembershipId")
+                        .IsUnique()
+                        .HasFilter("removed_at IS NULL");
+
+                    b.HasIndex("WorkspaceId", "ProjectId");
+
+                    b.HasIndex("WorkspaceId", "WorkspaceMembershipId");
+
+                    b.ToTable("project_memberships", (string)null);
                 });
 
             modelBuilder.Entity("FlowForge.Domain.Workspaces.Workspace", b =>
@@ -153,6 +321,76 @@ namespace FlowForge.Infrastructure.Migrations
                     b.HasIndex("CreatedByUserId");
 
                     b.ToTable("workspaces", (string)null);
+                });
+
+            modelBuilder.Entity("FlowForge.Domain.Workspaces.WorkspaceInvitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("AcceptedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("accepted_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<Guid>("InvitedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("invited_by_user_id");
+
+                    b.Property<string>("NormalizedEmail")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)")
+                        .HasColumnName("normalized_email");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("role");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("token_hash");
+
+                    b.Property<Guid>("WorkspaceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("workspace_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvitedByUserId");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("WorkspaceId", "NormalizedEmail")
+                        .IsUnique()
+                        .HasFilter("accepted_at IS NULL AND revoked_at IS NULL");
+
+                    b.ToTable("workspace_invitations", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_invitation_expiry", "expires_at > created_at");
+
+                            t.HasCheckConstraint("CK_invitation_role", "role IN ('Admin', 'Manager', 'Developer', 'Viewer')");
+
+                            t.HasCheckConstraint("CK_invitation_terminal", "accepted_at IS NULL OR revoked_at IS NULL");
+                        });
                 });
 
             modelBuilder.Entity("FlowForge.Domain.Workspaces.WorkspaceMembership", b =>
@@ -202,6 +440,17 @@ namespace FlowForge.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("FlowForge.Domain.Identity.EmailVerificationToken", b =>
+                {
+                    b.HasOne("FlowForge.Domain.Identity.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("FlowForge.Domain.Identity.RefreshSession", b =>
                 {
                     b.HasOne("FlowForge.Domain.Identity.RefreshSession", null)
@@ -218,11 +467,64 @@ namespace FlowForge.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("FlowForge.Domain.Projects.Project", b =>
+                {
+                    b.HasOne("FlowForge.Domain.Workspaces.Workspace", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FlowForge.Domain.Workspaces.WorkspaceMembership", "LeadMembership")
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "LeadMembershipId")
+                        .HasPrincipalKey("WorkspaceId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("LeadMembership");
+                });
+
+            modelBuilder.Entity("FlowForge.Domain.Projects.ProjectMembership", b =>
+                {
+                    b.HasOne("FlowForge.Domain.Projects.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "ProjectId")
+                        .HasPrincipalKey("WorkspaceId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FlowForge.Domain.Workspaces.WorkspaceMembership", "WorkspaceMembership")
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "WorkspaceMembershipId")
+                        .HasPrincipalKey("WorkspaceId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+
+                    b.Navigation("WorkspaceMembership");
+                });
+
             modelBuilder.Entity("FlowForge.Domain.Workspaces.Workspace", b =>
                 {
                     b.HasOne("FlowForge.Domain.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FlowForge.Domain.Workspaces.WorkspaceInvitation", b =>
+                {
+                    b.HasOne("FlowForge.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("InvitedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FlowForge.Domain.Workspaces.Workspace", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

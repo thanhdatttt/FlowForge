@@ -40,6 +40,9 @@ builder.Services.AddAuthorization();
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("verification", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
     options.AddPolicy("register", context => RateLimitPartition.GetFixedWindowLimiter(
         context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
@@ -62,6 +65,28 @@ if (builder.Configuration.GetValue<bool>("Database:AutoMigrate"))
 }
 
 // add middlewares
+app.UseExceptionHandler();
+app.Use(async (context, next) =>
+{
+    try { await next(context); }
+    catch (ApiFailure failure)
+    {
+        await Results.Problem(statusCode: failure.Status, title: failure.Message).ExecuteAsync(context);
+    }
+    catch (DbUpdateConcurrencyException)
+    {
+        await Results.Problem(statusCode: 409, title: "The resource changed. Reload and retry.").ExecuteAsync(context);
+    }
+    catch (DbUpdateException failure) when (failure.InnerException is Npgsql.PostgresException { SqlState: "23505" })
+    {
+        await Results.Problem(statusCode: 409, title: "The resource already exists.").ExecuteAsync(context);
+    }
+});
+app.UseStatusCodePages(async statusContext =>
+{
+    await Results.Problem(statusCode: statusContext.HttpContext.Response.StatusCode)
+        .ExecuteAsync(statusContext.HttpContext);
+});
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -82,6 +107,9 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 });
 app.MapIdentityEndpoints();
 app.MapWorkspaceEndpoints();
+app.MapEmailVerificationEndpoints();
+app.MapInvitationEndpoints();
+app.MapProjectEndpoints();
 
 app.Run();
 

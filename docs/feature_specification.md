@@ -37,6 +37,8 @@ resource details.
 
 ## 3. Authentication
 
+Phase 2 adds Gmail SMTP email verification using a six-digit OTP code, expiring after 10 minutes by default, with a maximum of five failed attempts. Codes are stored only as keyed hashes, and resends invalidate previous codes with a 60-second cooldown. Users verify once; their verified state persists across sign-ins. Existing accounts remain unverified until confirmation. Verification is required before accepting invitations or receiving workspace ownership. SMTP credentials are supplied through environment configuration, with empty defaults.
+
 Implement: - Email/password registration and sign-in. - Secure password
 hashing; never store plaintext passwords. - Short-lived JWT access
 tokens and rotating refresh tokens. - Logout and refresh-token/session
@@ -56,6 +58,10 @@ Features: - Create, list, view, and update workspaces. - Invite users by
 email; accept or reject invitations. - Assign or change workspace roles
 and remove members. - View members and invitation status.
 
+Invitations use manually shared links in Phase 2, with tokens in URL fragments; the backend exposes authenticated metadata and POST acceptance, and a future client can automate the browser flow. Email delivery of invitations follows in Phase 4. Default expiry is configurable, initially seven days. Acceptance requires a signed-in account with the invited email verified, rechecks the inviter's authority, and atomically creates membership and consumes the invitation. Lifecycle: Pending, Accepted, Expired, Revoked; recipient rejection records Revoked.
+
+Ownership transfer is restricted to the current Owner. The target must be an active same-workspace member with a verified email. The previous Owner becomes Admin. Serialize concurrent transfers and enforce exactly one Owner at commit.
+
 Rules: - The creator becomes Owner. - A workspace must have exactly one
 active Owner. - Prevent duplicate active membership. - Invitations
 expire and can be used only once. - Removing a member must not delete
@@ -68,6 +74,8 @@ Features: - Create, view, update, archive, restore, and list projects. -
 Configure name, description, unique project key, dates, and project
 lead. - View project members, overview, progress, recent activity, and
 overdue work. - Search, filter, and sort projects.
+
+Access: Owners/Admins access all projects and exclusively create projects. Managers manage only explicitly assigned projects. Developers/Viewers require explicit project membership; Developers can modify project work resources, while Viewers are read-only. Project settings and membership management are limited to Owners/Admins and assigned Managers.
 
 Rules: - Each project belongs to one workspace. - Project keys are
 unique within a workspace. - Project leads must be authorized workspace

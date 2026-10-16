@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using FlowForge.Api.Contracts.Identity;
 
 namespace FlowForge.Api.Validation.Identity;
@@ -8,9 +7,7 @@ public static class RegisterRequestValidator
     public static Dictionary<string, string[]> Validate(RegisterRequestDto request)
     {
         var errors = new Dictionary<string, string[]>();
-        if (string.IsNullOrWhiteSpace(request.Email) || request.Email.Length > 320 ||
-            !new EmailAddressAttribute().IsValid(request.Email.Trim()))
-            errors["email"] = ["A valid email address of at most 320 characters is required."];
+        InputRules.Email(request.Email, errors);
         if (string.IsNullOrWhiteSpace(request.DisplayName) || request.DisplayName.Trim().Length > 100)
             errors["displayName"] = ["Display name must be between 1 and 100 characters."];
 
