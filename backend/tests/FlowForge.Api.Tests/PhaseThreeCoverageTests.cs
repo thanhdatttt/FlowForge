@@ -12,6 +12,89 @@ namespace FlowForge.Api.Tests;
 public sealed class PhaseThreeCoverageTests(PhaseTwoFixture fixture) : IClassFixture<PhaseTwoFixture>
 {
     [PostgresFact]
+    public async Task Remaining_phase_three_endpoint_operations_complete_a_project_journey()
+    {
+        var owner = await fixture.UserAsync();
+        var workspace = await fixture.WorkspaceAsync(owner);
+        using var client = fixture.Client(owner);
+        var project = await ProjectAsync(client, workspace.Id, "JOURNEY");
+        var path = BasePath(workspace.Id, project.Id);
+
+        var statuses = await client.GetFromJsonAsync<List<StatusDto>>(path + "/statuses");
+        Assert.Equal(new[] { "Todo", "InProgress", "InReview", "Done", "Blocked" },
+            statuses!.Select(x => x.Name));
+        var label = await LabelAsync(client, path, "Initial");
+        Assert.Contains((await client.GetFromJsonAsync<List<LabelDto>>(path + "/labels"))!, x => x.Id == label.Id);
+        var renamed = await client.PutAsJsonAsync(path + $"/labels/{label.Id}", new LabelWriteDto("Renamed", "#654321"));
+        Assert.Equal(HttpStatusCode.OK, renamed.StatusCode);
+        Assert.Equal("Renamed", (await renamed.Content.ReadFromJsonAsync<LabelDto>())!.Name);
+
+        var prerequisite = await ItemAsync(client, path, "Prerequisite", "Task", "Medium", null, null, []);
+        var item = await ItemAsync(client, path, "Main", "Issue", "High", null, null, [label.Id]);
+        var itemPath = path + $"/work-items/{item.Id}";
+        Assert.Equal(item.Id, (await client.GetFromJsonAsync<WorkItemDto>(itemPath))!.Id);
+        Assert.Contains((await client.GetFromJsonAsync<PageDto<WorkItemDto>>(path + "/work-items"))!.Items,
+            x => x.Id == item.Id);
+        var added = await client.PostAsJsonAsync(itemPath + "/dependencies", new DependencyWriteDto(prerequisite.Id));
+        Assert.Equal(HttpStatusCode.Created, added.StatusCode);
+        Assert.True((await client.GetFromJsonAsync<WorkItemDto>(itemPath))!.IsBlocked);
+        Assert.Equal(HttpStatusCode.NoContent,
+            (await client.DeleteAsync(itemPath + $"/dependencies/{prerequisite.Id}")).StatusCode);
+        var current = await client.GetFromJsonAsync<WorkItemDto>(itemPath);
+        Assert.False(current!.IsBlocked);
+        var updated = await client.PutAsJsonAsync(itemPath,
+            Write("Main updated", "Issue", "InProgress", "High", null, null, [label.Id], current.Version));
+        Assert.Equal(HttpStatusCode.OK, updated.StatusCode);
+
+        var commentResponse = await client.PostAsJsonAsync(itemPath + "/comments", new CommentWriteDto("Initial", null));
+        Assert.Equal(HttpStatusCode.Created, commentResponse.StatusCode);
+        var comment = (await commentResponse.Content.ReadFromJsonAsync<CommentDto>())!;
+        Assert.Contains((await client.GetFromJsonAsync<PageDto<CommentDto>>(itemPath + "/comments"))!.Items,
+            x => x.Id == comment.Id);
+        Assert.Equal(HttpStatusCode.OK, (await client.PutAsJsonAsync(itemPath + $"/comments/{comment.Id}",
+            new CommentWriteDto("Revised", comment.Version))).StatusCode);
+
+        var timeResponse = await client.PostAsJsonAsync(itemPath + "/time-entries",
+            new TimeEntryWriteDto(15, null, "Start"));
+        Assert.Equal(HttpStatusCode.Created, timeResponse.StatusCode);
+        var entry = (await timeResponse.Content.ReadFromJsonAsync<TimeEntryDto>())!;
+        Assert.Contains((await client.GetFromJsonAsync<PageDto<TimeEntryDto>>(itemPath + "/time-entries"))!.Items,
+            x => x.Id == entry.Id);
+        var timeUpdate = await client.PutAsJsonAsync(itemPath + $"/time-entries/{entry.Id}",
+            new TimeEntryWriteDto(30, null, "Finish"));
+        Assert.Equal(HttpStatusCode.OK, timeUpdate.StatusCode);
+        Assert.Equal(30, (await timeUpdate.Content.ReadFromJsonAsync<TimeEntryDto>())!.Minutes);
+
+        using var multipart = new MultipartFormDataContent();
+        var file = new ByteArrayContent("%PDF-1.7 endpoint journey"u8.ToArray());
+        file.Headers.ContentType = new("application/pdf");
+        multipart.Add(file, "file", "journey.pdf");
+        var upload = await client.PostAsync(itemPath + "/attachments", multipart);
+        Assert.Equal(HttpStatusCode.Created, upload.StatusCode);
+        var attachment = (await upload.Content.ReadFromJsonAsync<AttachmentDto>())!;
+        Assert.Contains((await client.GetFromJsonAsync<PageDto<AttachmentDto>>(itemPath + "/attachments"))!.Items,
+            x => x.Id == attachment.Id);
+        Assert.Equal(HttpStatusCode.OK,
+            (await client.GetAsync(itemPath + $"/attachments/{attachment.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent,
+            (await client.DeleteAsync(itemPath + $"/attachments/{attachment.Id}")).StatusCode);
+
+        var feed = await client.GetFromJsonAsync<PageDto<ActivityDto>>(
+            $"/api/v1/workspaces/{workspace.Id}/activity?projectId={project.Id}&workItemId={item.Id}");
+        Assert.Contains(feed!.Items, x => x.Action == "dependency.removed");
+        Assert.Contains(feed.Items, x => x.Action == "time-entry.updated");
+        Assert.Equal(HttpStatusCode.NoContent,
+            (await client.DeleteAsync(itemPath + $"/time-entries/{entry.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent,
+            (await client.DeleteAsync(itemPath + $"/comments/{comment.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.PostAsync(itemPath + "/archive", null)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.PostAsync(itemPath + "/restore", null)).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent,
+            (await client.DeleteAsync(path + $"/labels/{label.Id}")).StatusCode);
+        Assert.Empty((await client.GetFromJsonAsync<WorkItemDto>(itemPath))!.LabelIds);
+    }
+
+    [PostgresFact]
     public async Task Work_item_filters_activity_details_and_outbox_follow_committed_changes()
     {
         var owner = await fixture.UserAsync();
