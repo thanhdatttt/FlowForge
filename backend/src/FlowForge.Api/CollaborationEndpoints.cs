@@ -73,6 +73,9 @@ public static class CollaborationEndpoints
                 db.CommentMentions.Add(new CommentMention { CommentId = commentId, MentionedUserId = id });
             WorkItemSupport.Activity(db, workspaceId, projectId, ApiRules.UserId(http), "comment.updated", "Comment", commentId,
                 before: new { Body = oldBody }, after: new { comment.Body, Mentions = mentions }, workItemId: itemId);
+            WorkItemSupport.EmitEvent(db, workspaceId, projectId, ApiRules.UserId(http), "CommentUpdated", comment.Id,
+                new { CommentId = comment.Id, WorkItemId = itemId,
+                    NewMentionedUserIds = mentions.Except(oldMentions.Select(x => x.MentionedUserId)).ToArray() });
             await db.SaveChangesAsync(ct);
             return Results.Ok(await CommentDtoAsync(db, comment, ct));
         });
@@ -87,6 +90,8 @@ public static class CollaborationEndpoints
             comment.DeletedAt = DateTimeOffset.UtcNow; comment.UpdatedAt = comment.DeletedAt.Value; comment.Version++;
             WorkItemSupport.Activity(db, workspaceId, projectId, ApiRules.UserId(http), "comment.deleted", "Comment", commentId,
                 before: new { comment.Body }, workItemId: itemId);
+            WorkItemSupport.EmitEvent(db, workspaceId, projectId, ApiRules.UserId(http), "CommentDeleted", comment.Id,
+                new { CommentId = comment.Id, WorkItemId = itemId });
             await db.SaveChangesAsync(ct);
             return Results.NoContent();
         });

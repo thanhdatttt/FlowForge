@@ -11,7 +11,13 @@ public sealed class GmailSmtpEmailSender(IConfiguration configuration) : IEmailS
         !string.IsNullOrWhiteSpace(configuration["Smtp:AppPassword"]);
 
     // send email verification
-    public async Task SendVerificationAsync(string recipient, string code, int lifetimeMinutes, CancellationToken cancellationToken)
+    public Task SendVerificationAsync(string recipient, string code, int lifetimeMinutes, CancellationToken cancellationToken) =>
+        SendAsync(recipient, "Verify your FlowForge email",
+            $"Your FlowForge email verification code is:\n\n{code}\n\n" +
+            $"Enter this 6-digit code to verify your email. It expires in {lifetimeMinutes} minutes. " +
+            "If you did not request this email, ignore it.", cancellationToken);
+
+    public async Task SendAsync(string recipient, string subject, string body, CancellationToken cancellationToken)
     {
         if (!IsConfigured) throw new InvalidOperationException("Gmail SMTP is not configured.");
         using var client = new SmtpClient("smtp.gmail.com", 587)
@@ -23,10 +29,8 @@ public sealed class GmailSmtpEmailSender(IConfiguration configuration) : IEmailS
         using var message = new MailMessage
         {
             From = new MailAddress(configuration["Smtp:Username"]!, "FlowForge"),
-            Subject = "Verify your FlowForge email",
-            Body = $"Your FlowForge email verification code is:\n\n{code}\n\n" +
-                $"Enter this 6-digit code to verify your email. It expires in {lifetimeMinutes} minutes. " +
-                "If you did not request this email, ignore it.",
+            Subject = subject,
+            Body = body,
             IsBodyHtml = false
         };
         message.To.Add(recipient);

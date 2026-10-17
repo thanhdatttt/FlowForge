@@ -4,6 +4,7 @@ using FlowForge.Api.Validation.Workspaces;
 using FlowForge.Domain.Workspaces;
 using FlowForge.Infrastructure;
 using FlowForge.Infrastructure.Identity;
+using FlowForge.Infrastructure.Notifications;
 using FlowForge.Infrastructure.Workspaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,7 +17,7 @@ public static class InvitationEndpoints
         var group = app.MapGroup("/api/v1/workspaces/{workspaceId:guid}/invitations")
             .WithTags("Invitations").RequireAuthorization().AddEndpointFilter<WorkspaceMutationFilter>();
         group.MapPost("/", async (Guid workspaceId, CreateInvitationRequestDto request, HttpContext http,
-            WorkspaceAccessService access, FlowForgeDbContext db, IConfiguration configuration, CancellationToken ct) =>
+            WorkspaceAccessService access, FlowForgeDbContext db, IConfiguration configuration, NotificationQueue queue, CancellationToken ct) =>
         {
             var actorRole = await ApiRules.RoleAsync(workspaceId, http, access, ct);
             ApiRules.Require(WorkspacePermissions.Allows(actorRole, WorkspacePermission.ManageMembers), 403, "Permission denied.");
@@ -49,9 +50,13 @@ public static class InvitationEndpoints
             db.WorkspaceInvitations.Add(invitation);
             WorkItemSupport.Activity(db, workspaceId, null, ApiRules.UserId(http), "invitation.created", "Invitation", invitation.Id,
                 after: new { Role = role.ToString() });
+            var invitationUrl = InvitationUrl(configuration, invitation.Id, raw);
+            queue.Invitation(invitation, invitationUrl);
+            WorkItemSupport.EmitEvent(db, workspaceId, null, ApiRules.UserId(http), "InvitationCreated", invitation.Id,
+                new { InvitationId = invitation.Id });
             await db.SaveChangesAsync(ct);
             return Results.Created($"/api/v1/workspaces/{workspaceId}/invitations/{invitation.Id}",
-                new CreatedInvitationResponseDto(ToResponse(invitation), raw, InvitationUrl(configuration, invitation.Id, raw)));
+                new CreatedInvitationResponseDto(ToResponse(invitation), raw, invitationUrl));
         }).Produces<CreatedInvitationResponseDto>(201).ProducesValidationProblem().ProducesProblem(403).ProducesProblem(409);
 
         group.MapGet("/", async (Guid workspaceId, HttpContext http, WorkspaceAccessService access,

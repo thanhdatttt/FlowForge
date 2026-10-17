@@ -1,8 +1,10 @@
 # Backend test results
 
-Latest Phase 3 retest: 2026-10-17 (+07). The earlier exception-handling regression run was performed on 2026-10-16 20:13 +07; its live HTTP evidence remains below as historical results.
+Latest Phase 4 run: 2026-10-17 (+07), .NET SDK 10.0.112 and disposable PostgreSQL 17. All **134 automated tests passed**, including **24 Phase 4 cases**, with zero failures or skips. The current fixture applies all seven EF Core migrations. No application database or real SMTP service was used.
 
-The API was built and tested with .NET SDK 10.0.112 and PostgreSQL 17 in an isolated, disposable Docker container. Existing project data was not used. The latest integration fixture applied all six EF Core migrations to new databases. The exception handler was updated to preserve request-binding HTTP error statuses; the six regression tests also verify the JSON problem response.
+Phase 4 covers notification APIs and permissions, assignment/self-notification rules, new/edited mentions, encrypted invitation email, cancellation after revocation/removal, overdue UTC boundaries and deduplication, concurrent dispatchers/scanners, expiring claims, retry limits, safe errors, rollback isolation, hosted-worker processing, Phase 3 migration upgrades, and real SignalR WebSocket handshake/subscription/event/reconnect journeys through TestServer. New regressions verify that slow SMTP does not block workspace writes or live dispatch, revoked access during an in-flight email cannot expose private resource data (including earlier queued bodies), a failed overdue scanner does not block outbox/email, and HTTP logs preserve method/path/status/duration without query tokens. Email uses the in-memory test sender; real Gmail inbox delivery remains unverified.
+
+The earlier Phase 3 retest and live HTTP evidence below are retained as historical results. The exception-handling regression run was performed on 2026-10-16 20:13 +07.
 
 ## Results
 
@@ -13,12 +15,70 @@ The API was built and tested with .NET SDK 10.0.112 and PostgreSQL 17 in an isol
 | Live HTTP checks after fix, Development | 79 | 0 | 0 | 79 |
 | Live HTTP checks after fix, Production | 8 | 0 | 0 | 8 |
 | Phase 3 endpoint/integration and migration tests, latest | 9 | 0 | 0 | 9 |
-| Full automated backend suite, latest | 110 | 0 | 0 | 110 |
+| Full automated backend suite, Phase 3 historical | 110 | 0 | 0 | 110 |
+| Phase 4 initial implementation, historical | 18 | 0 | 0 | 18 |
+| Phase 4 after P2 fixes and simplification, historical | 21 | 0 | 0 | 21 |
+| Phase 4 endpoint verification, latest | 24 | 0 | 0 | 24 |
+| Full automated backend suite, initial Phase 4 historical | 128 | 0 | 0 | 128 |
+| Full automated backend suite after P2 fixes, historical | 131 | 0 | 0 | 131 |
+| Full automated backend suite, latest | 134 | 0 | 0 | 134 |
 | Phase 3 live HTTP calls, Development, latest | 27 | 0 | 0 | 27 |
 
 The latest build passed with zero warnings and zero errors. EF Core reported no pending model changes. All six previously failing cases still pass in the automated suite. The historical 101-case run included the original 82 cases and 19 added coverage cases.
 
 The earlier live run exercised all **34 endpoint operations available at that time** over real HTTP: 31 business operations, two health endpoints, and Development OpenAPI. Phase 3's **26 route operations** were exercised through both the ASP.NET Core HTTP pipeline with `WebApplicationFactory` and a separately running Development API process against disposable PostgreSQL. The live journey made 27 calls because it created two work items. The earlier live operation list was checked against that running API's OpenAPI document. Endpoint exercise is not a claim of exhaustive input, security, or line coverage.
+
+## Phase 4 endpoint and SignalR verification
+
+Verified on 2026-10-17 (+07) with the actual ASP.NET Core HTTP/SignalR pipeline in `WebApplicationFactory`/TestServer and disposable PostgreSQL 17. The hub tests exchange real WebSocket/SignalR JSON frames. These results are automated integration checks, separate from the historical external-process live HTTP tables below. All Phase 4 operations listed here were exercised; this does not claim exhaustive coverage of every possible input or transport.
+
+### REST endpoints
+
+| Method and route | Verified behavior | Observed result | Evidence |
+| --- | --- | --- | --- |
+| `GET /api/v1/notifications` | Own notifications only; valid page 1/2 and page size; total count; unread filtering; resource links; removed project access | PASS: `200` | `Assignment_mentions_read_apis_and_email_are_idempotent_and_authorized`; `Notification_endpoints_enforce_authentication_paging_and_read_all_recipient_isolation`; `Removed_members_cannot_read_or_receive_queued_project_notifications` |
+| `GET /api/v1/notifications` | Missing authentication, query token without Bearer header, inactive user; invalid pagination and malformed page/unread flag | PASS: `401` for authentication failures; `400` for invalid queries | `Notification_endpoints_enforce_authentication_paging_and_read_all_recipient_isolation`; `Assignment_mentions_read_apis_and_email_are_idempotent_and_authorized` |
+| `POST /api/v1/notifications/{notificationId}/read` | Own notification becomes read; repeat remains successful; another recipient's/missing/inaccessible notification is unavailable; anonymous call rejected | PASS: `204`, `404`, `401` respectively | `Assignment_mentions_read_apis_and_email_are_idempotent_and_authorized`; `Notification_endpoints_enforce_authentication_paging_and_read_all_recipient_isolation`; `Removed_members_cannot_read_or_receive_queued_project_notifications` |
+| `POST /api/v1/notifications/read-all` | All visible own notifications become read; repeated call preserves read timestamps; another recipient's notifications remain unread | PASS: `204` | `Notification_endpoints_enforce_authentication_paging_and_read_all_recipient_isolation` |
+| `POST /api/v1/notifications/read-all` | Missing authentication and inactive account are rejected | PASS: `401` | `Notification_endpoints_enforce_authentication_paging_and_read_all_recipient_isolation` |
+
+### SignalR connection and hub methods
+
+| Operation | Verified behavior | Result | Evidence |
+| --- | --- | --- | --- |
+| `POST /hubs/updates/negotiate?negotiateVersion=1` | Anonymous negotiation rejected | PASS: `401` | `Signalr_authorizes_subscriptions_delivers_compact_events_and_recovers_by_refetch_after_reconnect` |
+| WebSocket `/hubs/updates` | JWT in Authorization header and hub query token; successful JSON protocol handshake; query token absent from captured logs | PASS | `Signalr_authorizes_subscriptions_delivers_compact_events_and_recovers_by_refetch_after_reconnect` |
+| `JoinProject(workspaceId, projectId)` | Authorized join receives events; outsider, wrong workspace, inaccessible same-workspace project, and removed membership are rejected | PASS: completion on success; safe hub error on denial | `Leaving_project_and_workspace_stops_delivery_and_workspace_subscriptions_exclude_private_projects`; `Existing_signalr_connection_stops_receiving_project_events_after_access_revocation`; reconnect journey |
+| `LeaveProject(projectId)` | Successful leave and repeated leave; no subsequent project update received; later rejoin works | PASS | `Leaving_project_and_workspace_stops_delivery_and_workspace_subscriptions_exclude_private_projects` |
+| `JoinWorkspace(workspaceId)` | Member receives authorized project updates; outsider denied; private project without membership does not reach the workspace subscription | PASS | `Leaving_project_and_workspace_stops_delivery_and_workspace_subscriptions_exclude_private_projects`; reconnect journey |
+| `LeaveWorkspace(workspaceId)` | Successful leave and repeated leave; no subsequent workspace event received; separate project subscription can be established afterward | PASS | `Leaving_project_and_workspace_stops_delivery_and_workspace_subscriptions_exclude_private_projects` |
+| Reconnect | Disconnect, commit changes, reconnect with query token, rejoin, REST refetch, then receive new events | PASS | `Signalr_authorizes_subscriptions_delivers_compact_events_and_recovers_by_refetch_after_reconnect` |
+
+### Server events
+
+| Event | Verified behavior | Result | Evidence |
+| --- | --- | --- | --- |
+| `ProjectUpdated` | Work-item creation and comment create/edit/delete have correct type/entity ID; payload excludes title/body; overlap retains a stable event ID; revoked access stops delivery | PASS | `Signalr_comment_events_and_notification_ids_match_committed_rest_resources`; reconnect, unsubscribe, and revocation journeys |
+| `NotificationReceived` | Assignment and mention notification IDs match notifications already retrievable through authorized REST; comment edits retaining the same mention and deletion emit no extra notification | PASS | `Signalr_comment_events_and_notification_ids_match_committed_rest_resources` |
+
+### Email, overdue, and background processing
+
+| Feature | Verified behavior | Result | Evidence |
+| --- | --- | --- | --- |
+| Existing invitation creation endpoint | Queues encrypted invitation URL; in-app invitation is visible to the invited account; fake SMTP receives the link; revocation hides/cancels delivery | PASS | `Invitation_email_is_encrypted_background_delivery_and_revocation_hides_notification` |
+| Notification email | No SMTP means in-app only; deleted mentions/removed access cancel queued email; transient retries stop at the limit; slow send does not lock workspace writes or block real-time; in-flight body contains no private resource data | PASS | `PhaseFourIntegrationTests` and `PhaseFourReliabilityTests` |
+| Overdue scanner | UTC due-date boundary; completed/archived/unassigned exclusions; concurrent scans deduplicate; due-date change allows a new reminder | PASS | `Overdue_checks_use_utc_skip_completed_archived_and_unassigned_and_deduplicate_concurrent_runs` |
+| Worker/outbox | Independent job loops; scanner failure does not stop other queues; crash claims recover; bad events become terminal; retries avoid duplicate persisted notifications; rollback is not published | PASS | `PhaseFourReliabilityTests` |
+
+Real Gmail inbox delivery, a deployed browser/reverse proxy, and a Redis backplane were not exercised. No real email was sent. No product source changes were needed in this endpoint verification run; three additional integration tests cover the identified gaps.
+
+## Phase 4 P2 fixes and simplification
+
+- SMTP no longer holds a workspace lock. Eligibility is checked immediately before sending; notification email is generic and contains no project/resource IDs or private text. Queued invitation links still require valid authorization at acceptance.
+- Overdue, outbox, and email run in independent loops, each with its own scope, timeout, interval, and error handling. Scanner failures and slow SMTP no longer stop other jobs.
+- Notification list validation uses `PaginationValidator` directly. The hub uses SignalR groups without a separate connection subscription registry; clients deduplicate stable event IDs.
+- Built-in HTTP logging records method/path/status/duration and omits query strings, headers, and bodies. The existing raw hosting logs remain suppressed to protect SignalR query tokens.
+- No schema or new migration changes were required for these fixes. Full build/test compilation passed without warnings; EF Core reports no pending model changes, and Compose configuration validation passes.
 
 ## Fixed regression cases
 
@@ -59,7 +119,9 @@ curl -i "$BASE/api/v1/workspaces/$WORKSPACE_ID/projects?page=abc" \
 - Projects: create/read/update, visibility and role rules, cross-workspace isolation, search/filter/sort/pagination, unique keys, lead changes, member add/list/remove, retained membership history, optimistic version conflicts, archive/restore idempotence, and archived mutation rejection.
 - Work items: all 26 Phase 3 route operations in an HTTP endpoint journey; concurrent item-number allocation, assignment, statuses, search/filter/sort, label/dependency/subtask changes, blocked state, archive/restore, stale versions, project permissions, and cross-project isolation.
 - Collaboration: comment mentions and moderation, time entries, private attachment validation/upload/download/deletion, item-scoped audit before/after values, domain-event/outbox persistence, and attachment cleanup after a deferred database commit failure.
-- Infrastructure: all six migrations on a fresh database, Phase 2-to-3 and earlier Phase 3 upgrades, activity backfill, readiness with available/unavailable PostgreSQL, liveness, Development/Production OpenAPI behavior, missing/short JWT keys, uniqueness, and composite foreign keys.
+- Notifications: recipient-only paginated lists, read-one/read-all, assignment and mention rules, revoked access, optional SMTP, encrypted invitation bodies, UTC overdue reminders, concurrent scan/dispatch, bounded retries, crash recovery, rollback, and registered hosted services.
+- SignalR: authenticated connections (header/query token), workspace/project subscription authorization, safe post-commit events, stable event IDs across overlapping subscriptions, membership revocation, and reconnect with REST refetch.
+- Infrastructure: all seven migrations on a fresh database, Phase 3-to-4 upgrade and notification scope/uniqueness constraints, Phase 2-to-3 and earlier Phase 3 upgrades, activity backfill, readiness with available/unavailable PostgreSQL, liveness, Development/Production OpenAPI behavior, missing/short JWT keys, uniqueness, and composite foreign keys.
 
 ### Automated results by test class
 
@@ -71,6 +133,11 @@ curl -i "$BASE/api/v1/workspaces/$WORKSPACE_ID/projects?page=abc" \
 | `PasswordHashingTests` | 1 | 0 |
 | `PhaseTwoIntegrationTests` | 17 | 0 |
 | `PhaseTwoRulesTests` | 8 | 0 |
+| `PhaseFourIntegrationTests` | 6 | 0 |
+| `PhaseFourLoggingTests` | 1 | 0 |
+| `PhaseFourMigrationTests` | 1 | 0 |
+| `PhaseFourRealtimeTests` | 4 | 0 |
+| `PhaseFourReliabilityTests` | 12 | 0 |
 | `PhaseThreeCoverageTests` | 5 | 0 |
 | `PhaseThreeIntegrationTests` | 2 | 0 |
 | `PhaseThreeMigrationTests` | 2 | 0 |
@@ -225,6 +292,55 @@ The original outcomes below came from the after-fix VSTest TRX output; the Phase
 | PASSED | `Project_permissions_distinguish_metadata_management_and_resource_writes(role: Owner, create: True, manage: True, write: True)` |
 | PASSED | `Project_permissions_distinguish_metadata_management_and_resource_writes(role: Viewer, create: False, manage: False, write: False)` |
 | PASSED | `Tokens_have_random_entropy_and_stable_nonplaintext_hashes` |
+
+### PhaseFourIntegrationTests
+
+| Result | Test |
+| --- | --- |
+| PASSED | `Assignment_mentions_read_apis_and_email_are_idempotent_and_authorized` |
+| PASSED | `Comment_edits_notify_only_new_mentions_and_deletions_cancel_pending_email` |
+| PASSED | `Invitation_email_is_encrypted_background_delivery_and_revocation_hides_notification` |
+| PASSED | `Notification_endpoints_enforce_authentication_paging_and_read_all_recipient_isolation` |
+| PASSED | `Overdue_checks_use_utc_skip_completed_archived_and_unassigned_and_deduplicate_concurrent_runs` |
+| PASSED | `Removed_members_cannot_read_or_receive_queued_project_notifications` |
+
+### PhaseFourLoggingTests
+
+| Result | Test |
+| --- | --- |
+| PASSED | `Request_logs_preserve_method_path_status_and_duration_without_query_tokens` |
+
+### PhaseFourMigrationTests
+
+| Result | Test |
+| --- | --- |
+| PASSED | `Phase_three_upgrade_preserves_pending_events_and_enforces_notification_scope_and_deduplication` |
+
+### PhaseFourRealtimeTests
+
+| Result | Test |
+| --- | --- |
+| PASSED | `Existing_signalr_connection_stops_receiving_project_events_after_access_revocation` |
+| PASSED | `Leaving_project_and_workspace_stops_delivery_and_workspace_subscriptions_exclude_private_projects` |
+| PASSED | `Signalr_authorizes_subscriptions_delivers_compact_events_and_recovers_by_refetch_after_reconnect` |
+| PASSED | `Signalr_comment_events_and_notification_ids_match_committed_rest_resources` |
+
+### PhaseFourReliabilityTests
+
+| Result | Test |
+| --- | --- |
+| PASSED | `Concurrent_dispatchers_and_recovered_claims_process_each_notification_once` |
+| PASSED | `Disabled_smtp_keeps_in_app_notifications_available_without_creating_email_jobs` |
+| PASSED | `Email_transient_failure_backs_off_and_stops_at_attempt_limit` |
+| PASSED | `Failing_overdue_scan_does_not_block_outbox_or_email_jobs` |
+| PASSED | `Hosted_worker_runs_registered_overdue_dispatch_and_email_services` |
+| PASSED | `Malformed_events_and_exhausted_crash_claims_fail_without_poisoning_other_messages` |
+| PASSED | `Realtime_failure_retries_after_commit_without_duplicate_notifications_or_email` |
+| PASSED | `Retry_classification_does_not_retry_permanent_smtp_failures(status: GeneralFailure, retry: True)` |
+| PASSED | `Retry_classification_does_not_retry_permanent_smtp_failures(status: MailboxBusy, retry: True)` |
+| PASSED | `Retry_classification_does_not_retry_permanent_smtp_failures(status: MailboxUnavailable, retry: False)` |
+| PASSED | `Rolled_back_events_are_never_published_or_notified` |
+| PASSED | `Slow_email_does_not_block_workspace_writes_or_realtime_dispatch_and_contains_no_private_data` |
 
 ### PhaseThreeCoverageTests
 
@@ -448,6 +564,15 @@ The Phase 2 rows are from the 2026-10-16 external-process run. The Phase 3 rows 
 
 ## Reproduce the automated run
 
+Phase 4 uses the same isolated PostgreSQL fixture and CI configuration. With `FLOWFORGE_TEST_CONNECTION` set to a test server, run:
+
+```sh
+dotnet test FlowForge.sln --no-restore -m:1 /p:UseSharedCompilation=false --filter 'FullyQualifiedName~PhaseFour'
+dotnet test FlowForge.sln --no-restore -m:1 /p:UseSharedCompilation=false
+```
+
+The latest TRX artifact was `/tmp/flowforge-phase4-endpoint-results/backend-phase4-endpoints.trx`; its 134 outcomes were checked against the totals above. The following commands reproduce the historical Phase 3 run.
+
 From `backend/`, start an isolated PostgreSQL 17 server. Set `FLOWFORGE_TEST_CONNECTION` to its admin connection string; the fixture requires permission to create/drop uniquely named test databases. Then run:
 
 ```sh
@@ -463,6 +588,9 @@ dotnet test FlowForge.sln --no-build -m:1 /p:UseSharedCompilation=false \
 The latest focused run exited with code 0: 9 passed, 0 failed, 0 skipped. The full run exited with code 0: 110 passed, 0 failed, 0 skipped. `dotnet ef migrations has-pending-model-changes --project src/FlowForge.Infrastructure --startup-project src/FlowForge.Api --no-build` reported no pending changes when run with the test connection and a valid `Jwt__SigningKey`. Without `FLOWFORGE_TEST_CONNECTION`, PostgreSQL-dependent tests are skipped, so that is not equivalent to these runs.
 
 ## Limits
+
+- Phase 4 SignalR tests use real WebSocket/SignalR framing through ASP.NET Core TestServer, not a deployed browser or Redis backplane. The implementation targets a single API instance.
+- SMTP retries deduplicate queued jobs; an ambiguous provider acceptance followed by process/commit failure can still result in a repeated inbox message. No real email was sent during tests.
 
 - Real Gmail SMTP delivery and inbox receipt were not tested. The automated suite captures email in memory and simulates configuration/delivery failures. The live API was deliberately started without SMTP credentials.
 - For live invitation accept/reject/ownership checks, only the disposable database's recipient accounts were marked verified through SQL. That setup does not count as a successful live OTP flow; the OTP success flow is covered by integration tests.

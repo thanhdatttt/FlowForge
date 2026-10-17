@@ -58,7 +58,7 @@ Features: - Create, list, view, and update workspaces. - Invite users by
 email; accept or reject invitations. - Assign or change workspace roles
 and remove members. - View members and invitation status.
 
-Invitations use manually shared links in Phase 2, with tokens in URL fragments; the backend exposes authenticated metadata and POST acceptance, and a future client can automate the browser flow. Email delivery of invitations follows in Phase 4. Default expiry is configurable, initially seven days. Acceptance requires a signed-in account with the invited email verified, rechecks the inviter's authority, and atomically creates membership and consumes the invitation. Lifecycle: Pending, Accepted, Expired, Revoked; recipient rejection records Revoked.
+Invitations use manually shared links in Phase 2, with tokens in URL fragments; the backend exposes authenticated metadata and POST acceptance, and a future client can automate the browser flow. Phase 4 also queues automatic email delivery for newly created invitations when SMTP is configured. Default expiry is configurable, initially seven days. Acceptance requires a signed-in account with the invited email verified, rechecks the inviter's authority, and atomically creates membership and consumes the invitation. Lifecycle: Pending, Accepted, Expired, Revoked; recipient rejection records Revoked.
 
 Ownership transfer is restricted to the current Owner. The target must be an active same-workspace member with a verified email. The previous Owner becomes Admin. Serialize concurrent transfers and enforce exactly one Owner at commit.
 
@@ -201,6 +201,8 @@ one/all as read, and navigate to related resources. - Send email in the
 background, retry transient failures, and deduplicate where
 appropriate. - Do not send private project details to users who no
 longer have access.
+
+Phase 4 delivery rules: assignment notifications target the current assignee, mention notifications target newly mentioned authorized users, and both skip self-notifications. Overdue notifications target the current assignee once per work item/due date/recipient after the due date ends in UTC; exclude completed work and archived items/projects. Notification emails follow these rules whenever SMTP is configured. New invitations also queue email; existing active accounts receive in-app invitation notifications. Recheck current permissions and relevant resource/invitation state before delivery. Notification reads use current resource access. Client recovery uses subscription rejoin and REST refetch, with event/notification ID deduplication. See the backend README for endpoint and hub contracts.
 
 ## 10. Activity and Audit Log
 

@@ -1,5 +1,10 @@
 using FlowForge.Infrastructure;
 using FlowForge.Api;
+using FlowForge.Api.Realtime;
+using FlowForge.Application.Notifications;
+using FlowForge.Infrastructure.Notifications;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpLogging;
 using System.Text;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -9,6 +14,8 @@ using Microsoft.EntityFrameworkCore;
 
 // init builder with env config
 var builder = WebApplication.CreateBuilder(args);
+// Replace hosting request logs (which include query tokens) with safe built-in HTTP logging.
+builder.Logging.AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics", LogLevel.Warning);
 
 // jwt config
 var signingKey = builder.Configuration["Jwt:SigningKey"];
@@ -21,10 +28,36 @@ var audience = builder.Configuration["Jwt:Audience"] ?? "flowforge-api";
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<AttachmentFileActions>();
 builder.Services.AddOpenApi();
+builder.Services.AddSignalR();
+builder.Services.AddHttpLogging(options =>
+{
+    options.LoggingFields = HttpLoggingFields.RequestMethod | HttpLoggingFields.RequestPath |
+        HttpLoggingFields.ResponseStatusCode | HttpLoggingFields.Duration;
+    options.CombineLogs = true;
+});
+builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
+builder.Services.AddOptions<NotificationJobOptions>().BindConfiguration("Notifications")
+    .ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddSingleton<IRealtimePublisher, SignalRPublisher>();
+builder.Services.AddSingleton<IEmailContentProtector, EmailContentProtector>();
+var protection = builder.Services.AddDataProtection().SetApplicationName("FlowForge");
+var keyPath = builder.Configuration["DataProtection:KeyPath"];
+if (!string.IsNullOrWhiteSpace(keyPath)) protection.PersistKeysToFileSystem(new DirectoryInfo(keyPath));
+builder.Services.AddHostedService<NotificationWorker>();
 builder.Services.AddProblemDetails();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
     options.MapInboundClaims = false;
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            // Browser WebSocket/SSE transports cannot set an Authorization header.
+            if (context.HttpContext.Request.Path.StartsWithSegments("/hubs/updates") &&
+                context.Request.Query.TryGetValue("access_token", out var token)) context.Token = token;
+            return Task.CompletedTask;
+        }
+    };
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -66,6 +99,7 @@ if (builder.Configuration.GetValue<bool>("Database:AutoMigrate"))
 }
 
 // add middlewares
+app.UseHttpLogging();
 app.UseExceptionHandler(new ExceptionHandlerOptions
 {
     // Development request binding throws for malformed input; preserve its HTTP status.
@@ -120,6 +154,8 @@ app.MapProjectEndpoints();
 app.MapWorkItemEndpoints();
 app.MapCollaborationEndpoints();
 app.MapAttachmentActivityEndpoints();
+app.MapNotificationEndpoints();
+app.MapHub<UpdatesHub>("/hubs/updates", options => options.CloseOnAuthenticationExpiration = true);
 
 app.Run();
 

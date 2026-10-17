@@ -4,4 +4,5 @@ public interface IEmailSender
 {
     bool IsConfigured { get; }
     Task SendVerificationAsync(string recipient, string code, int lifetimeMinutes, CancellationToken cancellationToken);
+    Task SendAsync(string recipient, string subject, string body, CancellationToken cancellationToken);
 }

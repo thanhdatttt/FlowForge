@@ -32,6 +32,10 @@ services:
       EmailVerification__LifetimeMinutes: ${EMAIL_VERIFICATION_LIFETIME_MINUTES:-10}
       Invitations__LifetimeDays: ${INVITATION_LIFETIME_DAYS:-7}
       Attachments__StoragePath: /app/private-attachments
+      DataProtection__KeyPath: /app/private-email-keys
+      Notifications__Enabled: ${NOTIFICATIONS_ENABLED:-true}
+      Notifications__PollSeconds: ${NOTIFICATIONS_POLL_SECONDS:-5}
+      Notifications__OverdueIntervalMinutes: ${NOTIFICATIONS_OVERDUE_INTERVAL_MINUTES:-5}
     ports:
       - "127.0.0.1:${API_PORT:-8080}:8080"
     depends_on:
@@ -39,7 +43,9 @@ services:
         condition: service_healthy
     volumes:
       - attachments_data:/app/private-attachments
+      - email_keys:/app/private-email-keys
 
 volumes:
   postgres_data:
   attachments_data:
+  email_keys:

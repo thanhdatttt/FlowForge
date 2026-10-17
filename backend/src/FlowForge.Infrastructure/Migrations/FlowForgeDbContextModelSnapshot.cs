@@ -179,6 +179,180 @@ namespace FlowForge.Infrastructure.Migrations
                     b.ToTable("users", (string)null);
                 });
 
+            modelBuilder.Entity("FlowForge.Domain.Notifications.EmailDelivery", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempt_count");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("IdempotencyKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("idempotency_key");
+
+                    b.Property<Guid?>("InvitationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("invitation_id");
+
+                    b.Property<Guid?>("LockId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lock_id");
+
+                    b.Property<DateTimeOffset>("NextAttemptAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_attempt_at");
+
+                    b.Property<Guid?>("NotificationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("notification_id");
+
+                    b.Property<string>("ProtectedBody")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("protected_body");
+
+                    b.Property<string>("RecipientEmail")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)")
+                        .HasColumnName("recipient_email");
+
+                    b.Property<string>("SafeError")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("safe_error");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("subject");
+
+                    b.Property<Guid>("WorkspaceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("workspace_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdempotencyKey")
+                        .IsUnique();
+
+                    b.HasIndex("Status", "NextAttemptAt");
+
+                    b.HasIndex("WorkspaceId", "InvitationId");
+
+                    b.HasIndex("WorkspaceId", "NotificationId");
+
+                    b.ToTable("email_deliveries", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_email_delivery_attempts", "attempt_count >= 0");
+
+                            t.HasCheckConstraint("CK_email_delivery_status", "status IN ('Pending', 'Sent', 'Cancelled', 'Failed')");
+
+                            t.HasCheckConstraint("CK_email_delivery_target", "(notification_id IS NULL) <> (invitation_id IS NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("FlowForge.Domain.Notifications.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("CommentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("comment_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateOnly?>("DueDate")
+                        .HasColumnType("date")
+                        .HasColumnName("due_date");
+
+                    b.Property<string>("IdempotencyKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("idempotency_key");
+
+                    b.Property<Guid?>("InvitationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("invitation_id");
+
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("project_id");
+
+                    b.Property<DateTimeOffset?>("ReadAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("read_at");
+
+                    b.Property<Guid>("RecipientUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("recipient_user_id");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("type");
+
+                    b.Property<Guid?>("WorkItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("work_item_id");
+
+                    b.Property<Guid>("WorkspaceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("workspace_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdempotencyKey")
+                        .IsUnique();
+
+                    b.HasIndex("ProjectId", "WorkItemId");
+
+                    b.HasIndex("WorkItemId", "CommentId");
+
+                    b.HasIndex("WorkspaceId", "InvitationId");
+
+                    b.HasIndex("WorkspaceId", "ProjectId");
+
+                    b.HasIndex("RecipientUserId", "ReadAt", "CreatedAt");
+
+                    b.HasIndex("WorkItemId", "DueDate", "RecipientUserId");
+
+                    b.ToTable("notifications", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_notification_scope", "(project_id IS NULL OR work_item_id IS NOT NULL) AND (work_item_id IS NULL OR project_id IS NOT NULL) AND ((type = 'Invited' AND invitation_id IS NOT NULL AND project_id IS NULL) OR (type <> 'Invited' AND invitation_id IS NULL AND work_item_id IS NOT NULL))");
+
+                            t.HasCheckConstraint("CK_notification_type", "type IN ('Assigned', 'Mentioned', 'Overdue', 'Invited')");
+                        });
+                });
+
             modelBuilder.Entity("FlowForge.Domain.Projects.Project", b =>
                 {
                     b.Property<Guid>("Id")
@@ -435,7 +609,7 @@ namespace FlowForge.Infrastructure.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("payload");
 
-                    b.Property<Guid>("ProjectId")
+                    b.Property<Guid?>("ProjectId")
                         .HasColumnType("uuid")
                         .HasColumnName("project_id");
 
@@ -476,6 +650,14 @@ namespace FlowForge.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("event_id");
 
+                    b.Property<DateTimeOffset?>("FailedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("failed_at");
+
+                    b.Property<Guid?>("LockId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lock_id");
+
                     b.Property<string>("MessageType")
                         .IsRequired()
                         .HasMaxLength(80)
@@ -485,6 +667,11 @@ namespace FlowForge.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("ProcessedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("processed_at");
+
+                    b.Property<string>("SafeError")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("safe_error");
 
                     b.HasKey("Id");
 
@@ -694,8 +881,6 @@ namespace FlowForge.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AuthorUserId");
-
-                    b.HasIndex("WorkItemId");
 
                     b.ToTable("comments", (string)null);
                 });
@@ -1085,6 +1270,66 @@ namespace FlowForge.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("FlowForge.Domain.Notifications.EmailDelivery", b =>
+                {
+                    b.HasOne("FlowForge.Domain.Workspaces.Workspace", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FlowForge.Domain.Workspaces.WorkspaceInvitation", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "InvitationId")
+                        .HasPrincipalKey("WorkspaceId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("FlowForge.Domain.Notifications.Notification", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "NotificationId")
+                        .HasPrincipalKey("WorkspaceId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("FlowForge.Domain.Notifications.Notification", b =>
+                {
+                    b.HasOne("FlowForge.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("RecipientUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FlowForge.Domain.Workspaces.Workspace", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FlowForge.Domain.WorkItems.WorkItem", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId", "WorkItemId")
+                        .HasPrincipalKey("ProjectId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("FlowForge.Domain.WorkItems.WorkComment", null)
+                        .WithMany()
+                        .HasForeignKey("WorkItemId", "CommentId")
+                        .HasPrincipalKey("WorkItemId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("FlowForge.Domain.Workspaces.WorkspaceInvitation", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "InvitationId")
+                        .HasPrincipalKey("WorkspaceId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("FlowForge.Domain.Projects.Project", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "ProjectId")
+                        .HasPrincipalKey("WorkspaceId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
             modelBuilder.Entity("FlowForge.Domain.Projects.Project", b =>
                 {
                     b.HasOne("FlowForge.Domain.Workspaces.Workspace", null)
@@ -1171,12 +1416,17 @@ namespace FlowForge.Infrastructure.Migrations
                         .HasForeignKey("ActorUserId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("FlowForge.Domain.Workspaces.Workspace", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("FlowForge.Domain.Projects.Project", null)
                         .WithMany()
                         .HasForeignKey("WorkspaceId", "ProjectId")
                         .HasPrincipalKey("WorkspaceId", "Id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("FlowForge.Domain.WorkItems.OutboxMessage", b =>

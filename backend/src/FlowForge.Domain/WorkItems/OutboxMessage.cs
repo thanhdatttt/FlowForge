@@ -8,4 +8,7 @@ public sealed class OutboxMessage
     public DateTimeOffset AvailableAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? ProcessedAt { get; set; }
     public int AttemptCount { get; set; }
+    public Guid? LockId { get; set; }
+    public DateTimeOffset? FailedAt { get; set; }
+    public string? SafeError { get; set; }
 }

@@ -80,7 +80,7 @@ internal static partial class WorkItemSupport
             BeforeValues = before == null ? null : JsonSerializer.Serialize(before),
             AfterValues = after == null ? null : JsonSerializer.Serialize(after),
             CorrelationId = System.Diagnostics.Activity.Current?.TraceId.ToString() });
-    public static void EmitEvent(FlowForgeDbContext db, Guid workspaceId, Guid projectId, Guid actor,
+    public static void EmitEvent(FlowForgeDbContext db, Guid workspaceId, Guid? projectId, Guid actor,
         string eventType, Guid entityId, object payload)
     {
         var domainEvent = new DomainEvent { WorkspaceId = workspaceId, ProjectId = projectId,

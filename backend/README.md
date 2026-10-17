@@ -1,13 +1,13 @@
 # FlowForge backend
 
-This is the .NET 10 modular-monolith backend. It includes authentication, Gmail SMTP email verification, workspaces, invitations, ownership transfer, projects, Phase 3 work items and collaboration, OpenAPI, and health checks.
+This is the .NET 10 modular-monolith backend. It includes authentication, Gmail SMTP email verification, workspaces, invitations, ownership transfer, projects, work items and collaboration, Phase 4 notifications and SignalR, OpenAPI, and health checks.
 
 ## Projects
 
 - `src/FlowForge.Api`: HTTP host, module endpoints, and client-facing request/response DTOs in `Contracts/`.
 - `src/FlowForge.Application`: use cases and module contracts.
 - `src/FlowForge.Domain`: business rules and domain models.
-- `src/FlowForge.Infrastructure`: EF Core context and PostgreSQL provider; future persistence and external integrations.
+- `src/FlowForge.Infrastructure`: EF Core context and PostgreSQL provider; private files, SMTP delivery, and notification background jobs.
 - `tests/FlowForge.Api.Tests`: unit, API smoke, and PostgreSQL integration tests.
 
 The references point inward: Application depends on Domain, Infrastructure depends on Application, and API composes Application and Infrastructure. Add feature code by business module within these projects, following [the architecture document](../docs/architecture.md). Do not create cross-module circular dependencies.
@@ -62,7 +62,7 @@ Registration requires an 8–128 character password containing an uppercase lett
 
 Workspace routes under `/api/v1/workspaces` require a JWT. A new workspace's creator becomes Owner. Membership roles are loaded from PostgreSQL for every request, so role changes and removals take effect immediately. Non-members receive `404`; members without permission receive `403`.
 
-| Role | Read workspace and members | Edit workspace or manage members | Manage projects | Write work items (future API) |
+| Role | Read workspace and members | Edit workspace or manage members | Manage projects | Write work items |
 | --- | --- | --- | --- | --- |
 | Owner | Yes | Yes | Yes | Yes |
 | Admin | Yes | Yes, except Owner/Admin members | Yes | Yes |
@@ -103,7 +103,7 @@ The `EmailVerificationOtp` migration adds the attempt counter and invalidates ou
 
 ## Workspace invitations
 
-Phase 2 uses manual sharing; automatic invitation email delivery remains in Phase 4. All routes require a Bearer token.
+All routes require a Bearer token. New invitations queue automatic background email delivery when SMTP is configured; manual sharing remains available through the creation response.
 
 | Method | Path | Request / behavior |
 | --- | --- | --- |
@@ -114,7 +114,7 @@ Phase 2 uses manual sharing; automatic invitation email delivery remains in Phas
 | POST | `/api/v1/invitations/accept` | `{ "token": "<invitation token>" }` |
 | POST | `/api/v1/invitations/reject` | Same body; recipient rejection records `Revoked` |
 
-Share the `invitationUrl` from the creation response privately. It points to the authenticated invitation metadata endpoint and carries the raw token in a URL fragment (`#token=...`), which is not sent to the server or included in HTTP request logs. Backend API users authenticate to inspect the invitation, then copy the fragment token into the accept/reject POST body. A future frontend can automate that flow; no browser UI is included. `PUBLIC_API_URL` controls the link base (default `http://localhost:8080`); host runs use `PublicApiUrl`. Use HTTPS outside local development. The URL and raw token are returned only in the creation response. The recipient may register after the invitation was created, but must sign in and verify the exact invited email before accepting or rejecting. Tokens are cryptographically random and stored only as hashes. Expiry defaults to seven days (configurable 1–30 days). States are `Pending`, `Accepted`, `Expired`, and `Revoked`. Accepted and revoked outcomes remain terminal. Creating a replacement for an expired invitation preserves its displayed `Expired` history.
+Share the `invitationUrl` from the creation response privately. It points to the authenticated invitation metadata endpoint and carries the raw token in a URL fragment (`#token=...`), which is not sent to the server or included in HTTP request logs. Backend API users authenticate to inspect the invitation, then copy the fragment token into the accept/reject POST body. A future frontend can automate that flow; no browser UI is included. `PUBLIC_API_URL` controls the link base (default `http://localhost:8080`); host runs use `PublicApiUrl`. Use HTTPS outside local development. The URL and raw token are returned only in the creation response; the queued invitation email stores its body encrypted with ASP.NET Core Data Protection and removes that body after delivery or terminal failure. The recipient may register after the invitation was created, but must sign in and verify the exact invited email before accepting or rejecting. Tokens are cryptographically random and stored only as hashes. Expiry defaults to seven days (configurable 1–30 days). States are `Pending`, `Accepted`, `Expired`, and `Revoked`. Accepted and revoked outcomes remain terminal. Creating a replacement for an expired invitation preserves its displayed `Expired` history.
 
 Only Owners/Admins may create/list invitations. Owners may invite Admins; Admins may invite Managers, Developers, and Viewers. Nobody may invite an Owner. Acceptance rechecks the inviter's current authority, email identity, expiry, and existing membership under a workspace lock, and commits invitation consumption and membership creation together. Duplicate pending invitations or active membership return `409`. Removed/demoted inviters cannot retain authority through outstanding invitations.
 
@@ -192,4 +192,54 @@ Work-item listing supports `search`, `status`, `priority`, `type`, `assigneeUser
 
 Attachments allow PNG, JPEG, PDF, and plain text up to 10 MiB. Metadata is in PostgreSQL, while bytes use a server-generated key in private storage. Configure `Attachments:StoragePath` outside the web root for host deployments. Docker Compose mounts `/app/private-attachments` in a persistent volume. Every download rechecks current project access. After a successful delete transaction, the private file is removed. If an upload transaction fails, its new file is removed; failed cleanup is logged without exposing the path to API clients.
 
-Work-item creation, updates, status/assignment changes, archive/restore, and comment creation persist typed `domain_events` and corresponding pending `outbox_messages` in the same database transaction as the resource and activity record. They contain IDs and safe event metadata, not comment bodies or attachment content. Dispatching these messages belongs to later notification/workflow phases; Phase 3 does not send mention notifications or real-time updates.
+Work-item creation, updates, status/assignment changes, archive/restore, and comment creation persist typed `domain_events` and corresponding pending `outbox_messages` in the same database transaction as the resource and activity record. They contain IDs and safe event metadata, not comment bodies or attachment content. Phase 4 dispatches these messages for notifications and real-time updates. Workflow execution belongs to Phase 5. Comment edits/deletions and new invitations also persist events in Phase 4.
+
+
+## Phase 4: notifications and real-time updates
+
+Notification APIs require a Bearer token. Queries always filter to the current recipient and their current workspace/project access before counting and paging. Pending invitation notifications are visible to the invited account even before workspace membership, provided the invitation and inviter remain valid. Revoked/expired/accepted invitations disappear from this list. Responses include resource IDs and an authorized API `resourceUrl`, without invitation tokens or comment bodies.
+
+| Method | Path | Behavior |
+| --- | --- | --- |
+| GET | `/api/v1/notifications` | `page`, `pageSize` (maximum 100), optional `unreadOnly`; returns `items`, `total`, `page`, `pageSize`. |
+| POST | `/api/v1/notifications/{notificationId}/read` | Marks the caller's visible notification as read; idempotent, otherwise `404`. |
+| POST | `/api/v1/notifications/read-all` | Marks all currently visible notifications as read; idempotent. |
+
+Notification rules:
+
+- `Assigned`: notify the assignee when an item is created with an assignee or reassigned. Skip self-assignment and stale events whose assignee has already changed.
+- `Mentioned`: notify users mentioned in a new comment, or newly added mentions on an edit. Repeated mentions and edits retaining a mention do not create duplicates. Skip self-mentions, deleted comments, removed mentions, and users without current project access.
+- `Overdue`: notify the current assignee once per work item, due date, and recipient. An item becomes overdue after its due date ends in UTC. Completed work, archived projects/items, unassigned work, and inaccessible recipients are excluded. Changing the due date or assignee can produce a new reminder.
+- `Invited`: notify an existing active account when a new invitation event is dispatched. Invitations sent before registration remain available through their emailed/manually shared link; there is no historical notification backfill on registration.
+
+Notification emails are queued when SMTP is configured. A missing SMTP configuration does not prevent in-app notifications or invitation creation. OTP verification retains its existing immediate delivery behavior. Before every notification email send, the worker rechecks access, resource state, recipient identity, assignment/mention validity, and overdue state. Before invitation delivery, it rechecks expiry, revocation, acceptance, existing membership, and inviter authority. SMTP runs without holding a workspace lock, so slow delivery cannot block workspace writes. Notification emails contain only a generic sign-in prompt, with no resource IDs or private project details, including when processing bodies queued by an earlier version. Access changes during an in-flight send therefore cannot expose project data. Invitation links remain subject to the existing token, expiry, recipient, and inviter checks at acceptance.
+
+Connect to SignalR at `/hubs/updates` with a JWT. Browser WebSocket/SSE clients may use `access_token` on this hub path; ordinary API routes do not accept query tokens. Connections close when the access token expires. Raw hosting request logs are replaced with built-in HTTP logging of method, path, status, and duration. Query strings, headers, and bodies are excluded, preserving request observability without logging access tokens.
+
+| Hub method | Arguments | Behavior |
+| --- | --- | --- |
+| `JoinWorkspace` | `workspaceId` | Subscribe to updates for projects in this workspace that the user can currently access. |
+| `LeaveWorkspace` | `workspaceId` | Leave that workspace subscription. |
+| `JoinProject` | `workspaceId`, `projectId` | Subscribe after checking current project access. |
+| `LeaveProject` | `projectId` | Leave that project subscription. |
+
+The server sends `ProjectUpdated` with `eventId`, `type`, `workspaceId`, `projectId`, `entityId`, and `occurredAt`. Events cover existing work-item changes plus comment create/edit/delete and overdue events. Each authenticated active connection automatically receives its user's `NotificationReceived` event with only `{ id }`. Group names are chosen by the server. Delivery filters current authorized users, so previously joined groups cannot retain access after membership removal or role changes. The hub keeps no additional subscription registry. Overlapping workspace/project subscriptions can deliver the same event more than once; clients deduplicate using the stable `eventId`.
+
+On reconnect, rejoin subscriptions and refetch work-item lists and `/api/v1/notifications`; there is no event replay endpoint. Subscribe before refetching, then deduplicate/invalidate using event IDs and refetch authoritative resource versions. Redis is not required for the current single-instance host; a distributed SignalR backplane is required before using multiple API instances for live delivery.
+
+`NotificationWorker` owns overdue scanning, outbox dispatch, and email delivery through three independent loops with separate scopes, timeouts, intervals, and error handling. A failed overdue scan or slow SMTP delivery does not block the other jobs. PostgreSQL is the durable queue. Claims use row locks with `SKIP LOCKED`, claim IDs, and two-minute expirations. The worker commits notifications/email jobs before publishing SignalR updates, rechecks authorization under the existing workspace lock, and acknowledges only its own claim. Failed attempts back off (5, 10, 20, 40 seconds by default); permanent failures stop immediately and transient failures stop after five attempts. Failed rows retain safe errors and timestamps. Expired claims are recovered, and exhausted claims become terminal. Job errors are logged by ID/type without provider error messages or email bodies. SMTP sends retain their 20-second timeout; each scan, dispatch, or send attempt is bounded to 60 seconds.
+
+Idempotency keys prevent duplicate persisted notifications and queued emails. SignalR is at least once during retries; clients should deduplicate `eventId`/notification `id`. SMTP cannot guarantee exactly one inbox delivery if a process stops after the provider accepted a message but before PostgreSQL records success. Successful, cancelled, and terminally failed email jobs discard their encrypted bodies. Earlier Phase 3 pending events are dispatched using current access/resource state. Existing invitations are not automatically emailed because their raw tokens were never retained.
+
+| Host configuration | Default | Purpose |
+| --- | --- | --- |
+| `Notifications:Enabled` | `true` | Enable the background worker. Notification APIs/hub remain available when it is disabled. |
+| `Notifications:PollSeconds` | `5` | Queue polling interval, 1–300 seconds. |
+| `Notifications:OverdueIntervalMinutes` | `5` | Overdue scan interval, 1–1440 minutes. |
+| `Notifications:BatchSize` | `50` | Maximum work per cycle/scan, 1–500. |
+| `Notifications:MaxAttempts` | `5` | Attempt limit, 1–10. |
+| `DataProtection:KeyPath` | ASP.NET Core default key storage | Persistent private directory for queued email encryption keys. |
+
+Compose maps the first three settings through `NOTIFICATIONS_ENABLED`, `NOTIFICATIONS_POLL_SECONDS`, and `NOTIFICATIONS_OVERDUE_INTERVAL_MINUTES`, and persists Data Protection keys in the private `email_keys` volume. Keep this volume across container replacements. Host deployments should set `DataProtection__KeyPath` to a persistent private directory outside the web root; back up keys with the database so pending invitation emails remain decryptable after restore. SMTP credentials continue to use environment configuration.
+
+The `PhaseFourNotifications` migration adds notifications and email delivery tables, outbox claim/failure fields, scope constraints/indexes, and optional project scope for workspace invitation events. Downgrade refuses to discard workspace-level event history that Phase 3 cannot represent; use a pre-upgrade backup if a full Phase 3 rollback is required.
