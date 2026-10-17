@@ -10,7 +10,7 @@ public sealed class ApiFailure(int status, string title) : Exception(title)
     public int Status { get; } = status;
 }
 
-// Request identity, resource access, and business-state guards. Input validation lives in Validation/.
+// Request identity, resource access, and business-state guards. Input validation lives in Validations/.
 public static class ApiRules
 {
     public static Guid UserId(HttpContext context) => Guid.Parse(context.User.FindFirst(JwtRegisteredClaimNames.Sub)!.Value);

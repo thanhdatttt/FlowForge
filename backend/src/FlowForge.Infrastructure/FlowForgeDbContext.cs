@@ -3,6 +3,7 @@ using FlowForge.Domain.Identity;
 using FlowForge.Domain.Workspaces;
 using FlowForge.Domain.Projects;
 using FlowForge.Domain.WorkItems;
+using FlowForge.Domain.Notifications;
 
 namespace FlowForge.Infrastructure;
 
@@ -30,6 +31,9 @@ public sealed class FlowForgeDbContext(DbContextOptions<FlowForgeDbContext> opti
     public DbSet<ActivityRecord> ActivityRecords => Set<ActivityRecord>();
     public DbSet<DomainEvent> DomainEvents => Set<DomainEvent>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<EmailDelivery> EmailDeliveries => Set<EmailDelivery>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -129,6 +133,7 @@ public sealed class FlowForgeDbContext(DbContextOptions<FlowForgeDbContext> opti
             entity.HasKey(x => x.Id);
             entity.Property(x => x.Id).HasColumnName("id");
             entity.Property(x => x.WorkspaceId).HasColumnName("workspace_id");
+            entity.HasAlternateKey(x => new { x.WorkspaceId, x.Id });
             entity.Property(x => x.NormalizedEmail).HasColumnName("normalized_email").HasMaxLength(320);
             entity.Property(x => x.Role).HasColumnName("role").HasConversion<string>().HasMaxLength(20);
             entity.Property(x => x.TokenHash).HasColumnName("token_hash").HasMaxLength(64);
@@ -286,6 +291,7 @@ public sealed class FlowForgeDbContext(DbContextOptions<FlowForgeDbContext> opti
         modelBuilder.Entity<WorkComment>(e =>
         {
             e.ToTable("comments"); e.HasKey(x => x.Id);
+            e.HasAlternateKey(x => new { x.WorkItemId, x.Id });
             e.Property(x => x.Id).HasColumnName("id"); e.Property(x => x.WorkItemId).HasColumnName("work_item_id");
             e.Property(x => x.AuthorUserId).HasColumnName("author_user_id");
             e.Property(x => x.Body).HasColumnName("body").HasMaxLength(10000);
@@ -376,6 +382,7 @@ public sealed class FlowForgeDbContext(DbContextOptions<FlowForgeDbContext> opti
             e.HasOne<Project>().WithMany().HasForeignKey(x => new { x.WorkspaceId, x.ProjectId })
                 .HasPrincipalKey(x => new { x.WorkspaceId, x.Id }).OnDelete(DeleteBehavior.Restrict);
             e.HasOne<User>().WithMany().HasForeignKey(x => x.ActorUserId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<Workspace>().WithMany().HasForeignKey(x => x.WorkspaceId).OnDelete(DeleteBehavior.Restrict);
         });
         modelBuilder.Entity<OutboxMessage>(e =>
         {
@@ -389,7 +396,77 @@ public sealed class FlowForgeDbContext(DbContextOptions<FlowForgeDbContext> opti
             e.Property(x => x.AvailableAt).HasColumnName("available_at");
             e.Property(x => x.ProcessedAt).HasColumnName("processed_at");
             e.Property(x => x.AttemptCount).HasColumnName("attempt_count");
+            e.Property(x => x.LockId).HasColumnName("lock_id");
+            e.Property(x => x.FailedAt).HasColumnName("failed_at");
+            e.Property(x => x.SafeError).HasColumnName("safe_error").HasMaxLength(100);
             e.HasOne<DomainEvent>().WithMany().HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<Notification>(e =>
+        {
+            e.ToTable("notifications", t =>
+            {
+                t.HasCheckConstraint("CK_notification_type", "type IN ('Assigned', 'Mentioned', 'Overdue', 'Invited')");
+                t.HasCheckConstraint("CK_notification_scope", "(project_id IS NULL OR work_item_id IS NOT NULL) AND (work_item_id IS NULL OR project_id IS NOT NULL) AND ((type = 'Invited' AND invitation_id IS NOT NULL AND project_id IS NULL) OR (type <> 'Invited' AND invitation_id IS NULL AND work_item_id IS NOT NULL))");
+            });
+            e.HasKey(x => x.Id);
+            e.HasAlternateKey(x => new { x.WorkspaceId, x.Id });
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.RecipientUserId).HasColumnName("recipient_user_id");
+            e.Property(x => x.WorkspaceId).HasColumnName("workspace_id");
+            e.Property(x => x.ProjectId).HasColumnName("project_id");
+            e.Property(x => x.WorkItemId).HasColumnName("work_item_id");
+            e.Property(x => x.CommentId).HasColumnName("comment_id");
+            e.Property(x => x.InvitationId).HasColumnName("invitation_id");
+            e.Property(x => x.DueDate).HasColumnName("due_date");
+            e.Property(x => x.Type).HasColumnName("type").HasMaxLength(30);
+            e.Property(x => x.IdempotencyKey).HasColumnName("idempotency_key").HasMaxLength(200);
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+            e.Property(x => x.ReadAt).HasColumnName("read_at");
+            e.HasIndex(x => x.IdempotencyKey).IsUnique();
+            e.HasIndex(x => new { x.RecipientUserId, x.ReadAt, x.CreatedAt });
+            e.HasIndex(x => new { x.WorkItemId, x.DueDate, x.RecipientUserId });
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.RecipientUserId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<Workspace>().WithMany().HasForeignKey(x => x.WorkspaceId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<Project>().WithMany().HasForeignKey(x => new { x.WorkspaceId, x.ProjectId })
+                .HasPrincipalKey(x => new { x.WorkspaceId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<WorkItem>().WithMany().HasForeignKey(x => new { x.ProjectId, x.WorkItemId })
+                .HasPrincipalKey(x => new { x.ProjectId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<WorkComment>().WithMany().HasForeignKey(x => new { x.WorkItemId, x.CommentId })
+                .HasPrincipalKey(x => new { x.WorkItemId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<WorkspaceInvitation>().WithMany().HasForeignKey(x => new { x.WorkspaceId, x.InvitationId })
+                .HasPrincipalKey(x => new { x.WorkspaceId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<EmailDelivery>(e =>
+        {
+            e.ToTable("email_deliveries", t =>
+            {
+                t.HasCheckConstraint("CK_email_delivery_status", "status IN ('Pending', 'Sent', 'Cancelled', 'Failed')");
+                t.HasCheckConstraint("CK_email_delivery_attempts", "attempt_count >= 0");
+                t.HasCheckConstraint("CK_email_delivery_target", "(notification_id IS NULL) <> (invitation_id IS NULL)");
+            });
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.WorkspaceId).HasColumnName("workspace_id");
+            e.Property(x => x.NotificationId).HasColumnName("notification_id");
+            e.Property(x => x.InvitationId).HasColumnName("invitation_id");
+            e.Property(x => x.RecipientEmail).HasColumnName("recipient_email").HasMaxLength(320);
+            e.Property(x => x.Subject).HasColumnName("subject").HasMaxLength(200);
+            e.Property(x => x.ProtectedBody).HasColumnName("protected_body");
+            e.Property(x => x.IdempotencyKey).HasColumnName("idempotency_key").HasMaxLength(200);
+            e.Property(x => x.Status).HasColumnName("status").HasMaxLength(20);
+            e.Property(x => x.AttemptCount).HasColumnName("attempt_count");
+            e.Property(x => x.NextAttemptAt).HasColumnName("next_attempt_at");
+            e.Property(x => x.LockId).HasColumnName("lock_id");
+            e.Property(x => x.SafeError).HasColumnName("safe_error").HasMaxLength(100);
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+            e.Property(x => x.CompletedAt).HasColumnName("completed_at");
+            e.HasIndex(x => x.IdempotencyKey).IsUnique();
+            e.HasIndex(x => new { x.Status, x.NextAttemptAt });
+            e.HasOne<Workspace>().WithMany().HasForeignKey(x => x.WorkspaceId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<Notification>().WithMany().HasForeignKey(x => new { x.WorkspaceId, x.NotificationId })
+                .HasPrincipalKey(x => new { x.WorkspaceId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<WorkspaceInvitation>().WithMany().HasForeignKey(x => new { x.WorkspaceId, x.InvitationId })
+                .HasPrincipalKey(x => new { x.WorkspaceId, x.Id }).OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using FlowForge.Infrastructure.Identity;
 using FlowForge.Infrastructure.Workspaces;
 using FlowForge.Infrastructure.Projects;
+using FlowForge.Infrastructure.Notifications;
 
 namespace FlowForge.Infrastructure;
 
@@ -27,6 +28,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AuthService>();
         services.AddScoped<WorkspaceAccessService>();
         services.AddScoped<ProjectAccessService>();
+        services.AddScoped<NotificationAccess>();
+        services.AddScoped<NotificationQueue>();
+        services.AddScoped<NotificationDispatcher>();
+        services.AddScoped<EmailDeliveryProcessor>();
+        services.AddScoped<OverdueChecker>();
         return services;
     }
 }

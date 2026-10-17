@@ -1,6 +1,6 @@
 using FlowForge.Api.Contracts.WorkItems;
-using FlowForge.Api.Validation;
-using FlowForge.Api.Validation.WorkItems;
+using FlowForge.Api.Validations;
+using FlowForge.Api.Validations.WorkItems;
 using FlowForge.Domain.Projects;
 using FlowForge.Domain.WorkItems;
 using FlowForge.Infrastructure;
@@ -73,6 +73,9 @@ public static class CollaborationEndpoints
                 db.CommentMentions.Add(new CommentMention { CommentId = commentId, MentionedUserId = id });
             WorkItemSupport.Activity(db, workspaceId, projectId, ApiRules.UserId(http), "comment.updated", "Comment", commentId,
                 before: new { Body = oldBody }, after: new { comment.Body, Mentions = mentions }, workItemId: itemId);
+            WorkItemSupport.EmitEvent(db, workspaceId, projectId, ApiRules.UserId(http), "CommentUpdated", comment.Id,
+                new { CommentId = comment.Id, WorkItemId = itemId,
+                    NewMentionedUserIds = mentions.Except(oldMentions.Select(x => x.MentionedUserId)).ToArray() });
             await db.SaveChangesAsync(ct);
             return Results.Ok(await CommentDtoAsync(db, comment, ct));
         });
@@ -87,6 +90,8 @@ public static class CollaborationEndpoints
             comment.DeletedAt = DateTimeOffset.UtcNow; comment.UpdatedAt = comment.DeletedAt.Value; comment.Version++;
             WorkItemSupport.Activity(db, workspaceId, projectId, ApiRules.UserId(http), "comment.deleted", "Comment", commentId,
                 before: new { comment.Body }, workItemId: itemId);
+            WorkItemSupport.EmitEvent(db, workspaceId, projectId, ApiRules.UserId(http), "CommentDeleted", comment.Id,
+                new { CommentId = comment.Id, WorkItemId = itemId });
             await db.SaveChangesAsync(ct);
             return Results.NoContent();
         });
@@ -114,7 +119,7 @@ public static class CollaborationEndpoints
             var errors = TimeEntryWriteRequestValidator.Validate(request);
             if (errors.Count > 0) return Results.ValidationProblem(errors);
             var entry = new TimeEntry { WorkItemId = itemId, UserId = ApiRules.UserId(http),
-                Minutes = request.Minutes, StartedAt = request.StartedAt, Note = request.Note?.Trim() };
+                Minutes = request.Minutes, StartedAt = request.StartedAt?.ToUniversalTime(), Note = request.Note?.Trim() };
             db.TimeEntries.Add(entry);
             WorkItemSupport.Activity(db, workspaceId, projectId, entry.UserId, "time-entry.created", "TimeEntry", entry.Id,
                 after: new { entry.WorkItemId, entry.Minutes, entry.StartedAt, entry.Note }, workItemId: itemId);
@@ -134,7 +139,7 @@ public static class CollaborationEndpoints
             var errors = TimeEntryWriteRequestValidator.Validate(request);
             if (errors.Count > 0) return Results.ValidationProblem(errors);
             var before = new { entry.Minutes, entry.StartedAt, entry.Note };
-            entry.Minutes = request.Minutes; entry.StartedAt = request.StartedAt;
+            entry.Minutes = request.Minutes; entry.StartedAt = request.StartedAt?.ToUniversalTime();
             entry.Note = request.Note?.Trim(); entry.UpdatedAt = DateTimeOffset.UtcNow;
             WorkItemSupport.Activity(db, workspaceId, projectId, ApiRules.UserId(http), "time-entry.updated", "TimeEntry", entryId,
                 before, new { entry.Minutes, entry.StartedAt, entry.Note }, workItemId: itemId);

@@ -1,6 +1,6 @@
 using FlowForge.Api.Contracts.Projects;
-using FlowForge.Api.Validation;
-using FlowForge.Api.Validation.Projects;
+using FlowForge.Api.Validations;
+using FlowForge.Api.Validations.Projects;
 using FlowForge.Domain.Projects;
 using FlowForge.Domain.WorkItems;
 using FlowForge.Domain.Workspaces;

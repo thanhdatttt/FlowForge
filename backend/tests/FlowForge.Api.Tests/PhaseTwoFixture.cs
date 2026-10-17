@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using System.Security.Claims;
 using System.Text;
 using FlowForge.Application.Email;
+using Microsoft.AspNetCore.DataProtection;
 using FlowForge.Domain.Identity;
 using FlowForge.Domain.Workspaces;
 using FlowForge.Infrastructure;
@@ -43,6 +44,14 @@ public sealed class TestEmailSender : IEmailSender
     public bool IsConfigured { get; set; } = true;
     public bool FailDelivery { get; set; }
     public ConcurrentDictionary<string, string> Codes { get; } = new();
+    public ConcurrentQueue<(string Recipient, string Subject, string Body)> Messages { get; } = new();
+    public Func<string, CancellationToken, Task>? BeforeSendAsync { get; set; }
+    public async Task SendAsync(string recipient, string subject, string body, CancellationToken ct)
+    {
+        if (BeforeSendAsync != null) await BeforeSendAsync(recipient, ct);
+        if (FailDelivery) throw new System.Net.Mail.SmtpException("Test-only delivery failure");
+        Messages.Enqueue((recipient, subject, body));
+    }
     public Task SendVerificationAsync(string recipient, string code, int lifetimeMinutes, CancellationToken ct)
     {
         if (FailDelivery) throw new System.Net.Mail.SmtpException("Test-only delivery failure");
@@ -51,7 +60,7 @@ public sealed class TestEmailSender : IEmailSender
     }
 }
 
-public sealed class PhaseTwoFixture : WebApplicationFactory<Program>, IAsyncLifetime
+public class PhaseTwoFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
     public const string SigningKey = "phase-two-test-signing-key-at-least-32-bytes";
     public TestEmailSender Sender { get; } = new();
@@ -65,10 +74,13 @@ public sealed class PhaseTwoFixture : WebApplicationFactory<Program>, IAsyncLife
         builder.UseSetting("ConnectionStrings:FlowForge", connection!);
         builder.UseSetting("Jwt:SigningKey", SigningKey);
         builder.UseSetting("Database:AutoMigrate", "false");
+        builder.UseSetting("Notifications:Enabled", "false");
         builder.UseSetting("Attachments:StoragePath", AttachmentPath);
         builder.ConfigureServices(services =>
         {
             services.AddSingleton<IStartupFilter, TestClientAddressFilter>();
+            services.RemoveAll<IDataProtectionProvider>();
+            services.AddSingleton<IDataProtectionProvider>(new EphemeralDataProtectionProvider());
             services.RemoveAll<IEmailSender>();
             services.AddSingleton<IEmailSender>(Sender);
         });

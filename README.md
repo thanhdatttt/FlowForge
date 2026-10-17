@@ -1,6 +1,6 @@
 # FlowForge
 
-A modular project management platform. The backend includes authentication, Gmail SMTP email verification, workspace roles and invitations, ownership transfer, and projects with explicit membership and archive controls. The frontend has not been implemented.
+A modular project management platform. The backend includes authentication, Gmail SMTP email verification, workspace roles and invitations, ownership transfer, projects with explicit membership and archive controls, work items and collaboration, notifications, background email delivery, overdue checks, and authorized SignalR updates. The frontend has not been implemented.
 
 ## Run locally with Docker
 
@@ -21,7 +21,7 @@ Open or check:
 - PostgreSQL readiness: <http://localhost:8080/health/ready>
 - OpenAPI JSON: <http://localhost:8080/openapi/v1.json>
 
-Both health endpoints should return `Healthy`. The OpenAPI document includes the versioned authentication, workspace, invitation, and project endpoints. The API and PostgreSQL ports are bound to localhost; edit `API_PORT` and `POSTGRES_PORT` in `backend/.env` if needed.
+Both health endpoints should return `Healthy`. The OpenAPI document includes the versioned authentication, workspace, invitation, project, work-item, collaboration, and notification endpoints. The API and PostgreSQL ports are bound to localhost; edit `API_PORT` and `POSTGRES_PORT` in `backend/.env` if needed.
 
 Stop the containers from `backend/` with `docker compose down`. PostgreSQL data stays in a Docker volume; `docker compose down -v` also deletes that local data. If PostgreSQL has already initialized its volume, keep the existing password in `.env` unless you also change it in PostgreSQL.
 
