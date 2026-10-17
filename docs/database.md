@@ -1,6 +1,6 @@
 # FlowForge database schema
 
-Proposed PostgreSQL schema based on [feature_specification.md](feature_specification.md) and [proposal.md](proposal.md). This is a design for future EF Core migrations, not an applied migration. The feature specification is authoritative if the two docs differ.
+Proposed PostgreSQL schema based on [feature_specification.md](feature_specification.md) and [proposal.md](proposal.md). Identity, workspace, email-verification, invitation, and project tables are implemented by EF Core migrations through EmailVerificationOtp. The remaining schema describes later phases. The feature specification is authoritative if the two docs differ.
 
 ## Conventions
 
@@ -12,21 +12,22 @@ Proposed PostgreSQL schema based on [feature_specification.md](feature_specifica
 
 | Table | Main columns | Constraints and purpose |
 | --- | --- | --- |
-| `users` | `id`, `email`, `normalized_email`, `password_hash`, `display_name`, `is_active`, timestamps | Unique normalized email; password hash only. |
+| `users` | `id`, `email`, `normalized_email`, `password_hash`, `display_name`, `is_active`, `email_verified_at?`, timestamps | Unique normalized email; password hash only. |
 | `refresh_sessions` | `id`, `user_id`, `token_hash`, `family_id`, `expires_at`, `revoked_at?`, `replaced_by_id?`, timestamps | Unique token hash. Rotate and revoke tokens atomically; detect reuse by token family. |
+| `email_verification_tokens` | `id`, `user_id`, `normalized_email`, `token_hash`, `failed_attempts`, `expires_at`, `used_at?`, `created_at` | Existing table name retained for OTP challenges. Stores a user/challenge-bound HMAC of a six-digit code; 10-minute default expiry, five-attempt limit, single use. Resends invalidate previous codes. |
 | `password_reset_tokens`* | `id`, `user_id`, `token_hash`, `expires_at`, `used_at?`, `created_at` | Unique token hash; expiring, single-use. |
 | `workspaces` | `id`, `name`, `created_by_user_id`, timestamps | Workspace root. |
 | `workspace_memberships` | `id`, `workspace_id`, `user_id`, `role`, `joined_at`, `removed_at?` | Roles: Owner, Admin, Manager, Developer, Viewer. Unique active `(workspace_id, user_id)` and unique active Owner per workspace. Retain removed rows. |
-| `workspace_invitations` | `id`, `workspace_id`, `normalized_email`, `role`, `token_hash`, `invited_by_user_id`, `expires_at`, `accepted_at?`, `rejected_at?`, `revoked_at?` | Unique token hash; one usable invitation per workspace/email. Acceptance checks expiry and email in one transaction. |
+| `workspace_invitations` | `id`, `workspace_id`, `normalized_email`, `role`, `token_hash`, `invited_by_user_id`, `expires_at`, `created_at`, `accepted_at?`, `revoked_at?` | Unique token hash; one usable invitation per workspace/email. Acceptance checks expiry, verified email, and inviter authority in one transaction. Recipient rejection uses Revoked. Expired rows are closed when replaced but retain Expired status. |
 
-A workspace must have **exactly one active Owner**. The unique index enforces at most one; creation, transfer, and removal must also enforce existence, ideally with a deferred database constraint trigger. `password_reset_tokens` exists only if email delivery is configured. The role-to-operation policy is enforced server-side, not inferred from these tables alone.
+A workspace must have **exactly one active Owner**. The unique index enforces at most one; creation, transfer, and removal must also enforce existence, with a deferred database constraint trigger. Workspace writes lock the workspace root before authorization. Ownership transfer promotes a verified active member and demotes the previous Owner to Admin in one transaction. `password_reset_tokens` exists only if email delivery is configured. The role-to-operation policy is enforced server-side, not inferred from these tables alone.
 
 ## Projects and work items
 
 | Table | Main columns | Constraints and purpose |
 | --- | --- | --- |
-| `projects` | `id`, `workspace_id`, `project_key`, `name`, `description?`, `lead_membership_id?`, `starts_on?`, `target_on?`, `archived_at?`, `next_item_number bigint`, timestamps, `version bigint` | Unique `(workspace_id, project_key)`. Lead must be an active member of the same workspace. Archived projects are read-only by default. |
-| `project_memberships` | `project_id`, `workspace_membership_id`, `joined_at`, `removed_at?` | Unique active pair; supports project-member lists and assigned-project permissions. Members must belong to the project's workspace. |
+| `projects` | `id`, `workspace_id`, `project_key`, `name`, `description?`, `lead_membership_id?`, `starts_on?`, `target_on?`, `archived_at?`, timestamps, `version bigint` | Unique `(workspace_id, project_key)`. Lead must be an active member of the same workspace. Archived projects are read-only by default. |
+| `project_memberships` | `id`, `workspace_id`, `project_id`, `workspace_membership_id`, `joined_at`, `removed_at?` | Unique active pair; supports project-member lists and assigned-project permissions. Members must belong to the project's workspace. |
 | `project_statuses` | `id`, `project_id`, `name`, `category`, `sort_order`, `is_active` | Unique `(project_id, name)`. Seed Todo, InProgress, InReview, Done, Blocked. `category` identifies completed work for reporting. |
 | `work_items` | `id`, `workspace_id`, `project_id`, `item_number bigint`, `title`, `description?`, `type`, `status_id`, `priority`, `reporter_membership_id`, `assignee_membership_id?`, `parent_id?`, `start_date?`, `due_date?`, `estimate_minutes?`, `archived_at?`, timestamps, `version bigint` | Unique `(project_id, item_number)`; type is task or issue. Status and parent belong to the same project; reporter and assignee belong to the workspace. Nonnegative estimate. |
 | `labels` / `work_item_labels` | Label: `id`, `project_id`, `name`, `color?`; join: `work_item_id`, `label_id` | Unique label name per project and unique item/label pair; both sides of join share project. |
@@ -34,6 +35,8 @@ A workspace must have **exactly one active Owner**. The unique index enforces at
 | `comments` / `comment_mentions` | Comment: `id`, `work_item_id`, `author_user_id`, `body`, timestamps, `deleted_at?`; mention: `comment_id`, `mentioned_user_id` | Keep author and edit/deletion audit; resolve mentions and verify access on server. |
 | `attachments` | `id`, `work_item_id`, `uploaded_by_user_id`, `storage_key`, `original_name`, `content_type`, `size_bytes`, `created_at`, `deleted_at?` | Unique server-generated storage key; authorize each download. |
 | `time_entries` | `id`, `work_item_id`, `user_id`, `minutes`, `started_at?`, `note?`, timestamps, `deleted_at?` | Positive minutes; preserve attribution after membership removal. |
+
+Phase 3 will add the project item-number counter. Owners/Admins access all projects; other roles require explicit project membership. Only Owners/Admins create projects. Assigned Managers manage projects; Developers write work-item resources; Viewers read only. Project keys normalize to uppercase and are unique per workspace, including archived projects.
 
 Display an item key as `project_key-item_number` (for example `FLOW-123`). Allocate numbers atomically. Keep project keys stable after item creation unless key aliases are added. Prevent parent and dependency cycles in business logic; restrict links to one project as an initial assumption. Use optimistic concurrency for item updates and write important changes with activity/outbox rows in one transaction. Removed members remain referenced by history but cannot receive new assignments.
 

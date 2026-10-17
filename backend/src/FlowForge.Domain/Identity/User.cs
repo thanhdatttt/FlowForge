@@ -8,6 +8,7 @@ public sealed class User
     public required string NormalizedEmail { get; set; }
     public required string PasswordHash { get; set; }
     public required string DisplayName { get; set; }
+    public DateTimeOffset? EmailVerifiedAt { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;

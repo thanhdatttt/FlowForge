@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using FlowForge.Api.Contracts.Workspaces;
+using FlowForge.Api.Validation.Workspaces;
 using FlowForge.Domain.Workspaces;
 using FlowForge.Infrastructure;
 using FlowForge.Infrastructure.Identity;
@@ -14,12 +14,13 @@ public static class WorkspaceEndpoints
 {
     public static IEndpointRouteBuilder MapWorkspaceEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/v1/workspaces").WithTags("Workspaces").RequireAuthorization();
+        var group = app.MapGroup("/api/v1/workspaces").WithTags("Workspaces").RequireAuthorization().AddEndpointFilter<WorkspaceMutationFilter>();
 
         group.MapPost("/", async (CreateWorkspaceRequestDto request, HttpContext context,
             FlowForgeDbContext db, CancellationToken cancellationToken) =>
         {
-            if (!ValidName(request.Name)) return Results.ValidationProblem(NameError());
+            var errors = CreateWorkspaceRequestValidator.Validate(request);
+            if (errors.Count > 0) return Results.ValidationProblem(errors);
             var userId = UserId(context);
             if (!await db.Users.AnyAsync(user => user.Id == userId && user.IsActive, cancellationToken))
                 return Results.Unauthorized();
@@ -64,7 +65,8 @@ public static class WorkspaceEndpoints
             var role = await access.GetRoleAsync(workspaceId, UserId(context), cancellationToken);
             if (role is null) return Results.NotFound();
             if (!WorkspacePermissions.Allows(role.Value, WorkspacePermission.ManageWorkspace)) return Results.Forbid();
-            if (!ValidName(request.Name)) return Results.ValidationProblem(NameError());
+            var errors = UpdateWorkspaceRequestValidator.Validate(request);
+            if (errors.Count > 0) return Results.ValidationProblem(errors);
             var workspace = await db.Workspaces.SingleAsync(item => item.Id == workspaceId, cancellationToken);
             workspace.Name = request.Name!.Trim();
             workspace.UpdatedAt = DateTimeOffset.UtcNow;
@@ -94,13 +96,13 @@ public static class WorkspaceEndpoints
             var actorRole = await access.GetRoleAsync(workspaceId, UserId(context), cancellationToken);
             if (actorRole is null) return Results.NotFound();
             if (!WorkspacePermissions.Allows(actorRole.Value, WorkspacePermission.ManageMembers)) return Results.Forbid();
-            if (string.IsNullOrWhiteSpace(request.Email) || request.Email.Length > 320 ||
-                !new EmailAddressAttribute().IsValid(request.Email.Trim()) || !TryRole(request.Role, out var newRole))
-                return Results.ValidationProblem(new Dictionary<string, string[]> { ["member"] = ["Valid email and role are required."] });
+            var errors = AddWorkspaceMemberRequestValidator.Validate(request);
+            if (errors.Count > 0) return Results.ValidationProblem(errors);
+            var newRole = Enum.Parse<WorkspaceRole>(request.Role!, true);
             if (!WorkspacePermissions.CanAssignRole(actorRole.Value, newRole)) return Results.Forbid();
 
             var user = await db.Users.AsNoTracking().SingleOrDefaultAsync(candidate =>
-                candidate.NormalizedEmail == AuthService.NormalizeEmail(request.Email) && candidate.IsActive,
+                candidate.NormalizedEmail == AuthService.NormalizeEmail(request.Email!) && candidate.IsActive,
                 cancellationToken);
             if (user is null) return Results.NotFound();
             if (await db.WorkspaceMemberships.AnyAsync(membership => membership.WorkspaceId == workspaceId &&
@@ -134,8 +136,9 @@ public static class WorkspaceEndpoints
             var actorRole = await access.GetRoleAsync(workspaceId, UserId(context), cancellationToken);
             if (actorRole is null) return Results.NotFound();
             if (!WorkspacePermissions.Allows(actorRole.Value, WorkspacePermission.ManageMembers)) return Results.Forbid();
-            if (!TryRole(request.Role, out var newRole))
-                return Results.ValidationProblem(new Dictionary<string, string[]> { ["role"] = ["A valid role is required."] });
+            var errors = ChangeWorkspaceRoleRequestValidator.Validate(request);
+            if (errors.Count > 0) return Results.ValidationProblem(errors);
+            var newRole = Enum.Parse<WorkspaceRole>(request.Role!, true);
             var membership = await db.WorkspaceMemberships.Include(item => item.User)
                 .SingleOrDefaultAsync(item => item.WorkspaceId == workspaceId && item.UserId == userId &&
                     item.RemovedAt == null, cancellationToken);
@@ -162,23 +165,45 @@ public static class WorkspaceEndpoints
             if (membership is null) return Results.NotFound();
             if (!WorkspacePermissions.CanManageRole(actorRole.Value, membership.Role)) return Results.Forbid();
 
-            membership.RemovedAt = DateTimeOffset.UtcNow;
+            var now = DateTimeOffset.UtcNow;
+            await db.ProjectMemberships.Where(item => item.WorkspaceMembershipId == membership.Id && item.RemovedAt == null)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(item => item.RemovedAt, now), cancellationToken);
+            await db.Projects.Where(item => item.LeadMembershipId == membership.Id)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(item => item.LeadMembershipId, (Guid?)null)
+                    .SetProperty(item => item.UpdatedAt, now).SetProperty(item => item.Version, item => item.Version + 1), cancellationToken);
+            membership.RemovedAt = now;
             await db.SaveChangesAsync(cancellationToken);
             return Results.NoContent();
         }).Produces(StatusCodes.Status204NoContent).Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound);
 
+        group.MapPost("/{workspaceId:guid}/ownership/transfer", async (Guid workspaceId,
+            TransferOwnershipRequestDto request, HttpContext http, WorkspaceAccessService access,
+            FlowForgeDbContext db, CancellationToken ct) =>
+        {
+            var role = await ApiRules.RoleAsync(workspaceId, http, access, ct);
+            ApiRules.Require(role == WorkspaceRole.Owner, 403, "Only the current Owner may transfer ownership.");
+            var errors = TransferOwnershipRequestValidator.Validate(request);
+            if (errors.Count > 0) return Results.ValidationProblem(errors);
+            var actorId = ApiRules.UserId(http);
+            ApiRules.Require(request.NewOwnerUserId != actorId, 400, "Choose another active member.");
+            var target = await db.WorkspaceMemberships.Include(x => x.User).SingleOrDefaultAsync(x =>
+                x.WorkspaceId == workspaceId && x.UserId == request.NewOwnerUserId && x.RemovedAt == null, ct);
+            ApiRules.Require(target != null && target.User.IsActive && target.User.EmailVerifiedAt != null,
+                400, "The new Owner must be an active member with a verified email.");
+            var owner = await db.WorkspaceMemberships.SingleAsync(x => x.WorkspaceId == workspaceId &&
+                x.UserId == actorId && x.RemovedAt == null, ct);
+            // The enclosing filter supplies the transaction and workspace lock. Two saves
+            // avoid the immediate unique-owner index; the deferred trigger checks existence.
+            owner.Role = WorkspaceRole.Admin;
+            await db.SaveChangesAsync(ct);
+            target!.Role = WorkspaceRole.Owner;
+            await db.SaveChangesAsync(ct);
+            return Results.NoContent();
+        }).Produces(204).ProducesProblem(400).ProducesProblem(403);
+
         return app;
     }
 
     private static Guid UserId(HttpContext context) => Guid.Parse(context.User.FindFirst(JwtRegisteredClaimNames.Sub)!.Value);
-    private static bool ValidName(string? name) => !string.IsNullOrWhiteSpace(name) && name.Trim().Length <= 100;
-    private static Dictionary<string, string[]> NameError() => new() { ["name"] = ["Name must be between 1 and 100 characters."] };
-    private static bool TryRole(string? value, out WorkspaceRole role)
-    {
-        role = default;
-        return value is not null && Enum.GetNames<WorkspaceRole>().Any(name =>
-            string.Equals(name, value, StringComparison.OrdinalIgnoreCase)) &&
-            Enum.TryParse(value, true, out role);
-    }
 }

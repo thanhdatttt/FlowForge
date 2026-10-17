@@ -34,32 +34,34 @@ public static class IdentityEndpoints
 
         group.MapPost("/login", async (LoginRequestDto request, AuthService auth, CancellationToken cancellationToken) =>
         {
-            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrEmpty(request.Password))
-                return Results.Problem(statusCode: StatusCodes.Status400BadRequest, title: "Email and password are required.");
-            var tokens = await auth.LoginAsync(request.Email, request.Password, cancellationToken);
+            var errors = LoginRequestValidator.Validate(request);
+            if (errors.Count > 0) return Results.ValidationProblem(errors);
+            var tokens = await auth.LoginAsync(request.Email!, request.Password!, cancellationToken);
             return tokens is null
                 ? Results.Problem(statusCode: StatusCodes.Status401Unauthorized, title: "Invalid email or password.")
                 : Results.Ok(ToResponse(tokens));
         }).RequireRateLimiting("login")
             .Produces<AuthTokenResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         group.MapPost("/refresh", async (RefreshTokenRequestDto request, AuthService auth, CancellationToken cancellationToken) =>
         {
-            if (string.IsNullOrWhiteSpace(request.RefreshToken))
-                return Results.Problem(statusCode: StatusCodes.Status400BadRequest, title: "Refresh token is required.");
-            var tokens = await auth.RefreshAsync(request.RefreshToken, cancellationToken);
+            var errors = RefreshTokenRequestValidator.Validate(request);
+            if (errors.Count > 0) return Results.ValidationProblem(errors);
+            var tokens = await auth.RefreshAsync(request.RefreshToken!, cancellationToken);
             return tokens is null
                 ? Results.Problem(statusCode: StatusCodes.Status401Unauthorized, title: "Invalid refresh token.")
                 : Results.Ok(ToResponse(tokens));
         }).RequireRateLimiting("refresh")
             .Produces<AuthTokenResponseDto>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         group.MapPost("/logout", async (RefreshTokenRequestDto request, AuthService auth, CancellationToken cancellationToken) =>
         {
+            var errors = RefreshTokenRequestValidator.Validate(request, allowEmpty: true);
+            if (errors.Count > 0) return Results.ValidationProblem(errors);
             if (!string.IsNullOrWhiteSpace(request.RefreshToken))
                 await auth.LogoutAsync(request.RefreshToken, cancellationToken);
             return Results.NoContent();
@@ -70,7 +72,7 @@ public static class IdentityEndpoints
         {
             var id = Guid.Parse(context.User.FindFirst(JwtRegisteredClaimNames.Sub)!.Value);
             var user = await db.Users.AsNoTracking().Where(candidate => candidate.Id == id && candidate.IsActive)
-                .Select(candidate => new CurrentUserResponseDto(candidate.Id, candidate.Email, candidate.DisplayName))
+                .Select(candidate => new CurrentUserResponseDto(candidate.Id, candidate.Email, candidate.DisplayName, candidate.EmailVerifiedAt != null))
                 .SingleOrDefaultAsync(cancellationToken);
             return user is null ? Results.Unauthorized() : Results.Ok(user);
         }).RequireAuthorization()
