@@ -1,8 +1,8 @@
 # Backend test results
 
-Retested after the fix on 2026-10-16 20:13 +07.
+Latest Phase 3 retest: 2026-10-17 (+07). The earlier exception-handling regression run was performed on 2026-10-16 20:13 +07; its live HTTP evidence remains below as historical results.
 
-The API was built and tested with .NET SDK 10.0.112 and PostgreSQL 17 in an isolated, disposable Docker container. Existing project data was not used. Tests applied all four EF Core migrations. The exception handler was updated to preserve request-binding HTTP error statuses; the six regression tests also verify the JSON problem response.
+The API was built and tested with .NET SDK 10.0.112 and PostgreSQL 17 in an isolated, disposable Docker container. Existing project data was not used. The latest integration fixture applied all six EF Core migrations to new databases. The exception handler was updated to preserve request-binding HTTP error statuses; the six regression tests also verify the JSON problem response.
 
 ## Results
 
@@ -12,10 +12,13 @@ The API was built and tested with .NET SDK 10.0.112 and PostgreSQL 17 in an isol
 | Automated suite after fix | 101 | 0 | 0 | 101 |
 | Live HTTP checks after fix, Development | 79 | 0 | 0 | 79 |
 | Live HTTP checks after fix, Production | 8 | 0 | 0 | 8 |
+| Phase 3 endpoint/integration and migration tests, latest | 9 | 0 | 0 | 9 |
+| Full automated backend suite, latest | 110 | 0 | 0 | 110 |
+| Phase 3 live HTTP calls, Development, latest | 27 | 0 | 0 | 27 |
 
-Build passed with zero warnings and zero errors. All six previously failing cases now pass in the automated suite and over real HTTP. The 101 automated cases include the original 82 cases and 19 added coverage cases.
+The latest build passed with zero warnings and zero errors. EF Core reported no pending model changes. All six previously failing cases still pass in the automated suite. The historical 101-case run included the original 82 cases and 19 added coverage cases.
 
-All **34 current endpoint operations** were exercised over real HTTP: 31 business operations, two health endpoints, and Development OpenAPI. Every business operation also has automated API coverage. The HTTP operation list was checked against the running API's OpenAPI document; no described operation was missing. This is endpoint exercise coverage, not a claim of exhaustive input, security, or line coverage.
+The earlier live run exercised all **34 endpoint operations available at that time** over real HTTP: 31 business operations, two health endpoints, and Development OpenAPI. Phase 3's **26 route operations** were exercised through both the ASP.NET Core HTTP pipeline with `WebApplicationFactory` and a separately running Development API process against disposable PostgreSQL. The live journey made 27 calls because it created two work items. The earlier live operation list was checked against that running API's OpenAPI document. Endpoint exercise is not a claim of exhaustive input, security, or line coverage.
 
 ## Fixed regression cases
 
@@ -54,7 +57,9 @@ curl -i "$BASE/api/v1/workspaces/$WORKSPACE_ID/projects?page=abc" \
 - Workspaces: creation, listing, read/rename, member listing/addition/role changes/removal, immediate permission updates, ownership transfer, concurrent transfer serialization, and the database owner invariant.
 - Invitations: create/list/preview/accept/reject/revoke, role restrictions, wrong recipient, unverified email, expiry and terminal states, stale inviter authority, duplicate protection, and concurrent acceptance.
 - Projects: create/read/update, visibility and role rules, cross-workspace isolation, search/filter/sort/pagination, unique keys, lead changes, member add/list/remove, retained membership history, optimistic version conflicts, archive/restore idempotence, and archived mutation rejection.
-- Infrastructure: all four migrations on a fresh database, legacy migration upgrade, readiness with available/unavailable PostgreSQL, liveness, Development/Production OpenAPI behavior, missing/short JWT keys, uniqueness, and composite foreign keys.
+- Work items: all 26 Phase 3 route operations in an HTTP endpoint journey; concurrent item-number allocation, assignment, statuses, search/filter/sort, label/dependency/subtask changes, blocked state, archive/restore, stale versions, project permissions, and cross-project isolation.
+- Collaboration: comment mentions and moderation, time entries, private attachment validation/upload/download/deletion, item-scoped audit before/after values, domain-event/outbox persistence, and attachment cleanup after a deferred database commit failure.
+- Infrastructure: all six migrations on a fresh database, Phase 2-to-3 and earlier Phase 3 upgrades, activity backfill, readiness with available/unavailable PostgreSQL, liveness, Development/Production OpenAPI behavior, missing/short JWT keys, uniqueness, and composite foreign keys.
 
 ### Automated results by test class
 
@@ -66,6 +71,9 @@ curl -i "$BASE/api/v1/workspaces/$WORKSPACE_ID/projects?page=abc" \
 | `PasswordHashingTests` | 1 | 0 |
 | `PhaseTwoIntegrationTests` | 17 | 0 |
 | `PhaseTwoRulesTests` | 8 | 0 |
+| `PhaseThreeCoverageTests` | 5 | 0 |
+| `PhaseThreeIntegrationTests` | 2 | 0 |
+| `PhaseThreeMigrationTests` | 2 | 0 |
 | `RegisterRequestValidationTests` | 13 | 0 |
 | `RequestValidationTests` | 35 | 0 |
 | `ScaffoldSmokeTests` | 1 | 0 |
@@ -73,7 +81,7 @@ curl -i "$BASE/api/v1/workspaces/$WORKSPACE_ID/projects?page=abc" \
 
 ## Live endpoint results
 
-PASS means the exercised responses matched expectations. All endpoint operations and the previously failing malformed-input checks passed in this run. A 503 for missing SMTP and a 400 for OTP confirmation without a challenge are expected live checks, not successful Gmail delivery. Successful OTP delivery/confirmation paths use `TestEmailSender` in the integration suite.
+PASS means the exercised responses matched expectations. The Phase 2 rows below are from the 2026-10-16 live run; the Phase 3 rows are from a new 2026-10-17 Development API process bound to `127.0.0.1:5187` with disposable PostgreSQL 17. The Phase 3 journey registered a user, created a workspace and project, then exercised every Phase 3 route operation, including a PDF upload and download. A 503 for missing SMTP and a 400 for OTP confirmation without a challenge are expected historical checks, not successful Gmail delivery. Successful OTP delivery/confirmation paths use `TestEmailSender` in the integration suite.
 
 | Method | Route | HTTP checks passed / total | Result |
 | --- | --- | ---: | --- |
@@ -108,13 +116,39 @@ PASS means the exercised responses matched expectations. All endpoint operations
 | POST | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/members` | 1 / 1 | PASS |
 | DELETE | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/members/{userId}` | 3 / 3 | PASS |
 | POST | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/restore` | 1 / 1 | PASS |
+| GET | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/statuses` | 1 / 1 | PASS |
+| GET | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/labels` | 1 / 1 | PASS |
+| POST | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/labels` | 1 / 1 | PASS |
+| PUT | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/labels/{labelId}` | 1 / 1 | PASS |
+| DELETE | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/labels/{labelId}` | 1 / 1 | PASS |
+| GET | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items` | 1 / 1 | PASS |
+| POST | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items` | 2 / 2 | PASS |
+| GET | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{itemId}` | 1 / 1 | PASS |
+| PUT | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{itemId}` | 1 / 1 | PASS |
+| POST | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{itemId}/archive` | 1 / 1 | PASS |
+| POST | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{itemId}/restore` | 1 / 1 | PASS |
+| POST | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{itemId}/dependencies` | 1 / 1 | PASS |
+| DELETE | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{itemId}/dependencies/{dependsOnId}` | 1 / 1 | PASS |
+| GET | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{itemId}/comments` | 1 / 1 | PASS |
+| POST | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{itemId}/comments` | 1 / 1 | PASS |
+| PUT | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{itemId}/comments/{commentId}` | 1 / 1 | PASS |
+| DELETE | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{itemId}/comments/{commentId}` | 1 / 1 | PASS |
+| GET | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{itemId}/time-entries` | 1 / 1 | PASS |
+| POST | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{itemId}/time-entries` | 1 / 1 | PASS |
+| PUT | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{itemId}/time-entries/{entryId}` | 1 / 1 | PASS |
+| DELETE | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{itemId}/time-entries/{entryId}` | 1 / 1 | PASS |
+| GET | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{itemId}/attachments` | 1 / 1 | PASS |
+| POST | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{itemId}/attachments` | 1 / 1 | PASS |
+| GET | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{itemId}/attachments/{attachmentId}` | 1 / 1 | PASS |
+| DELETE | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{itemId}/attachments/{attachmentId}` | 1 / 1 | PASS |
+| GET | `/api/v1/workspaces/{workspaceId}/activity` | 1 / 1 | PASS |
 | GET | `/health/live` | 1 / 1 | PASS |
 | GET | `/health/ready` | 1 / 1 | PASS |
 | GET | `/openapi/v1.json` | 1 / 1 | PASS |
 
 ## Every automated test result
 
-Outcomes below were read from the after-fix VSTest TRX output. Parameterized test rows are listed separately.
+The original outcomes below came from the after-fix VSTest TRX output; the Phase 3 rows were checked against the latest `phase3.trx` and `backend-current.trx`. Parameterized test rows are listed separately.
 
 ### BackendCoverageTests
 
@@ -192,6 +226,30 @@ Outcomes below were read from the after-fix VSTest TRX output. Parameterized tes
 | PASSED | `Project_permissions_distinguish_metadata_management_and_resource_writes(role: Viewer, create: False, manage: False, write: False)` |
 | PASSED | `Tokens_have_random_entropy_and_stable_nonplaintext_hashes` |
 
+### PhaseThreeCoverageTests
+
+| Result | Test case |
+| --- | --- |
+| PASSED | `Comment_time_and_attachment_validation_and_moderation` |
+| PASSED | `Labels_relationships_and_activity_respect_project_scope` |
+| PASSED | `Remaining_phase_three_endpoint_operations_complete_a_project_journey` |
+| PASSED | `Upload_removes_private_file_if_the_database_commit_fails` |
+| PASSED | `Work_item_filters_activity_details_and_outbox_follow_committed_changes` |
+
+### PhaseThreeIntegrationTests
+
+| Result | Test case |
+| --- | --- |
+| PASSED | `Collaboration_activity_and_file_access_are_project_scoped` |
+| PASSED | `Work_items_assignments_cycles_archiving_and_permissions` |
+
+### PhaseThreeMigrationTests
+
+| Result | Test case |
+| --- | --- |
+| PASSED | `Completion_upgrade_backfills_existing_work_item_activity` |
+| PASSED | `Initial_phase_three_upgrade_seeds_statuses_for_existing_projects` |
+
 ### RegisterRequestValidationTests
 
 | Result | Test case |
@@ -268,6 +326,8 @@ Outcomes below were read from the after-fix VSTest TRX output. Parameterized tes
 | PASSED | `Roles_grant_only_their_intended_permissions(role: Viewer, manageMembers: False, manageProjects: False, writeWorkItems: False, transferOwnership: False)` |
 
 ## Every live HTTP check
+
+The Phase 2 rows are from the 2026-10-16 external-process run. The Phase 3 rows are from the 2026-10-17 external-process run against disposable PostgreSQL.
 
 | Result | Environment | Check | Expected | Actual |
 | --- | --- | --- | --- | --- |
@@ -358,6 +418,33 @@ Outcomes below were read from the after-fix VSTest TRX output. Parameterized tes
 | PASS | Production | Invalid query type: leadUserId=not-a-uuid | 400 | 400 |
 | PASS | Production | Production OpenAPI hidden | 404 | 404 |
 | PASS | Production | Production readiness | 200 | 200 |
+| PASS | Development, Phase 3 | List project statuses | 200 | 200 |
+| PASS | Development, Phase 3 | Create label | 201 | 201 |
+| PASS | Development, Phase 3 | List labels | 200 | 200 |
+| PASS | Development, Phase 3 | Update label | 200 | 200 |
+| PASS | Development, Phase 3 | Create prerequisite work item | 201 | 201 |
+| PASS | Development, Phase 3 | Create main work item | 201 | 201 |
+| PASS | Development, Phase 3 | List work items | 200 | 200 |
+| PASS | Development, Phase 3 | Read work item | 200 | 200 |
+| PASS | Development, Phase 3 | Add dependency | 201 | 201 |
+| PASS | Development, Phase 3 | Remove dependency | 204 | 204 |
+| PASS | Development, Phase 3 | Update work item | 200 | 200 |
+| PASS | Development, Phase 3 | Create comment | 201 | 201 |
+| PASS | Development, Phase 3 | List comments | 200 | 200 |
+| PASS | Development, Phase 3 | Update comment | 200 | 200 |
+| PASS | Development, Phase 3 | Create time entry | 201 | 201 |
+| PASS | Development, Phase 3 | List time entries | 200 | 200 |
+| PASS | Development, Phase 3 | Update time entry | 200 | 200 |
+| PASS | Development, Phase 3 | Upload PDF attachment | 201 | 201 |
+| PASS | Development, Phase 3 | List attachments | 200 | 200 |
+| PASS | Development, Phase 3 | Download PDF attachment | 200 | 200 |
+| PASS | Development, Phase 3 | Delete attachment | 204 | 204 |
+| PASS | Development, Phase 3 | Read item-scoped activity | 200 | 200 |
+| PASS | Development, Phase 3 | Delete time entry | 204 | 204 |
+| PASS | Development, Phase 3 | Delete comment | 204 | 204 |
+| PASS | Development, Phase 3 | Archive work item | 200 | 200 |
+| PASS | Development, Phase 3 | Restore work item | 200 | 200 |
+| PASS | Development, Phase 3 | Delete label | 204 | 204 |
 
 ## Reproduce the automated run
 
@@ -366,11 +453,14 @@ From `backend/`, start an isolated PostgreSQL 17 server. Set `FLOWFORGE_TEST_CON
 ```sh
 dotnet restore FlowForge.sln -m:1
 dotnet build FlowForge.sln --no-restore -m:1 /p:UseSharedCompilation=false
-dotnet test FlowForge.sln --no-restore -m:1 /p:UseSharedCompilation=false \
-  --logger 'trx;LogFileName=backend.trx' --results-directory /tmp/flowforge-backend-results
+dotnet test FlowForge.sln --no-build -m:1 /p:UseSharedCompilation=false \
+  --filter 'FullyQualifiedName~PhaseThree' \
+  --logger 'trx;LogFileName=phase3.trx' --results-directory /tmp/flowforge-phase3-results
+dotnet test FlowForge.sln --no-build -m:1 /p:UseSharedCompilation=false \
+  --logger 'trx;LogFileName=backend-current.trx' --results-directory /tmp/flowforge-phase3-results
 ```
 
-The after-fix run exits with code 0: 101 passed, 0 failed, 0 skipped. Without `FLOWFORGE_TEST_CONNECTION`, PostgreSQL-dependent tests are skipped, so that is not equivalent to this run.
+The latest focused run exited with code 0: 9 passed, 0 failed, 0 skipped. The full run exited with code 0: 110 passed, 0 failed, 0 skipped. `dotnet ef migrations has-pending-model-changes --project src/FlowForge.Infrastructure --startup-project src/FlowForge.Api --no-build` reported no pending changes when run with the test connection and a valid `Jwt__SigningKey`. Without `FLOWFORGE_TEST_CONNECTION`, PostgreSQL-dependent tests are skipped, so that is not equivalent to these runs.
 
 ## Limits
 
@@ -378,3 +468,4 @@ The after-fix run exits with code 0: 101 passed, 0 failed, 0 skipped. Without `F
 - For live invitation accept/reject/ownership checks, only the disposable database's recipient accounts were marked verified through SQL. That setup does not count as a successful live OTP flow; the OTP success flow is covered by integration tests.
 - These checks do not certify load capacity, penetration resistance, every possible input, or behavior on a deployed external host. No performance benchmark was run.
 - The fix changes only exception-status selection. The six regression cases remain in the suite and now assert the 400 problem-details response.
+- The latest live Phase 3 run used Development mode and a local disposable database. It exercised each route's successful journey; failure paths, authorization, concurrency, rollback, and migration upgrades are covered by the PostgreSQL integration suite rather than every combination being repeated in the external-process run.

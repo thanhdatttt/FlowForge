@@ -36,11 +36,22 @@ public sealed class WorkspaceMutationFilter : IEndpointFilter
             !Guid.TryParse(http.Request.RouteValues["workspaceId"]?.ToString(), out var workspaceId))
             return await next(context);
         var db = http.RequestServices.GetRequiredService<FlowForgeDbContext>();
+        var fileActions = http.RequestServices.GetRequiredService<AttachmentFileActions>();
+        var logger = http.RequestServices.GetRequiredService<ILogger<WorkspaceMutationFilter>>();
         await using var transaction = await db.Database.BeginTransactionAsync(http.RequestAborted);
         if (await WorkspaceLock.AcquireAsync(db, workspaceId, http.RequestAborted) is null)
             return Results.NotFound();
-        var result = await next(context);
-        await transaction.CommitAsync(http.RequestAborted);
-        return result;
+        try
+        {
+            var result = await next(context);
+            await transaction.CommitAsync(http.RequestAborted);
+            fileActions.Committed(logger);
+            return result;
+        }
+        catch
+        {
+            fileActions.Failed(logger);
+            throw;
+        }
     }
 }

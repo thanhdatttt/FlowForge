@@ -58,12 +58,14 @@ public sealed class PhaseTwoFixture : WebApplicationFactory<Program>, IAsyncLife
     private static int clientSequence;
     private string? connection;
     private readonly string database = "flowforge_tests_" + Guid.NewGuid().ToString("N");
+    public string AttachmentPath { get; } = Path.Combine(Path.GetTempPath(), "flowforge-test-files-" + Guid.NewGuid().ToString("N"));
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
         builder.UseSetting("ConnectionStrings:FlowForge", connection!);
         builder.UseSetting("Jwt:SigningKey", SigningKey);
         builder.UseSetting("Database:AutoMigrate", "false");
+        builder.UseSetting("Attachments:StoragePath", AttachmentPath);
         builder.ConfigureServices(services =>
         {
             services.AddSingleton<IStartupFilter, TestClientAddressFilter>();
@@ -93,6 +95,7 @@ public sealed class PhaseTwoFixture : WebApplicationFactory<Program>, IAsyncLife
         await admin.OpenAsync();
         await using var command = new NpgsqlCommand($"DROP DATABASE {database} WITH (FORCE)", admin);
         await command.ExecuteNonQueryAsync();
+        if (Directory.Exists(AttachmentPath)) Directory.Delete(AttachmentPath, recursive: true);
     }
     public async Task InDb(Func<FlowForgeDbContext, Task> action)
     {

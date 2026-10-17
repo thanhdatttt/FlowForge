@@ -33,6 +33,8 @@ public static class WorkspaceEndpoints
                 UserId = userId,
                 Role = WorkspaceRole.Owner
             });
+            WorkItemSupport.Activity(db, workspace.Id, null, userId, "workspace.created", "Workspace", workspace.Id,
+                after: new { workspace.Name });
             await db.SaveChangesAsync(cancellationToken);
             return Results.Created($"/api/v1/workspaces/{workspace.Id}",
                 new WorkspaceResponseDto(workspace.Id, workspace.Name, WorkspaceRole.Owner.ToString()));
@@ -68,8 +70,11 @@ public static class WorkspaceEndpoints
             var errors = UpdateWorkspaceRequestValidator.Validate(request);
             if (errors.Count > 0) return Results.ValidationProblem(errors);
             var workspace = await db.Workspaces.SingleAsync(item => item.Id == workspaceId, cancellationToken);
+            var oldName = workspace.Name;
             workspace.Name = request.Name!.Trim();
             workspace.UpdatedAt = DateTimeOffset.UtcNow;
+            WorkItemSupport.Activity(db, workspaceId, null, UserId(context), "workspace.updated", "Workspace", workspaceId,
+                before: new { Name = oldName }, after: new { workspace.Name });
             await db.SaveChangesAsync(cancellationToken);
             return Results.Ok(new WorkspaceResponseDto(workspace.Id, workspace.Name, role.Value.ToString()));
         }).Produces<WorkspaceResponseDto>().ProducesValidationProblem()
@@ -115,6 +120,8 @@ public static class WorkspaceEndpoints
                 UserId = user.Id,
                 Role = newRole
             });
+            WorkItemSupport.Activity(db, workspaceId, null, UserId(context), "workspace-member.added", "WorkspaceMember", user.Id,
+                after: new { Role = newRole.ToString() });
             try
             {
                 await db.SaveChangesAsync(cancellationToken);
@@ -146,7 +153,10 @@ public static class WorkspaceEndpoints
             if (!WorkspacePermissions.CanManageRole(actorRole.Value, membership.Role) ||
                 !WorkspacePermissions.CanAssignRole(actorRole.Value, newRole)) return Results.Forbid();
 
+            var oldRole = membership.Role;
             membership.Role = newRole;
+            WorkItemSupport.Activity(db, workspaceId, null, UserId(context), "workspace-member.role-changed", "WorkspaceMember", userId,
+                before: new { Role = oldRole.ToString() }, after: new { Role = newRole.ToString() });
             await db.SaveChangesAsync(cancellationToken);
             return Results.Ok(new WorkspaceMemberResponseDto(userId, membership.User.Email,
                 membership.User.DisplayName, newRole.ToString()));
@@ -172,6 +182,8 @@ public static class WorkspaceEndpoints
                 .ExecuteUpdateAsync(setters => setters.SetProperty(item => item.LeadMembershipId, (Guid?)null)
                     .SetProperty(item => item.UpdatedAt, now).SetProperty(item => item.Version, item => item.Version + 1), cancellationToken);
             membership.RemovedAt = now;
+            WorkItemSupport.Activity(db, workspaceId, null, UserId(context), "workspace-member.removed", "WorkspaceMember", userId,
+                before: new { Role = membership.Role.ToString() });
             await db.SaveChangesAsync(cancellationToken);
             return Results.NoContent();
         }).Produces(StatusCodes.Status204NoContent).Produces(StatusCodes.Status403Forbidden)
@@ -198,6 +210,8 @@ public static class WorkspaceEndpoints
             owner.Role = WorkspaceRole.Admin;
             await db.SaveChangesAsync(ct);
             target!.Role = WorkspaceRole.Owner;
+            WorkItemSupport.Activity(db, workspaceId, null, actorId, "workspace.ownership-transferred", "Workspace", workspaceId,
+                after: new { NewOwnerUserId = target.UserId });
             await db.SaveChangesAsync(ct);
             return Results.NoContent();
         }).Produces(204).ProducesProblem(400).ProducesProblem(403);

@@ -19,6 +19,7 @@ var audience = builder.Configuration["Jwt:Audience"] ?? "flowforge-api";
 
 // sign services
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddScoped<AttachmentFileActions>();
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
@@ -116,6 +117,9 @@ app.MapWorkspaceEndpoints();
 app.MapEmailVerificationEndpoints();
 app.MapInvitationEndpoints();
 app.MapProjectEndpoints();
+app.MapWorkItemEndpoints();
+app.MapCollaborationEndpoints();
+app.MapAttachmentActivityEndpoints();
 
 app.Run();
 

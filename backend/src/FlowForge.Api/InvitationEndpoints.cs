@@ -47,6 +47,8 @@ public static class InvitationEndpoints
                 CreatedAt = now, ExpiresAt = now.AddDays(days)
             };
             db.WorkspaceInvitations.Add(invitation);
+            WorkItemSupport.Activity(db, workspaceId, null, ApiRules.UserId(http), "invitation.created", "Invitation", invitation.Id,
+                after: new { Role = role.ToString() });
             await db.SaveChangesAsync(ct);
             return Results.Created($"/api/v1/workspaces/{workspaceId}/invitations/{invitation.Id}",
                 new CreatedInvitationResponseDto(ToResponse(invitation), raw, InvitationUrl(configuration, invitation.Id, raw)));
@@ -76,6 +78,7 @@ public static class InvitationEndpoints
             ApiRules.Require(WorkspacePermissions.CanAssignRole(role, invitation!.Role), 403, "You cannot manage this invitation role.");
             ApiRules.Require(invitation.Status(DateTimeOffset.UtcNow) == "Pending", 409, "The invitation is no longer pending.");
             invitation.RevokedAt = DateTimeOffset.UtcNow;
+            WorkItemSupport.Activity(db, workspaceId, null, ApiRules.UserId(http), "invitation.revoked", "Invitation", invitationId);
             await db.SaveChangesAsync(ct);
             return Results.NoContent();
         }).Produces(204);
@@ -131,6 +134,9 @@ public static class InvitationEndpoints
             });
             invitation.AcceptedAt = DateTimeOffset.UtcNow;
         }
+        WorkItemSupport.Activity(db, invitation.WorkspaceId, null, userId,
+            reject ? "invitation.rejected" : "invitation.accepted", "Invitation", invitation.Id,
+            after: reject ? null : new { Role = invitation.Role.ToString() });
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
         return Results.NoContent();

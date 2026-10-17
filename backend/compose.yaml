@@ -31,11 +31,15 @@ services:
       Smtp__AppPassword: ${SMTP_APP_PASSWORD:-}
       EmailVerification__LifetimeMinutes: ${EMAIL_VERIFICATION_LIFETIME_MINUTES:-10}
       Invitations__LifetimeDays: ${INVITATION_LIFETIME_DAYS:-7}
+      Attachments__StoragePath: /app/private-attachments
     ports:
       - "127.0.0.1:${API_PORT:-8080}:8080"
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - attachments_data:/app/private-attachments
 
 volumes:
   postgres_data:
+  attachments_data:

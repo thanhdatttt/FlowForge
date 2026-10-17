@@ -1,6 +1,6 @@
 # FlowForge backend
 
-This is the .NET 10 modular-monolith backend. It includes authentication, Gmail SMTP email verification, workspaces, invitations, ownership transfer, projects, OpenAPI, and health checks.
+This is the .NET 10 modular-monolith backend. It includes authentication, Gmail SMTP email verification, workspaces, invitations, ownership transfer, projects, Phase 3 work items and collaboration, OpenAPI, and health checks.
 
 ## Projects
 
@@ -140,11 +140,11 @@ Create accepts `name`, `projectKey`, optional `description`, `leadUserId`, `star
 
 List parameters: `search` (name/key), `archived` (omit for both states), `leadUserId`, `sort` (`name`, `key`, `createdAt`, `updatedAt`), `descending`, `page` (default 1), `pageSize` (default 20, maximum 100). The response contains `items`, `total`, `page`, and `pageSize`. Project-member and invitation lists use the same pagination bounds. Lists filter authorization before counting or returning data. Unavailable resources return `404`, insufficient privileges `403`, and conflicts `409`, using problem details.
 
-Archived projects permit reads and restore but reject metadata/member mutations. Workspace removal may still revoke access and clear leads on archived projects. Progress, work-item resources, overdue work, and activity feeds depend on Phase 3; no fabricated progress is returned. Project keys may currently be edited; Phase 3 must prevent key changes after work items exist unless aliases are implemented.
+Archived projects permit reads and restore but reject metadata/member mutations. Workspace removal may still revoke access and clear leads on archived projects. Progress and activity derive from persisted work items and activity records. Project keys cannot change after a work item has been created.
 
 ## Request validation
 
-Request validators live under `FlowForge.Api/Validation`, grouped by Identity, Workspaces, and Projects, with shared input and pagination rules. They return field-specific errors as `400 application/problem+json` using `ValidationProblem`. Endpoints check resource authorization before exposing validation errors for scoped resources. `ApiRules` handles identity, authorization, and business-state guards; database-dependent checks remain in the use-case flow. Configuration errors still return `503`, and state conflicts `409`.
+Request validators live under `FlowForge.Api/Validation`, grouped by Identity, Workspaces, Projects, and WorkItems, with shared input and pagination rules. They return field-specific errors as `400 application/problem+json` using `ValidationProblem`. Endpoints check resource authorization before exposing validation errors for scoped resources. `ApiRules` handles identity, authorization, and business-state guards; database-dependent checks remain in the use-case flow. Configuration errors still return `503`, and state conflicts `409`.
 
 OTP format validation also uses a request validator, but malformed codes continue to consume an attempt inside the verification transaction. Logout remains idempotent for an empty refresh token. No database migration is needed for this validation refactor.
 
@@ -168,3 +168,28 @@ dotnet test FlowForge.sln --no-restore -m:1 /p:UseSharedCompilation=false
 ```
 
 The fixture creates a uniquely named database, applies real migrations, and drops only that database when finished. Tests cover email verification, invitation lifecycle and concurrency, ownership invariants and concurrent transfers, workspace/project isolation, project validation and pagination, archive behavior, stale updates, member removal, duplicate creation, and composite foreign keys. A test email sender captures OTP codes in memory; tests never send real email. Gmail delivery must be checked separately after you supply credentials.
+
+## Phase 3: work items and collaboration
+
+All Phase 3 routes require a Bearer token. A caller must have access to the project; Owners/Admins have implicit access, while Managers/Developers/Viewers need explicit project membership. Viewers can read but cannot change work resources. Archived projects and archived work items reject writes. Work-item changes and activity records commit in the same database transaction.
+
+Base path: `/api/v1/workspaces/{workspaceId}/projects/{projectId}`.
+
+| Resource | Routes |
+| --- | --- |
+| Statuses | `GET /statuses` returns the project's active statuses (`Todo`, `InProgress`, `InReview`, `Done`, `Blocked`). |
+| Labels | `GET, POST /labels`; `PUT, DELETE /labels/{labelId}`. |
+| Work items | `GET, POST /work-items`; `GET, PUT /work-items/{itemId}`; `POST /work-items/{itemId}/archive` and `/restore`. |
+| Dependencies | `POST /work-items/{itemId}/dependencies` with `dependsOnItemId`; `DELETE /work-items/{itemId}/dependencies/{dependsOnId}`. |
+| Comments | `GET, POST /work-items/{itemId}/comments`; `PUT, DELETE /work-items/{itemId}/comments/{commentId}`. |
+| Time entries | `GET, POST /work-items/{itemId}/time-entries`; `PUT, DELETE /work-items/{itemId}/time-entries/{entryId}`. |
+| Attachments | `GET, POST /work-items/{itemId}/attachments`; `GET, DELETE /work-items/{itemId}/attachments/{attachmentId}`. POST uses multipart form field `file`; GET by ID downloads the file. |
+| Activity | `GET /api/v1/workspaces/{workspaceId}/activity`, optionally filtered by `projectId` and `workItemId` (requires `projectId`). |
+
+Create and update work items with `title`, optional `description`, `type` (`Task` or `Issue`), `status`, `priority` (`Low`, `Medium`, `High`, `Critical`), optional `assigneeUserId`, `parentId`, `startDate`, `dueDate`, `estimateMinutes`, and `labelIds`. Updates also require the current `version`; stale versions return `409`. Label removal and dependency changes increment the affected work item's version. A project allocates item numbers atomically; its key cannot change once items exist. Assignees and mentions must have current project access. A returned item includes `isBlocked` if any dependency is unfinished and `needsReassignment` when its assignee loses access. Parent and dependency links stay within one project and cannot form cycles.
+
+Work-item listing supports `search`, `status`, `priority`, `type`, `assigneeUserId`, `reporterUserId`, `labelId`, `dueBefore`, `dueAfter`, `archived`, `sort` (`createdAt`, `updatedAt`, `dueDate`, `priority`, `key`), `descending`, `page`, and `pageSize`. Paginated comments, time entries, attachments, and activity use `page` and `pageSize` (maximum 100). Activity is filtered to projects the caller can currently see. It returns safe before/after JSON and can be narrowed to one work item, including its comments, time entries, attachments, and dependency changes. Label changes on an item are retained in its audit record. Comments use `@{user-uuid}` syntax for server-validated mentions. Authors or project managers can edit/delete comments and time entries; edits/deletions retain activity history.
+
+Attachments allow PNG, JPEG, PDF, and plain text up to 10 MiB. Metadata is in PostgreSQL, while bytes use a server-generated key in private storage. Configure `Attachments:StoragePath` outside the web root for host deployments. Docker Compose mounts `/app/private-attachments` in a persistent volume. Every download rechecks current project access. After a successful delete transaction, the private file is removed. If an upload transaction fails, its new file is removed; failed cleanup is logged without exposing the path to API clients.
+
+Work-item creation, updates, status/assignment changes, archive/restore, and comment creation persist typed `domain_events` and corresponding pending `outbox_messages` in the same database transaction as the resource and activity record. They contain IDs and safe event metadata, not comment bodies or attachment content. Dispatching these messages belongs to later notification/workflow phases; Phase 3 does not send mention notifications or real-time updates.
