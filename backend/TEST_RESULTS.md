@@ -1,6 +1,6 @@
 # Backend test results
 
-Latest Phase 4 run: 2026-10-17 (+07), .NET SDK 10.0.112 and disposable PostgreSQL 17. All **134 automated tests passed**, including **24 Phase 4 cases**, with zero failures or skips. The current fixture applies all seven EF Core migrations. No application database or real SMTP service was used.
+Latest full backend audit: 2026-10-17 (+07), .NET SDK 10.0.112 and disposable PostgreSQL 17. All **143 automated tests passed**, including **26 Phase 4 cases** and **7 system-audit regressions**, with zero failures/skips. A separately running Release API passed **50 live checks** (46 HTTP requests and four state assertions). No application database or real SMTP service was used. See the full backend audit section for the three reproduced and corrected defects.
 
 Phase 4 covers notification APIs and permissions, assignment/self-notification rules, new/edited mentions, encrypted invitation email, cancellation after revocation/removal, overdue UTC boundaries and deduplication, concurrent dispatchers/scanners, expiring claims, retry limits, safe errors, rollback isolation, hosted-worker processing, Phase 3 migration upgrades, and real SignalR WebSocket handshake/subscription/event/reconnect journeys through TestServer. New regressions verify that slow SMTP does not block workspace writes or live dispatch, revoked access during an in-flight email cannot expose private resource data (including earlier queued bodies), a failed overdue scanner does not block outbox/email, and HTTP logs preserve method/path/status/duration without query tokens. Email uses the in-memory test sender; real Gmail inbox delivery remains unverified.
 
@@ -18,21 +18,137 @@ The earlier Phase 3 retest and live HTTP evidence below are retained as historic
 | Full automated backend suite, Phase 3 historical | 110 | 0 | 0 | 110 |
 | Phase 4 initial implementation, historical | 18 | 0 | 0 | 18 |
 | Phase 4 after P2 fixes and simplification, historical | 21 | 0 | 0 | 21 |
-| Phase 4 endpoint verification, latest | 24 | 0 | 0 | 24 |
+| Phase 4 endpoint verification, historical | 24 | 0 | 0 | 24 |
+| Phase 4 module input validation, latest | 26 | 0 | 0 | 26 |
 | Full automated backend suite, initial Phase 4 historical | 128 | 0 | 0 | 128 |
 | Full automated backend suite after P2 fixes, historical | 131 | 0 | 0 | 131 |
-| Full automated backend suite, latest | 134 | 0 | 0 | 134 |
+| Full automated backend suite before module validators, historical | 134 | 0 | 0 | 134 |
+| Full automated backend suite before system audit, historical | 136 | 0 | 0 | 136 |
+| Full automated backend suite after audit fixes, latest | 143 | 0 | 0 | 143 |
+| System audit regressions before fixes | 0 | 6 | 0 | 6 |
+| System audit regressions after fixes, including concurrent refresh | 7 | 0 | 0 | 7 |
+| Release API live audit checks | 50 | 0 | 0 | 50 |
 | Phase 3 live HTTP calls, Development, latest | 27 | 0 | 0 | 27 |
 
 The latest build passed with zero warnings and zero errors. EF Core reported no pending model changes. All six previously failing cases still pass in the automated suite. The historical 101-case run included the original 82 cases and 19 added coverage cases.
 
 The earlier live run exercised all **34 endpoint operations available at that time** over real HTTP: 31 business operations, two health endpoints, and Development OpenAPI. Phase 3's **26 route operations** were exercised through both the ASP.NET Core HTTP pipeline with `WebApplicationFactory` and a separately running Development API process against disposable PostgreSQL. The live journey made 27 calls because it created two work items. The earlier live operation list was checked against that running API's OpenAPI document. Endpoint exercise is not a claim of exhaustive input, security, or line coverage.
 
+## Full backend audit
+
+Scope: implemented backend Phases 1–4, identity/session handling, workspace/project access, work items and collaboration, files/audit, notifications/SignalR/background delivery, migrations, host configuration, CI/Compose configuration, and a Release publish. The frontend and future workflow/reporting/AI phases are not implemented.
+
+### Reproduced defects and fixes
+
+The original 136 tests all passed. Additional targeted tests then reproduced six failing cases across three defects; all were fixed before the final full run.
+
+| Defect | Before fix | Correction and verified result |
+| --- | --- | --- |
+| Time-entry timestamps with non-UTC offsets | Valid `+07:00` and `-05:00` values caused `500` when Npgsql wrote `timestamptz` | Normalize `startedAt` with `ToUniversalTime()` on both POST and PUT; return `201`/`200` and preserve the same instant in UTC. Two regression cases passed. |
+| Invalid JWT subject shape | Signed tokens with missing/malformed `sub` caused `500`; an empty GUID reached some authenticated endpoints | Validate the non-empty GUID subject in `OnTokenValidated`; all three invalid-subject variants return `401` for identity/workspace/notification endpoints and hub negotiation. |
+| Logout racing with refresh | Logout could miss the uncommitted replacement session and leave its refresh token active | Serialize refresh/reuse/logout with a PostgreSQL transaction advisory lock per token family and re-read state after acquiring the lock. A deterministic PostgreSQL lock-wait test proves logout revokes the replacement; a concurrent double-refresh test proves reuse also revokes the winning replacement. |
+
+No migration or new dependency was required. Existing API input validation, project authorization, and module boundaries were preserved. Startup/configuration checks, transaction/constraint tests, file authorization/cleanup tests, and the Phase 4 retry/concurrency/reconnect regressions remain green.
+
+### Final verification
+
+| Check | Result |
+| --- | --- |
+| Existing test baseline before new audit cases | PASS: 136/136 |
+| Full automated suite after fixes | PASS: 143/143; zero failures/skips |
+| New audit regressions | PASS: 7/7; six reproduced failures corrected plus one concurrent-refresh guard |
+| Phase 4 cases within the full suite | PASS: 26/26 |
+| Release publish | PASS: `dotnet publish ... -c Release --no-restore -o /tmp/flowforge-system-audit-publish` |
+| EF Core pending model changes | PASS: no changes since the last migration |
+| Fresh database migrations | PASS: all seven migrations applied by the fixture and Release API startup |
+| Docker Compose configuration | PASS: `docker compose -f backend/compose.yaml --env-file backend/.env.example config --quiet` |
+| Live Release API | PASS: 46 HTTP requests and four state assertions on localhost, with a separate disposable database and SMTP disabled |
+
+TRX: `/tmp/flowforge-system-audit-results/system-final.trx`. Reproduced pre-fix failures: `/tmp/flowforge-system-audit-results/audit-before-fixes.trx`. Sanitized live results: `/tmp/flowforge-system-audit-results/live-http.json`. Temporary users, database, API process, and PostgreSQL container were created solely for this audit.
+
+### Live Release API results
+
+The published Release binary ran in Development mode on `127.0.0.1:5193` to expose its OpenAPI contract. Production-mode OpenAPI/readiness behavior is covered by the automated host tests. The following table lists actual live checks; status values such as `400`, `401`, `403`, `404`, and `409` are expected rejection cases.
+
+| Check | Method | Expected | Actual | Result |
+| --- | --- | --- | --- | --- |
+| GET /health/live | GET | 200 | 200 | PASS |
+| GET /health/ready | GET | 200 | 200 | PASS |
+| GET /openapi/v1.json | GET | 200 | 200 | PASS |
+| Register owner | POST | 201 | 201 | PASS |
+| Register developer | POST | 201 | 201 | PASS |
+| Register outsider | POST | 201 | 201 | PASS |
+| GET /api/v1/auth/me | GET | 200 | 200 | PASS |
+| GET /api/v1/auth/me | GET | 200 | 200 | PASS |
+| POST /api/v1/workspaces | POST | 201 | 201 | PASS |
+| GET /api/v1/workspaces/2bce3319-2548-47d5-8c5b-d09d7d03281a | GET | 200 | 200 | PASS |
+| POST /api/v1/workspaces/2bce3319-2548-47d5-8c5b-d09d7d03281a/members | POST | 201 | 201 | PASS |
+| POST /api/v1/workspaces/2bce3319-2548-47d5-8c5b-d09d7d03281a/projects | POST | 201 | 201 | PASS |
+| POST /api/v1/workspaces/2bce3319-2548-47d5-8c5b-d09d7d03281a/projects/1e669914-b275-4030-a54e-07a1ada12371/members | POST | 201 | 201 | PASS |
+| GET /api/v1/workspaces/2bce3319-2548-47d5-8c5b-d09d7d03281a/projects/1e669914-b275-4030-a54e-07a1ada12371/statuses | GET | 200 | 200 | PASS |
+| POST /api/v1/workspaces/2bce3319-2548-47d5-8c5b-d09d7d03281a/projects/1e669914-b275-4030-a54e-07a1ada12371/work-items | POST | 201 | 201 | PASS |
+| GET /api/v1/workspaces/2bce3319-2548-47d5-8c5b-d09d7d03281a/projects/1e669914-b275-4030-a54e-07a1ada12371/work-items/83b2c1ba-cfbe-4924-baae-8394d6b208e3 | GET | 200 | 200 | PASS |
+| Outsider denied project item | GET | 404 | 404 | PASS |
+| PUT /api/v1/workspaces/2bce3319-2548-47d5-8c5b-d09d7d03281a/projects/1e669914-b275-4030-a54e-07a1ada12371/work-items/83b2c1ba-cfbe-4924-baae-8394d6b208e3 | PUT | 200 | 200 | PASS |
+| Stale work item version denied | PUT | 409 | 409 | PASS |
+| POST /api/v1/workspaces/2bce3319-2548-47d5-8c5b-d09d7d03281a/projects/1e669914-b275-4030-a54e-07a1ada12371/work-items/83b2c1ba-cfbe-4924-baae-8394d6b208e3/time-entries | POST | 201 | 201 | PASS |
+| Time entry +07 normalized to UTC | ASSERT | True | True | PASS |
+| PUT /api/v1/workspaces/2bce3319-2548-47d5-8c5b-d09d7d03281a/projects/1e669914-b275-4030-a54e-07a1ada12371/work-items/83b2c1ba-cfbe-4924-baae-8394d6b208e3/time-entries/d23200f6-aa01-4a4d-8a86-2b15c5a1454e | PUT | 200 | 200 | PASS |
+| Time entry -05 update normalized to UTC | ASSERT | True | True | PASS |
+| GET /api/v1/workspaces/2bce3319-2548-47d5-8c5b-d09d7d03281a/projects/1e669914-b275-4030-a54e-07a1ada12371/work-items/83b2c1ba-cfbe-4924-baae-8394d6b208e3/time-entries | GET | 200 | 200 | PASS |
+| POST /api/v1/workspaces/2bce3319-2548-47d5-8c5b-d09d7d03281a/projects/1e669914-b275-4030-a54e-07a1ada12371/work-items/83b2c1ba-cfbe-4924-baae-8394d6b208e3/comments | POST | 201 | 201 | PASS |
+| GET /api/v1/workspaces/2bce3319-2548-47d5-8c5b-d09d7d03281a/projects/1e669914-b275-4030-a54e-07a1ada12371/work-items/83b2c1ba-cfbe-4924-baae-8394d6b208e3/comments | GET | 200 | 200 | PASS |
+| POST /api/v1/workspaces/2bce3319-2548-47d5-8c5b-d09d7d03281a/projects/1e669914-b275-4030-a54e-07a1ada12371/work-items/83b2c1ba-cfbe-4924-baae-8394d6b208e3/attachments | POST | 201 | 201 | PASS |
+| GET /api/v1/workspaces/2bce3319-2548-47d5-8c5b-d09d7d03281a/projects/1e669914-b275-4030-a54e-07a1ada12371/work-items/83b2c1ba-cfbe-4924-baae-8394d6b208e3/attachments/64f8bf56-f29a-48ac-9fb0-05106246c0a1 | GET | 200 | 200 | PASS |
+| Outsider denied attachment | GET | 404 | 404 | PASS |
+| DELETE /api/v1/workspaces/2bce3319-2548-47d5-8c5b-d09d7d03281a/projects/1e669914-b275-4030-a54e-07a1ada12371/work-items/83b2c1ba-cfbe-4924-baae-8394d6b208e3/attachments/64f8bf56-f29a-48ac-9fb0-05106246c0a1 | DELETE | 204 | 204 | PASS |
+| GET /api/v1/workspaces/2bce3319-2548-47d5-8c5b-d09d7d03281a/activity?projectId=1e669914-b275-4030-a54e-07a1ada12371 | GET | 200 | 200 | PASS |
+| Actual background worker delivered assignment and mention notifications | ASSERT | True | True | PASS |
+| GET /api/v1/notifications?page=1&pageSize=1&unreadOnly=true | GET | 200 | 200 | PASS |
+| POST /api/v1/notifications/e5b03fbc-2a95-4a32-b89c-041a08aacf8d/read | POST | 204 | 204 | PASS |
+| Repeated mark-read is idempotent | POST | 204 | 204 | PASS |
+| POST /api/v1/notifications/read-all | POST | 204 | 204 | PASS |
+| GET /api/v1/notifications?unreadOnly=true | GET | 200 | 200 | PASS |
+| Read-all cleared unread list | ASSERT | True | True | PASS |
+| GET /api/v1/notifications?page=0&pageSize=101 | GET | 400 | 400 | PASS |
+| POST /api/v1/notifications/00000000-0000-0000-0000-000000000000/read | POST | 400 | 400 | PASS |
+| GET /api/v1/notifications | GET | 401 | 401 | PASS |
+| POST /api/v1/workspaces/2bce3319-2548-47d5-8c5b-d09d7d03281a/invitations | POST | 201 | 201 | PASS |
+| GET /api/v1/invitations/e33fa3a3-5183-4add-89da-53438628f496 | GET | 200 | 200 | PASS |
+| Unverified invited account cannot accept | POST | 403 | 403 | PASS |
+| POST /api/v1/workspaces/2bce3319-2548-47d5-8c5b-d09d7d03281a/invitations/e33fa3a3-5183-4add-89da-53438628f496/revoke | POST | 204 | 204 | PASS |
+| Invalid JWT subject rejected: None | GET | 401 | 401 | PASS |
+| Invalid JWT subject rejected: not-a-guid | GET | 401 | 401 | PASS |
+| Invalid JWT subject rejected: 00000000-0000-0000-0000-000000000000 | GET | 401 | 401 | PASS |
+| POST /api/v1/auth/logout | POST | 204 | 204 | PASS |
+| Logged-out refresh token rejected | POST | 401 | 401 | PASS |
+
+### Practical limits
+
+Real Gmail/inbox delivery, browser UI, a reverse proxy, and multi-instance Redis backplane behavior were not exercised. No real email was sent. Tests passing and this source review do not establish that every possible input or operational failure is covered. No further failing case was found in the checks listed above.
+
+## Phase 4 validation organization
+
+Request input validation already existed. The shared validator folder was renamed from `FlowForge.Api/Validation` to `FlowForge.Api/Validations`, and namespaces/imports were updated in endpoints and tests. The original 26 validator files retain their validation logic. Two dedicated Phase 4 validators now handle empty notification and subscription IDs; pagination remains shared, with no pass-through list validator or new migration.
+
+| Phase 4 input | Validation location | Verified result |
+| --- | --- | --- |
+| `page`, `pageSize` | `Validations/PaginationValidator.cs`, used directly by `NotificationEndpoints` | PASS: defaults and valid pagination; invalid bounds return `400` |
+| Integer/boolean query formats | ASP.NET Core parameter binding | PASS: malformed `page` and `unreadOnly` return `400` |
+| `notificationId` | `Validations/Notifications/NotificationRequestValidator.cs` | PASS: `Guid.Empty` returns field-specific `400 application/problem+json`; a non-empty missing ID still returns `404` |
+| `workspaceId`, `projectId` in all join/leave methods | `Validations/Realtime/SubscriptionRequestValidator.cs` | PASS: empty IDs produce safe field-specific hub errors; a join with both empty IDs reports both fields |
+| Malformed GUIDs or missing hub arguments | SignalR parameter binding | PASS: invalid invocations are rejected and the connection remains usable for valid calls |
+| Notification ownership and subscription scope | Endpoint/service authorization and resource lookup | PASS: missing/inaccessible notification returns `404`; unauthorized hub subscriptions are rejected |
+
+Background option ranges remain configuration validation in Infrastructure (`NotificationJobOptions` Data Annotations), with startup validation in the API host. Build passed with zero warnings/errors. The full rerun passed **136/136**, including **26/26 Phase 4** cases, with no skips; TRX: `/tmp/flowforge-module-validation-results/backend-module-validation.trx`.
+
 ## Phase 4 endpoint and SignalR verification
 
 Verified on 2026-10-17 (+07) with the actual ASP.NET Core HTTP/SignalR pipeline in `WebApplicationFactory`/TestServer and disposable PostgreSQL 17. The hub tests exchange real WebSocket/SignalR JSON frames. These results are automated integration checks, separate from the historical external-process live HTTP tables below. All Phase 4 operations listed here were exercised; this does not claim exhaustive coverage of every possible input or transport.
 
 ### REST endpoints
+
+The additional `Empty_notification_id_returns_field_validation_problem_before_resource_lookup` case verifies `POST /api/v1/notifications/{Guid.Empty}/read` returns `400` with an `errors.notificationId` entry; unknown non-empty IDs retain `404`.
 
 | Method and route | Verified behavior | Observed result | Evidence |
 | --- | --- | --- | --- |
@@ -43,6 +159,8 @@ Verified on 2026-10-17 (+07) with the actual ASP.NET Core HTTP/SignalR pipeline 
 | `POST /api/v1/notifications/read-all` | Missing authentication and inactive account are rejected | PASS: `401` | `Notification_endpoints_enforce_authentication_paging_and_read_all_recipient_isolation` |
 
 ### SignalR connection and hub methods
+
+`Hub_validates_empty_ids_for_all_subscription_methods_and_binding_rejects_malformed_guids` verifies empty IDs in all four methods, malformed GUIDs, missing arguments, field-specific errors, and successful valid subscriptions afterward.
 
 | Operation | Verified behavior | Result | Evidence |
 | --- | --- | --- | --- |
@@ -70,7 +188,7 @@ Verified on 2026-10-17 (+07) with the actual ASP.NET Core HTTP/SignalR pipeline 
 | Overdue scanner | UTC due-date boundary; completed/archived/unassigned exclusions; concurrent scans deduplicate; due-date change allows a new reminder | PASS | `Overdue_checks_use_utc_skip_completed_archived_and_unassigned_and_deduplicate_concurrent_runs` |
 | Worker/outbox | Independent job loops; scanner failure does not stop other queues; crash claims recover; bad events become terminal; retries avoid duplicate persisted notifications; rollback is not published | PASS | `PhaseFourReliabilityTests` |
 
-Real Gmail inbox delivery, a deployed browser/reverse proxy, and a Redis backplane were not exercised. No real email was sent. No product source changes were needed in this endpoint verification run; three additional integration tests cover the identified gaps.
+Real Gmail inbox delivery, a deployed browser/reverse proxy, and a Redis backplane were not exercised. No real email was sent. The original endpoint-verification run added three integration tests without changing product behavior. The subsequent module-validation change adds two integration tests and explicitly rejects empty IDs as described above.
 
 ## Phase 4 P2 fixes and simplification
 
@@ -133,10 +251,10 @@ curl -i "$BASE/api/v1/workspaces/$WORKSPACE_ID/projects?page=abc" \
 | `PasswordHashingTests` | 1 | 0 |
 | `PhaseTwoIntegrationTests` | 17 | 0 |
 | `PhaseTwoRulesTests` | 8 | 0 |
-| `PhaseFourIntegrationTests` | 6 | 0 |
+| `PhaseFourIntegrationTests` | 7 | 0 |
 | `PhaseFourLoggingTests` | 1 | 0 |
 | `PhaseFourMigrationTests` | 1 | 0 |
-| `PhaseFourRealtimeTests` | 4 | 0 |
+| `PhaseFourRealtimeTests` | 5 | 0 |
 | `PhaseFourReliabilityTests` | 12 | 0 |
 | `PhaseThreeCoverageTests` | 5 | 0 |
 | `PhaseThreeIntegrationTests` | 2 | 0 |
@@ -144,6 +262,7 @@ curl -i "$BASE/api/v1/workspaces/$WORKSPACE_ID/projects?page=abc" \
 | `RegisterRequestValidationTests` | 13 | 0 |
 | `RequestValidationTests` | 35 | 0 |
 | `ScaffoldSmokeTests` | 1 | 0 |
+| `SystemAuditTests` | 7 | 0 |
 | `WorkspacePermissionsTests` | 6 | 0 |
 
 ## Live endpoint results
@@ -299,6 +418,7 @@ The original outcomes below came from the after-fix VSTest TRX output; the Phase
 | --- | --- |
 | PASSED | `Assignment_mentions_read_apis_and_email_are_idempotent_and_authorized` |
 | PASSED | `Comment_edits_notify_only_new_mentions_and_deletions_cancel_pending_email` |
+| PASSED | `Empty_notification_id_returns_field_validation_problem_before_resource_lookup` |
 | PASSED | `Invitation_email_is_encrypted_background_delivery_and_revocation_hides_notification` |
 | PASSED | `Notification_endpoints_enforce_authentication_paging_and_read_all_recipient_isolation` |
 | PASSED | `Overdue_checks_use_utc_skip_completed_archived_and_unassigned_and_deduplicate_concurrent_runs` |
@@ -321,6 +441,7 @@ The original outcomes below came from the after-fix VSTest TRX output; the Phase
 | Result | Test |
 | --- | --- |
 | PASSED | `Existing_signalr_connection_stops_receiving_project_events_after_access_revocation` |
+| PASSED | `Hub_validates_empty_ids_for_all_subscription_methods_and_binding_rejects_malformed_guids` |
 | PASSED | `Leaving_project_and_workspace_stops_delivery_and_workspace_subscriptions_exclude_private_projects` |
 | PASSED | `Signalr_authorizes_subscriptions_delivers_compact_events_and_recovers_by_refetch_after_reconnect` |
 | PASSED | `Signalr_comment_events_and_notification_ids_match_committed_rest_resources` |
@@ -429,6 +550,18 @@ The original outcomes below came from the after-fix VSTest TRX output; the Phase
 | Result | Test case |
 | --- | --- |
 | PASSED | `Host_exposes_liveness_and_openapi_in_development` |
+
+### SystemAuditTests
+
+| Result | Test |
+| --- | --- |
+| PASSED | `Concurrent_refresh_reuse_revokes_the_winning_replacement` |
+| PASSED | `Logout_revokes_a_replacement_token_when_refresh_commits_concurrently` |
+| PASSED | `Signed_tokens_with_missing_malformed_or_empty_subject_are_rejected_at_authentication(subject: "00000000-0000-0000-0000-000000000000")` |
+| PASSED | `Signed_tokens_with_missing_malformed_or_empty_subject_are_rejected_at_authentication(subject: "not-a-guid")` |
+| PASSED | `Signed_tokens_with_missing_malformed_or_empty_subject_are_rejected_at_authentication(subject: null)` |
+| PASSED | `Time_entries_accept_offset_timestamps_and_persist_the_same_instant_in_utc(offsetHours: -5)` |
+| PASSED | `Time_entries_accept_offset_timestamps_and_persist_the_same_instant_in_utc(offsetHours: 7)` |
 
 ### WorkspacePermissionsTests
 
@@ -571,7 +704,7 @@ dotnet test FlowForge.sln --no-restore -m:1 /p:UseSharedCompilation=false --filt
 dotnet test FlowForge.sln --no-restore -m:1 /p:UseSharedCompilation=false
 ```
 
-The latest TRX artifact was `/tmp/flowforge-phase4-endpoint-results/backend-phase4-endpoints.trx`; its 134 outcomes were checked against the totals above. The following commands reproduce the historical Phase 3 run.
+The latest TRX artifact was `/tmp/flowforge-system-audit-results/system-final.trx`; its 143 outcomes were checked against the totals above. The following commands reproduce the historical Phase 3 run.
 
 From `backend/`, start an isolated PostgreSQL 17 server. Set `FLOWFORGE_TEST_CONNECTION` to its admin connection string; the fixture requires permission to create/drop uniquely named test databases. Then run:
 

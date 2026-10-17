@@ -1,6 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using FlowForge.Api.Contracts.Identity;
-using FlowForge.Api.Validation.Identity;
+using FlowForge.Api.Validations.Identity;
 using FlowForge.Infrastructure;
 using FlowForge.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;

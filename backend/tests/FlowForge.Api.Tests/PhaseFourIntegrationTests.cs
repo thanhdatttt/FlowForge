@@ -224,6 +224,20 @@ public sealed class PhaseFourIntegrationTests(PhaseFourFixture fixture) : IClass
         Assert.Equal(HttpStatusCode.Unauthorized, (await memberClient.PostAsync("/api/v1/notifications/read-all", null)).StatusCode);
     }
 
+    [PostgresFact]
+    public async Task Empty_notification_id_returns_field_validation_problem_before_resource_lookup()
+    {
+        var user = await fixture.UserAsync();
+        using var client = fixture.Client(user);
+        var response = await client.PostAsync($"/api/v1/notifications/{Guid.Empty}/read", null);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("application/problem+json", response.Content.Headers.ContentType!.MediaType);
+        using var problem = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.True(problem.RootElement.GetProperty("errors").TryGetProperty("notificationId", out _));
+        Assert.Equal(HttpStatusCode.NotFound, (await client.PostAsync($"/api/v1/notifications/{Guid.NewGuid()}/read", null)).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await client.PostAsync("/api/v1/notifications/read-all", null)).StatusCode);
+    }
+
     internal async Task DrainOutboxAsync()
     {
         await fixture.InScope(async services =>

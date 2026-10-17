@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using FlowForge.Api.Validations.Realtime;
 using FlowForge.Infrastructure;
 using FlowForge.Infrastructure.Notifications;
 using FlowForge.Infrastructure.Workspaces;
@@ -30,19 +31,34 @@ public sealed class UpdatesHub(FlowForgeDbContext db, WorkspaceAccessService wor
 
     public async Task JoinProject(Guid workspaceId, Guid projectId)
     {
+        ValidateSubscription(workspaceId, projectId);
         if (!await access.ProjectRecipients(workspaceId, projectId).ContainsAsync(UserId, Context.ConnectionAborted))
             throw new HubException("Resource not found.");
         await Groups.AddToGroupAsync(Context.ConnectionId, ProjectGroup(projectId, UserId), Context.ConnectionAborted);
     }
-    public Task LeaveProject(Guid projectId) =>
-        Groups.RemoveFromGroupAsync(Context.ConnectionId, ProjectGroup(projectId, UserId), Context.ConnectionAborted);
+    public Task LeaveProject(Guid projectId)
+    {
+        ValidateSubscription(projectId: projectId);
+        return Groups.RemoveFromGroupAsync(Context.ConnectionId, ProjectGroup(projectId, UserId), Context.ConnectionAborted);
+    }
 
     public async Task JoinWorkspace(Guid workspaceId)
     {
+        ValidateSubscription(workspaceId: workspaceId);
         if (await workspaces.GetRoleAsync(workspaceId, UserId, Context.ConnectionAborted) == null)
             throw new HubException("Resource not found.");
         await Groups.AddToGroupAsync(Context.ConnectionId, WorkspaceGroup(workspaceId, UserId), Context.ConnectionAborted);
     }
-    public Task LeaveWorkspace(Guid workspaceId) =>
-        Groups.RemoveFromGroupAsync(Context.ConnectionId, WorkspaceGroup(workspaceId, UserId), Context.ConnectionAborted);
+    public Task LeaveWorkspace(Guid workspaceId)
+    {
+        ValidateSubscription(workspaceId: workspaceId);
+        return Groups.RemoveFromGroupAsync(Context.ConnectionId, WorkspaceGroup(workspaceId, UserId), Context.ConnectionAborted);
+    }
+
+    private static void ValidateSubscription(Guid? workspaceId = null, Guid? projectId = null)
+    {
+        var errors = SubscriptionRequestValidator.Validate(workspaceId, projectId);
+        if (errors.Count > 0)
+            throw new HubException(string.Join(" ", errors.Select(x => $"{x.Key}: {string.Join(" ", x.Value)}")));
+    }
 }

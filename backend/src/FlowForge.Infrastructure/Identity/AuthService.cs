@@ -58,48 +58,53 @@ public sealed class AuthService(FlowForgeDbContext db, IConfiguration configurat
         return CreateTokens(user, token);
     }
 
-    // refresh
+    // Refresh, reuse detection, and logout share a transaction lock per token family.
+    // This prevents a concurrent logout/replay snapshot from missing a new replacement.
     public async Task<AuthTokens?> RefreshAsync(string token, CancellationToken cancellationToken)
     {
-        // check valid token
         var hash = HashToken(token);
+        var familyId = await db.RefreshSessions.AsNoTracking().Where(session => session.TokenHash == hash)
+            .Select(session => (Guid?)session.FamilyId).SingleOrDefaultAsync(cancellationToken);
+        if (familyId == null) return null;
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        await LockFamilyAsync(familyId.Value, cancellationToken);
+        // Re-read only after the lock: the token may have been rotated or revoked while waiting.
         var current = await db.RefreshSessions.AsNoTracking().Include(session => session.User)
-            .SingleOrDefaultAsync(session => session.TokenHash == hash, cancellationToken);
-        if (current is null) return null;
+            .SingleAsync(session => session.TokenHash == hash, cancellationToken);
         if (current.RevokedAt is not null)
         {
             await RevokeFamilyAsync(current.FamilyId, cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
             return null;
         }
         if (current.ExpiresAt <= DateTimeOffset.UtcNow || !current.User.IsActive) return null;
 
-        // refresh rotation and gen new access token
         var (replacement, replacementToken) = NewSession(current.UserId, current.FamilyId);
-        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         db.RefreshSessions.Add(replacement);
         await db.SaveChangesAsync(cancellationToken);
-        var updated = await db.RefreshSessions.Where(session => session.Id == current.Id && session.RevokedAt == null)
+        await db.RefreshSessions.Where(session => session.Id == current.Id)
             .ExecuteUpdateAsync(setters => setters
                 .SetProperty(session => session.RevokedAt, DateTimeOffset.UtcNow)
                 .SetProperty(session => session.ReplacedById, replacement.Id), cancellationToken);
-        if (updated == 0)
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            await RevokeFamilyAsync(current.FamilyId, cancellationToken);
-            return null;
-        }
         await transaction.CommitAsync(cancellationToken);
         return CreateTokens(current.User, replacementToken);
     }
 
-    // logout
     public async Task LogoutAsync(string token, CancellationToken cancellationToken)
     {
         var hash = HashToken(token);
-        var session = await db.RefreshSessions.AsNoTracking()
-            .SingleOrDefaultAsync(candidate => candidate.TokenHash == hash, cancellationToken);
-        if (session is not null) await RevokeFamilyAsync(session.FamilyId, cancellationToken);
+        var familyId = await db.RefreshSessions.AsNoTracking().Where(session => session.TokenHash == hash)
+            .Select(session => (Guid?)session.FamilyId).SingleOrDefaultAsync(cancellationToken);
+        if (familyId == null) return;
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        await LockFamilyAsync(familyId.Value, cancellationToken);
+        await RevokeFamilyAsync(familyId.Value, cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
     }
+
+    private Task LockFamilyAsync(Guid familyId, CancellationToken cancellationToken) =>
+        db.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT pg_advisory_xact_lock(hashtextextended({familyId.ToString("N")}, 0))", cancellationToken);
 
     // revoke token
     private async Task RevokeFamilyAsync(Guid familyId, CancellationToken cancellationToken)

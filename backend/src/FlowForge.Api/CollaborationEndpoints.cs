@@ -1,6 +1,6 @@
 using FlowForge.Api.Contracts.WorkItems;
-using FlowForge.Api.Validation;
-using FlowForge.Api.Validation.WorkItems;
+using FlowForge.Api.Validations;
+using FlowForge.Api.Validations.WorkItems;
 using FlowForge.Domain.Projects;
 using FlowForge.Domain.WorkItems;
 using FlowForge.Infrastructure;
@@ -119,7 +119,7 @@ public static class CollaborationEndpoints
             var errors = TimeEntryWriteRequestValidator.Validate(request);
             if (errors.Count > 0) return Results.ValidationProblem(errors);
             var entry = new TimeEntry { WorkItemId = itemId, UserId = ApiRules.UserId(http),
-                Minutes = request.Minutes, StartedAt = request.StartedAt, Note = request.Note?.Trim() };
+                Minutes = request.Minutes, StartedAt = request.StartedAt?.ToUniversalTime(), Note = request.Note?.Trim() };
             db.TimeEntries.Add(entry);
             WorkItemSupport.Activity(db, workspaceId, projectId, entry.UserId, "time-entry.created", "TimeEntry", entry.Id,
                 after: new { entry.WorkItemId, entry.Minutes, entry.StartedAt, entry.Note }, workItemId: itemId);
@@ -139,7 +139,7 @@ public static class CollaborationEndpoints
             var errors = TimeEntryWriteRequestValidator.Validate(request);
             if (errors.Count > 0) return Results.ValidationProblem(errors);
             var before = new { entry.Minutes, entry.StartedAt, entry.Note };
-            entry.Minutes = request.Minutes; entry.StartedAt = request.StartedAt;
+            entry.Minutes = request.Minutes; entry.StartedAt = request.StartedAt?.ToUniversalTime();
             entry.Note = request.Note?.Trim(); entry.UpdatedAt = DateTimeOffset.UtcNow;
             WorkItemSupport.Activity(db, workspaceId, projectId, ApiRules.UserId(http), "time-entry.updated", "TimeEntry", entryId,
                 before, new { entry.Minutes, entry.StartedAt, entry.Note }, workItemId: itemId);

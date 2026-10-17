@@ -1,6 +1,7 @@
 using FlowForge.Api.Contracts.Notifications;
 using FlowForge.Api.Contracts.WorkItems;
-using FlowForge.Api.Validation;
+using FlowForge.Api.Validations;
+using FlowForge.Api.Validations.Notifications;
 using FlowForge.Domain.Notifications;
 using FlowForge.Infrastructure;
 using FlowForge.Infrastructure.Notifications;
@@ -31,11 +32,13 @@ public static class NotificationEndpoints
         group.MapPost("/{notificationId:guid}/read", async (Guid notificationId, HttpContext http,
             NotificationAccess access, TimeProvider clock, CancellationToken ct) =>
         {
+            var errors = NotificationRequestValidator.Validate(notificationId);
+            if (errors.Count > 0) return Results.ValidationProblem(errors);
             var query = access.Visible(ApiRules.UserId(http)).Where(x => x.Id == notificationId);
             ApiRules.Require(await query.AnyAsync(ct), 404, "Resource not found.");
             await query.Where(x => x.ReadAt == null).ExecuteUpdateAsync(s => s.SetProperty(x => x.ReadAt, clock.GetUtcNow()), ct);
             return Results.NoContent();
-        }).Produces(204).ProducesProblem(404);
+        }).Produces(204).ProducesValidationProblem().ProducesProblem(404);
         group.MapPost("/read-all", async (HttpContext http, NotificationAccess access, FlowForgeDbContext db,
             TimeProvider clock, CancellationToken ct) =>
         {

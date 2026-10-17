@@ -1,6 +1,6 @@
 using System.Net.Mail;
 using FlowForge.Api.Contracts.Identity;
-using FlowForge.Api.Validation.Identity;
+using FlowForge.Api.Validations.Identity;
 using FlowForge.Application.Email;
 using FlowForge.Domain.Identity;
 using FlowForge.Infrastructure;

@@ -1,6 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using FlowForge.Api.Contracts.Workspaces;
-using FlowForge.Api.Validation.Workspaces;
+using FlowForge.Api.Validations.Workspaces;
 using FlowForge.Domain.Workspaces;
 using FlowForge.Infrastructure;
 using FlowForge.Infrastructure.Identity;

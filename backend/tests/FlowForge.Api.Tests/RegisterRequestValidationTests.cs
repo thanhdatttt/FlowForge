@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FlowForge.Api.Contracts.Identity;
-using FlowForge.Api.Validation.Identity;
+using FlowForge.Api.Validations.Identity;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;

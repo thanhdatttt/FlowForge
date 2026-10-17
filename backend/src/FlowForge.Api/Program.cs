@@ -56,6 +56,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
             if (context.HttpContext.Request.Path.StartsWithSegments("/hubs/updates") &&
                 context.Request.Query.TryGetValue("access_token", out var token)) context.Token = token;
             return Task.CompletedTask;
+        },
+        OnTokenValidated = context =>
+        {
+            if (!Guid.TryParse(context.Principal?.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value, out var userId) || userId == Guid.Empty)
+                context.Fail("A valid user identity is required.");
+            return Task.CompletedTask;
         }
     };
     options.TokenValidationParameters = new TokenValidationParameters

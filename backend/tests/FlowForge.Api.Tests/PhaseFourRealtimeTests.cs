@@ -162,6 +162,30 @@ public sealed class PhaseFourRealtimeTests(PhaseFourFixture fixture) : IClassFix
         Assert.DoesNotContain(socket.BufferedEvents, e => e.GetProperty("target").GetString() == "NotificationReceived");
     }
 
+    [PostgresFact]
+    public async Task Hub_validates_empty_ids_for_all_subscription_methods_and_binding_rejects_malformed_guids()
+    {
+        var journey = new PhaseFourIntegrationTests(fixture);
+        var (_, member, project, _) = await journey.SetupAsync();
+        using var client = fixture.Client(member);
+        await using var socket = await ConnectAsync(client);
+        var emptyJoin = await socket.InvokeAsync("JoinProject", Guid.Empty, Guid.Empty);
+        var joinError = emptyJoin.GetProperty("error").GetString();
+        Assert.Contains("workspaceId", joinError);
+        Assert.Contains("projectId", joinError);
+        Assert.Contains("projectId", (await socket.InvokeAsync("JoinProject", project.WorkspaceId, Guid.Empty)).GetProperty("error").GetString());
+        Assert.Contains("projectId", (await socket.InvokeAsync("LeaveProject", Guid.Empty)).GetProperty("error").GetString());
+        Assert.Contains("workspaceId", (await socket.InvokeAsync("JoinWorkspace", Guid.Empty)).GetProperty("error").GetString());
+        Assert.Contains("workspaceId", (await socket.InvokeAsync("LeaveWorkspace", Guid.Empty)).GetProperty("error").GetString());
+        Assert.True((await socket.InvokeAsync("JoinProject", "not-a-guid", project.Id)).TryGetProperty("error", out _));
+        Assert.True((await socket.InvokeAsync("JoinWorkspace")).TryGetProperty("error", out _));
+        // Invalid invocations leave the connection usable; valid IDs still pass through authorization.
+        Assert.False((await socket.InvokeAsync("JoinProject", project.WorkspaceId, project.Id)).TryGetProperty("error", out _));
+        Assert.False((await socket.InvokeAsync("LeaveProject", project.Id)).TryGetProperty("error", out _));
+        Assert.False((await socket.InvokeAsync("JoinWorkspace", project.WorkspaceId)).TryGetProperty("error", out _));
+        Assert.False((await socket.InvokeAsync("LeaveWorkspace", project.WorkspaceId)).TryGetProperty("error", out _));
+    }
+
     private async Task<HubSocket> ConnectAsync(HttpClient http, bool queryToken = false)
     {
         var client = fixture.Server.CreateWebSocketClient();
