@@ -17,4 +17,5 @@ public sealed class Project
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
     public long Version { get; set; } = 1;
+    public long NextItemNumber { get; set; } = 1;
 }

@@ -378,3 +378,18 @@ The after-fix run exits with code 0: 101 passed, 0 failed, 0 skipped. Without `F
 - For live invitation accept/reject/ownership checks, only the disposable database's recipient accounts were marked verified through SQL. That setup does not count as a successful live OTP flow; the OTP success flow is covered by integration tests.
 - These checks do not certify load capacity, penetration resistance, every possible input, or behavior on a deployed external host. No performance benchmark was run.
 - The fix changes only exception-status selection. The six regression cases remain in the suite and now assert the 400 problem-details response.
+
+## Phase 3 verification (2026-10-17)
+
+- `dotnet build FlowForge.sln --no-restore -m:1 /p:UseSharedCompilation=false`: passed with 0 warnings and 0 errors.
+- `dotnet ef migrations has-pending-model-changes --project src/FlowForge.Infrastructure --startup-project src/FlowForge.Api --no-build`: no pending model changes.
+- With an isolated PostgreSQL 17 container and `FLOWFORGE_TEST_CONNECTION` set to its admin connection: `dotnet test FlowForge.sln --no-build -m:1 /p:UseSharedCompilation=false`: 103 passed, 0 failed, 0 skipped. The fixture created and dropped unique databases and applied all migrations, including `PhaseThreeWorkItems`.
+- New integration coverage exercises work-item allocation under concurrent requests, project authorization, assignment, parent/dependency cycles, archive behavior, stale versions, reassignment flagging, comments and mentions, time entries, private attachment access, and activity visibility.
+- After moving Phase 3 request checks into `FlowForge.Api/Validation/WorkItems`, the full PostgreSQL-backed suite was rerun: 103 passed, 0 failed, 0 skipped; build had 0 warnings and 0 errors.
+
+## Phase 3 completion verification (2026-10-17)
+
+- Added integration coverage for work-item list filters, label/dependency version changes and item-scoped audit details, domain-event/outbox atomic persistence, scoped authorization, comment/time/attachment validation and moderation, physical attachment deletion, rollback cleanup after a deferred database commit failure, and migration upgrades from both Phase 2 and the earlier Phase 3 schema.
+- `dotnet build FlowForge.sln --no-restore -m:1 /p:UseSharedCompilation=false`: passed with 0 warnings and 0 errors.
+- With isolated PostgreSQL 17 and `FLOWFORGE_TEST_CONNECTION`: `dotnet test FlowForge.sln --no-build -m:1 /p:UseSharedCompilation=false`: 109 passed, 0 failed, 0 skipped.
+- `dotnet ef migrations has-pending-model-changes --project src/FlowForge.Infrastructure --startup-project src/FlowForge.Api --no-build`: no pending model changes.

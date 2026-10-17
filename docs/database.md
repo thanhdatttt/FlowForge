@@ -1,6 +1,6 @@
 # FlowForge database schema
 
-Proposed PostgreSQL schema based on [feature_specification.md](feature_specification.md) and [proposal.md](proposal.md). Identity, workspace, email-verification, invitation, and project tables are implemented by EF Core migrations through EmailVerificationOtp. The remaining schema describes later phases. The feature specification is authoritative if the two docs differ.
+Proposed PostgreSQL schema based on [feature_specification.md](feature_specification.md) and [proposal.md](proposal.md). Identity, workspace, project, work-item, collaboration, activity, domain-event, and outbox tables are implemented by EF Core migrations through PhaseThreeCompletion. Event dispatch, workflow, notification, and later-phase tables remain planned. The feature specification is authoritative if the two docs differ.
 
 ## Conventions
 
@@ -36,7 +36,7 @@ A workspace must have **exactly one active Owner**. The unique index enforces at
 | `attachments` | `id`, `work_item_id`, `uploaded_by_user_id`, `storage_key`, `original_name`, `content_type`, `size_bytes`, `created_at`, `deleted_at?` | Unique server-generated storage key; authorize each download. |
 | `time_entries` | `id`, `work_item_id`, `user_id`, `minutes`, `started_at?`, `note?`, timestamps, `deleted_at?` | Positive minutes; preserve attribution after membership removal. |
 
-Phase 3 will add the project item-number counter. Owners/Admins access all projects; other roles require explicit project membership. Only Owners/Admins create projects. Assigned Managers manage projects; Developers write work-item resources; Viewers read only. Project keys normalize to uppercase and are unique per workspace, including archived projects.
+Phase 3 adds the project item-number counter. Owners/Admins access all projects; other roles require explicit project membership. Only Owners/Admins create projects. Assigned Managers manage projects; Developers write work-item resources; Viewers read only. Project keys normalize to uppercase and are unique per workspace, including archived projects.
 
 Display an item key as `project_key-item_number` (for example `FLOW-123`). Allocate numbers atomically. Keep project keys stable after item creation unless key aliases are added. Prevent parent and dependency cycles in business logic; restrict links to one project as an initial assumption. Use optimistic concurrency for item updates and write important changes with activity/outbox rows in one transaction. Removed members remain referenced by history but cannot receive new assignments.
 
@@ -51,7 +51,7 @@ Display an item key as `project_key-item_number` (for example `FLOW-123`). Alloc
 | `workflow_action_results` | `execution_id`, `action_id`, `status`, `attempt_count`, `safe_error?`, timestamps | Unique action per execution; pair with side-effect idempotency keys. |
 | `notifications` | `id`, `recipient_user_id`, related resource IDs?, `type`, `payload jsonb`, `idempotency_key?`, `created_at`, `read_at?` | Unique idempotency key; recheck access before exposing private details. |
 | `email_deliveries`* | `id`, `recipient_email`, `template_key`, `template_data jsonb`, `idempotency_key`, `status`, `attempt_count`, `next_attempt_at?` | Background delivery with bounded retry and deduplication. |
-| `activity_records` | `id`, `workspace_id`, `project_id?`, `actor_user_id?`, `actor_kind`, `action`, `entity_type`, `entity_id`, `before_values jsonb?`, `after_values jsonb?`, `correlation_id?`, `workflow_execution_id?`, `occurred_at` | Append-only, authorized activity feed. Exclude secrets and attachment content. |
+| `activity_records` | `id`, `workspace_id`, `project_id?`, `work_item_id?`, `actor_user_id?`, `actor_kind`, `action`, `entity_type`, `entity_id`, `before_values jsonb?`, `after_values jsonb?`, `correlation_id?`, `workflow_execution_id?`, `occurred_at` | Append-only, authorized activity feed. Exclude secrets and attachment content. |
 
 Workflow triggers, conditions, and actions must match the feature specification. Validate scope and current permissions for each action. `email_deliveries` is optional when email is configured. SignalR reads committed changes; Redis is only for cache/coordination or a multi-instance backplane.
 

@@ -2,6 +2,7 @@ using FlowForge.Api.Contracts.Projects;
 using FlowForge.Api.Validation;
 using FlowForge.Api.Validation.Projects;
 using FlowForge.Domain.Projects;
+using FlowForge.Domain.WorkItems;
 using FlowForge.Domain.Workspaces;
 using FlowForge.Infrastructure;
 using FlowForge.Infrastructure.Projects;
@@ -31,7 +32,14 @@ public static class ProjectEndpoints
                 StartsOn = request.StartsOn, TargetOn = request.TargetOn
             };
             db.Projects.Add(project);
+            var defaultStatuses = new[] { ("Todo", "Open"), ("InProgress", "Open"),
+                ("InReview", "Open"), ("Done", "Done"), ("Blocked", "Open") };
+            for (var i = 0; i < defaultStatuses.Length; i++)
+                db.ProjectStatuses.Add(new ProjectStatus { ProjectId = project.Id, Name = defaultStatuses[i].Item1,
+                    Category = defaultStatuses[i].Item2, SortOrder = i });
             if (lead != null) AddMembership(db, project, lead.Id);
+            WorkItemSupport.Activity(db, workspaceId, project.Id, ApiRules.UserId(http), "project.created", "Project", project.Id,
+                after: new { project.Name, project.ProjectKey, project.Description, project.LeadMembershipId });
             await db.SaveChangesAsync(ct);
             return Results.Created($"/api/v1/workspaces/{workspaceId}/projects/{project.Id}", ToResponse(project, lead?.UserId));
         }).Produces<ProjectResponseDto>(201).ProducesValidationProblem().ProducesProblem(403).ProducesProblem(409);
@@ -85,7 +93,12 @@ public static class ProjectEndpoints
             var errors = UpdateProjectRequestValidator.Validate(request);
             if (errors.Count > 0) return Results.ValidationProblem(errors);
             ApiRules.Require(request.Version == project.Version, 409, "The project changed. Reload and retry.");
+            if (!string.Equals(project.ProjectKey, request.ProjectKey!.Trim(), StringComparison.OrdinalIgnoreCase))
+                ApiRules.Require(!await db.WorkItems.AnyAsync(x => x.ProjectId == projectId, ct), 409,
+                    "Project key cannot change after work items exist.");
             var lead = await LeadAsync(db, workspaceId, request.LeadUserId, ct);
+            var before = new { project.Name, project.ProjectKey, project.Description, project.LeadMembershipId,
+                project.StartsOn, project.TargetOn };
             project.Name = request.Name!.Trim();
             project.ProjectKey = request.ProjectKey!.Trim().ToUpperInvariant();
             project.Description = request.Description?.Trim();
@@ -95,6 +108,9 @@ public static class ProjectEndpoints
             if (lead != null && !await db.ProjectMemberships.AnyAsync(x => x.ProjectId == projectId &&
                 x.WorkspaceMembershipId == lead.Id && x.RemovedAt == null, ct)) AddMembership(db, project, lead.Id);
             Touch(project);
+            WorkItemSupport.Activity(db, workspaceId, projectId, ApiRules.UserId(http), "project.updated", "Project", projectId,
+                before, new { project.Name, project.ProjectKey, project.Description, project.LeadMembershipId,
+                    project.StartsOn, project.TargetOn });
             await db.SaveChangesAsync(ct);
             return Results.Ok(ToResponse(project, lead?.UserId));
         }).Produces<ProjectResponseDto>().ProducesValidationProblem().ProducesProblem(409);
@@ -138,6 +154,8 @@ public static class ProjectEndpoints
                 x.WorkspaceMembershipId == member!.Id && x.RemovedAt == null, ct), 409, "The user is already a project member.");
             AddMembership(db, project, member!.Id);
             Touch(project);
+            WorkItemSupport.Activity(db, workspaceId, projectId, ApiRules.UserId(http), "project-member.added", "Project", projectId,
+                after: new { request.UserId });
             await db.SaveChangesAsync(ct);
             return Results.Created($"/api/v1/workspaces/{workspaceId}/projects/{projectId}/members/{request.UserId}",
                 new ProjectMemberResponseDto(member.UserId, member.User.DisplayName, member.User.Email, member.Role.ToString()));
@@ -155,6 +173,8 @@ public static class ProjectEndpoints
             ApiRules.Require(project.LeadMembershipId != member!.WorkspaceMembershipId, 409, "Change or clear the project lead before removing them.");
             member.RemovedAt = DateTimeOffset.UtcNow;
             Touch(project);
+            WorkItemSupport.Activity(db, workspaceId, projectId, ApiRules.UserId(http), "project-member.removed", "Project", projectId,
+                before: new { UserId = userId });
             await db.SaveChangesAsync(ct);
             return Results.NoContent();
         }).Produces(204);
@@ -170,6 +190,8 @@ public static class ProjectEndpoints
         {
             project.ArchivedAt = archive ? DateTimeOffset.UtcNow : null;
             Touch(project);
+            WorkItemSupport.Activity(db, workspaceId, projectId, ApiRules.UserId(http),
+                archive ? "project.archived" : "project.restored", "Project", projectId);
             await db.SaveChangesAsync(ct);
         }
         return Results.Ok(ToResponse(project, project.LeadMembership?.UserId));

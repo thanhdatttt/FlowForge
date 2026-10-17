@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using FlowForge.Domain.Identity;
 using FlowForge.Domain.Workspaces;
 using FlowForge.Domain.Projects;
+using FlowForge.Domain.WorkItems;
 
 namespace FlowForge.Infrastructure;
 
@@ -17,6 +18,18 @@ public sealed class FlowForgeDbContext(DbContextOptions<FlowForgeDbContext> opti
     public DbSet<WorkspaceInvitation> WorkspaceInvitations => Set<WorkspaceInvitation>();
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<ProjectMembership> ProjectMemberships => Set<ProjectMembership>();
+    public DbSet<ProjectStatus> ProjectStatuses => Set<ProjectStatus>();
+    public DbSet<WorkItem> WorkItems => Set<WorkItem>();
+    public DbSet<WorkLabel> WorkLabels => Set<WorkLabel>();
+    public DbSet<WorkItemLabel> WorkItemLabels => Set<WorkItemLabel>();
+    public DbSet<WorkItemDependency> WorkItemDependencies => Set<WorkItemDependency>();
+    public DbSet<WorkComment> WorkComments => Set<WorkComment>();
+    public DbSet<CommentMention> CommentMentions => Set<CommentMention>();
+    public DbSet<WorkAttachment> WorkAttachments => Set<WorkAttachment>();
+    public DbSet<TimeEntry> TimeEntries => Set<TimeEntry>();
+    public DbSet<ActivityRecord> ActivityRecords => Set<ActivityRecord>();
+    public DbSet<DomainEvent> DomainEvents => Set<DomainEvent>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -151,6 +164,7 @@ public sealed class FlowForgeDbContext(DbContextOptions<FlowForgeDbContext> opti
             entity.Property(x => x.CreatedAt).HasColumnName("created_at");
             entity.Property(x => x.UpdatedAt).HasColumnName("updated_at");
             entity.Property(x => x.Version).HasColumnName("version").IsConcurrencyToken();
+            entity.Property(x => x.NextItemNumber).HasColumnName("next_item_number");
             entity.HasIndex(x => new { x.WorkspaceId, x.ProjectKey }).IsUnique();
             entity.HasOne<Workspace>().WithMany().HasForeignKey(x => x.WorkspaceId).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(x => x.LeadMembership).WithMany()
@@ -172,6 +186,210 @@ public sealed class FlowForgeDbContext(DbContextOptions<FlowForgeDbContext> opti
                 .HasPrincipalKey(x => new { x.WorkspaceId, x.Id }).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(x => x.WorkspaceMembership).WithMany().HasForeignKey(x => new { x.WorkspaceId, x.WorkspaceMembershipId })
                 .HasPrincipalKey(x => new { x.WorkspaceId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<ProjectStatus>(e =>
+        {
+            e.ToTable("project_statuses", t => t.HasCheckConstraint("CK_status_category", "category IN ('Open', 'Done')"));
+            e.HasKey(x => x.Id);
+            e.HasAlternateKey(x => new { x.ProjectId, x.Id });
+            e.HasIndex(x => new { x.ProjectId, x.Name }).IsUnique();
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ProjectId).HasColumnName("project_id");
+            e.Property(x => x.Name).HasColumnName("name").HasMaxLength(40);
+            e.Property(x => x.Category).HasColumnName("category").HasMaxLength(20);
+            e.Property(x => x.SortOrder).HasColumnName("sort_order");
+            e.Property(x => x.IsActive).HasColumnName("is_active");
+            e.HasOne<Project>().WithMany().HasForeignKey(x => x.ProjectId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<WorkItem>(e =>
+        {
+            e.ToTable("work_items", t =>
+            {
+                t.HasCheckConstraint("CK_work_item_type", "type IN ('Task', 'Issue')");
+                t.HasCheckConstraint("CK_work_item_priority", "priority IN ('Low', 'Medium', 'High', 'Critical')");
+                t.HasCheckConstraint("CK_work_item_estimate", "estimate_minutes IS NULL OR estimate_minutes >= 0");
+                t.HasCheckConstraint("CK_work_item_dates", "start_date IS NULL OR due_date IS NULL OR start_date <= due_date");
+                t.HasCheckConstraint("CK_work_item_number", "item_number > 0");
+                t.HasCheckConstraint("CK_work_item_parent", "parent_id IS NULL OR parent_id <> id");
+            });
+            e.HasKey(x => x.Id);
+            e.HasAlternateKey(x => new { x.ProjectId, x.Id });
+            e.HasIndex(x => new { x.ProjectId, x.ItemNumber }).IsUnique();
+            e.HasIndex(x => new { x.ProjectId, x.StatusId });
+            e.HasIndex(x => new { x.ProjectId, x.AssigneeMembershipId });
+            e.HasIndex(x => new { x.ProjectId, x.DueDate });
+            e.HasIndex(x => new { x.ProjectId, x.UpdatedAt });
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.WorkspaceId).HasColumnName("workspace_id");
+            e.Property(x => x.ProjectId).HasColumnName("project_id");
+            e.Property(x => x.ItemNumber).HasColumnName("item_number");
+            e.Property(x => x.Title).HasColumnName("title").HasMaxLength(200);
+            e.Property(x => x.Description).HasColumnName("description").HasMaxLength(20000);
+            e.Property(x => x.Type).HasColumnName("type").HasMaxLength(12);
+            e.Property(x => x.StatusId).HasColumnName("status_id");
+            e.Property(x => x.Priority).HasColumnName("priority").HasMaxLength(12);
+            e.Property(x => x.ReporterMembershipId).HasColumnName("reporter_membership_id");
+            e.Property(x => x.AssigneeMembershipId).HasColumnName("assignee_membership_id");
+            e.Property(x => x.ParentId).HasColumnName("parent_id");
+            e.Property(x => x.StartDate).HasColumnName("start_date");
+            e.Property(x => x.DueDate).HasColumnName("due_date");
+            e.Property(x => x.EstimateMinutes).HasColumnName("estimate_minutes");
+            e.Property(x => x.ArchivedAt).HasColumnName("archived_at");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+            e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
+            e.Property(x => x.Version).HasColumnName("version").IsConcurrencyToken();
+            e.HasOne<Project>().WithMany().HasForeignKey(x => new { x.WorkspaceId, x.ProjectId })
+                .HasPrincipalKey(x => new { x.WorkspaceId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<ProjectStatus>().WithMany().HasForeignKey(x => new { x.ProjectId, x.StatusId })
+                .HasPrincipalKey(x => new { x.ProjectId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<WorkspaceMembership>().WithMany().HasForeignKey(x => new { x.WorkspaceId, x.ReporterMembershipId })
+                .HasPrincipalKey(x => new { x.WorkspaceId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<WorkspaceMembership>().WithMany().HasForeignKey(x => new { x.WorkspaceId, x.AssigneeMembershipId })
+                .HasPrincipalKey(x => new { x.WorkspaceId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<WorkItem>().WithMany().HasForeignKey(x => new { x.ProjectId, x.ParentId })
+                .HasPrincipalKey(x => new { x.ProjectId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<WorkLabel>(e =>
+        {
+            e.ToTable("labels"); e.HasKey(x => x.Id); e.HasAlternateKey(x => new { x.ProjectId, x.Id });
+            e.HasIndex(x => new { x.ProjectId, x.Name }).IsUnique();
+            e.Property(x => x.Id).HasColumnName("id"); e.Property(x => x.ProjectId).HasColumnName("project_id");
+            e.Property(x => x.Name).HasColumnName("name").HasMaxLength(50);
+            e.Property(x => x.Color).HasColumnName("color").HasMaxLength(7);
+            e.HasOne<Project>().WithMany().HasForeignKey(x => x.ProjectId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<WorkItemLabel>(e =>
+        {
+            e.ToTable("work_item_labels"); e.HasKey(x => new { x.WorkItemId, x.LabelId });
+            e.Property(x => x.ProjectId).HasColumnName("project_id");
+            e.Property(x => x.WorkItemId).HasColumnName("work_item_id");
+            e.Property(x => x.LabelId).HasColumnName("label_id");
+            e.HasOne<WorkItem>().WithMany().HasForeignKey(x => new { x.ProjectId, x.WorkItemId })
+                .HasPrincipalKey(x => new { x.ProjectId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<WorkLabel>().WithMany().HasForeignKey(x => new { x.ProjectId, x.LabelId })
+                .HasPrincipalKey(x => new { x.ProjectId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<WorkItemDependency>(e =>
+        {
+            e.ToTable("work_item_dependencies", t => t.HasCheckConstraint("CK_dependency_self", "work_item_id <> depends_on_item_id"));
+            e.HasKey(x => new { x.WorkItemId, x.DependsOnItemId });
+            e.Property(x => x.ProjectId).HasColumnName("project_id");
+            e.Property(x => x.WorkItemId).HasColumnName("work_item_id");
+            e.Property(x => x.DependsOnItemId).HasColumnName("depends_on_item_id");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+            e.HasIndex(x => x.DependsOnItemId);
+            e.HasOne<WorkItem>().WithMany().HasForeignKey(x => new { x.ProjectId, x.WorkItemId })
+                .HasPrincipalKey(x => new { x.ProjectId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<WorkItem>().WithMany().HasForeignKey(x => new { x.ProjectId, x.DependsOnItemId })
+                .HasPrincipalKey(x => new { x.ProjectId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<WorkComment>(e =>
+        {
+            e.ToTable("comments"); e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id"); e.Property(x => x.WorkItemId).HasColumnName("work_item_id");
+            e.Property(x => x.AuthorUserId).HasColumnName("author_user_id");
+            e.Property(x => x.Body).HasColumnName("body").HasMaxLength(10000);
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+            e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
+            e.Property(x => x.DeletedAt).HasColumnName("deleted_at");
+            e.Property(x => x.Version).HasColumnName("version").IsConcurrencyToken();
+            e.HasOne<WorkItem>().WithMany().HasForeignKey(x => x.WorkItemId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.AuthorUserId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<CommentMention>(e =>
+        {
+            e.ToTable("comment_mentions"); e.HasKey(x => new { x.CommentId, x.MentionedUserId });
+            e.Property(x => x.CommentId).HasColumnName("comment_id");
+            e.Property(x => x.MentionedUserId).HasColumnName("mentioned_user_id");
+            e.HasOne<WorkComment>().WithMany().HasForeignKey(x => x.CommentId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.MentionedUserId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<WorkAttachment>(e =>
+        {
+            e.ToTable("attachments", t => t.HasCheckConstraint("CK_attachment_size", "size_bytes > 0"));
+            e.HasKey(x => x.Id); e.HasIndex(x => x.StorageKey).IsUnique();
+            e.Property(x => x.Id).HasColumnName("id"); e.Property(x => x.WorkItemId).HasColumnName("work_item_id");
+            e.Property(x => x.UploadedByUserId).HasColumnName("uploaded_by_user_id");
+            e.Property(x => x.StorageKey).HasColumnName("storage_key").HasMaxLength(100);
+            e.Property(x => x.OriginalName).HasColumnName("original_name").HasMaxLength(255);
+            e.Property(x => x.ContentType).HasColumnName("content_type").HasMaxLength(100);
+            e.Property(x => x.SizeBytes).HasColumnName("size_bytes");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at"); e.Property(x => x.DeletedAt).HasColumnName("deleted_at");
+            e.HasOne<WorkItem>().WithMany().HasForeignKey(x => x.WorkItemId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.UploadedByUserId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<TimeEntry>(e =>
+        {
+            e.ToTable("time_entries", t => t.HasCheckConstraint("CK_time_minutes", "minutes > 0"));
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id"); e.Property(x => x.WorkItemId).HasColumnName("work_item_id");
+            e.Property(x => x.UserId).HasColumnName("user_id"); e.Property(x => x.Minutes).HasColumnName("minutes");
+            e.Property(x => x.StartedAt).HasColumnName("started_at");
+            e.Property(x => x.Note).HasColumnName("note").HasMaxLength(2000);
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+            e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
+            e.Property(x => x.DeletedAt).HasColumnName("deleted_at");
+            e.HasOne<WorkItem>().WithMany().HasForeignKey(x => x.WorkItemId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<ActivityRecord>(e =>
+        {
+            e.ToTable("activity_records"); e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.WorkspaceId, x.OccurredAt });
+            e.HasIndex(x => new { x.ProjectId, x.OccurredAt });
+            e.HasIndex(x => new { x.WorkItemId, x.OccurredAt });
+            e.Property(x => x.Id).HasColumnName("id"); e.Property(x => x.WorkspaceId).HasColumnName("workspace_id");
+            e.Property(x => x.ProjectId).HasColumnName("project_id");
+            e.Property(x => x.WorkItemId).HasColumnName("work_item_id");
+            e.Property(x => x.ActorUserId).HasColumnName("actor_user_id");
+            e.Property(x => x.ActorKind).HasColumnName("actor_kind").HasMaxLength(20);
+            e.Property(x => x.Action).HasColumnName("action").HasMaxLength(80);
+            e.Property(x => x.EntityType).HasColumnName("entity_type").HasMaxLength(40);
+            e.Property(x => x.EntityId).HasColumnName("entity_id");
+            e.Property(x => x.BeforeValues).HasColumnName("before_values").HasColumnType("jsonb");
+            e.Property(x => x.AfterValues).HasColumnName("after_values").HasColumnType("jsonb");
+            e.Property(x => x.CorrelationId).HasColumnName("correlation_id").HasMaxLength(64);
+            e.Property(x => x.OccurredAt).HasColumnName("occurred_at");
+            e.HasOne<Workspace>().WithMany().HasForeignKey(x => x.WorkspaceId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<Project>().WithMany().HasForeignKey(x => new { x.WorkspaceId, x.ProjectId })
+                .HasPrincipalKey(x => new { x.WorkspaceId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<WorkItem>().WithMany().HasForeignKey(x => new { x.ProjectId, x.WorkItemId })
+                .HasPrincipalKey(x => new { x.ProjectId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.ActorUserId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<DomainEvent>(e =>
+        {
+            e.ToTable("domain_events", t => t.HasCheckConstraint("CK_domain_event_depth", "depth >= 0"));
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.ProjectId, x.OccurredAt });
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.WorkspaceId).HasColumnName("workspace_id");
+            e.Property(x => x.ProjectId).HasColumnName("project_id");
+            e.Property(x => x.EventType).HasColumnName("event_type").HasMaxLength(80);
+            e.Property(x => x.EntityId).HasColumnName("entity_id");
+            e.Property(x => x.Payload).HasColumnName("payload").HasColumnType("jsonb");
+            e.Property(x => x.ActorUserId).HasColumnName("actor_user_id");
+            e.Property(x => x.CorrelationId).HasColumnName("correlation_id").HasMaxLength(64);
+            e.Property(x => x.OriginExecutionId).HasColumnName("origin_execution_id");
+            e.Property(x => x.Depth).HasColumnName("depth");
+            e.Property(x => x.OccurredAt).HasColumnName("occurred_at");
+            e.HasOne<Project>().WithMany().HasForeignKey(x => new { x.WorkspaceId, x.ProjectId })
+                .HasPrincipalKey(x => new { x.WorkspaceId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.ActorUserId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<OutboxMessage>(e =>
+        {
+            e.ToTable("outbox_messages", t => t.HasCheckConstraint("CK_outbox_attempt_count", "attempt_count >= 0"));
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.EventId).IsUnique();
+            e.HasIndex(x => new { x.ProcessedAt, x.AvailableAt });
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.EventId).HasColumnName("event_id");
+            e.Property(x => x.MessageType).HasColumnName("message_type").HasMaxLength(80);
+            e.Property(x => x.AvailableAt).HasColumnName("available_at");
+            e.Property(x => x.ProcessedAt).HasColumnName("processed_at");
+            e.Property(x => x.AttemptCount).HasColumnName("attempt_count");
+            e.HasOne<DomainEvent>().WithMany().HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Restrict);
         });
     }
 }
