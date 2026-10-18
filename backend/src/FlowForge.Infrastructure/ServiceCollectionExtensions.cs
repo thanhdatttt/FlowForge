@@ -5,6 +5,7 @@ using FlowForge.Infrastructure.Identity;
 using FlowForge.Infrastructure.Workspaces;
 using FlowForge.Infrastructure.Projects;
 using FlowForge.Infrastructure.Notifications;
+using FlowForge.Infrastructure.Workflows;
 
 namespace FlowForge.Infrastructure;
 
@@ -33,6 +34,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<NotificationDispatcher>();
         services.AddScoped<EmailDeliveryProcessor>();
         services.AddScoped<OverdueChecker>();
+        services.AddScoped<WorkflowAccess>();
+        services.AddScoped<WorkflowReferences>();
+        services.AddScoped<WorkflowScheduler>();
+        services.AddScoped<WorkflowActions>();
+        services.AddScoped<WorkflowRunner>();
+        services.AddScoped<WorkflowDateScanner>();
         return services;
     }
 }

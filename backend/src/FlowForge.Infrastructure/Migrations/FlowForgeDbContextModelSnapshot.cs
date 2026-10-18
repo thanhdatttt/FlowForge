@@ -231,6 +231,10 @@ namespace FlowForge.Infrastructure.Migrations
                         .HasColumnType("character varying(320)")
                         .HasColumnName("recipient_email");
 
+                    b.Property<Guid?>("RecipientUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("recipient_user_id");
+
                     b.Property<string>("SafeError")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
@@ -248,6 +252,10 @@ namespace FlowForge.Infrastructure.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("subject");
 
+                    b.Property<Guid?>("WorkflowExecutionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("workflow_execution_id");
+
                     b.Property<Guid>("WorkspaceId")
                         .HasColumnType("uuid")
                         .HasColumnName("workspace_id");
@@ -257,11 +265,15 @@ namespace FlowForge.Infrastructure.Migrations
                     b.HasIndex("IdempotencyKey")
                         .IsUnique();
 
+                    b.HasIndex("RecipientUserId");
+
                     b.HasIndex("Status", "NextAttemptAt");
 
                     b.HasIndex("WorkspaceId", "InvitationId");
 
                     b.HasIndex("WorkspaceId", "NotificationId");
+
+                    b.HasIndex("WorkspaceId", "WorkflowExecutionId");
 
                     b.ToTable("email_deliveries", null, t =>
                         {
@@ -269,7 +281,7 @@ namespace FlowForge.Infrastructure.Migrations
 
                             t.HasCheckConstraint("CK_email_delivery_status", "status IN ('Pending', 'Sent', 'Cancelled', 'Failed')");
 
-                            t.HasCheckConstraint("CK_email_delivery_target", "(notification_id IS NULL) <> (invitation_id IS NULL)");
+                            t.HasCheckConstraint("CK_email_delivery_target", "num_nonnulls(notification_id, invitation_id, workflow_execution_id) = 1");
                         });
                 });
 
@@ -349,7 +361,7 @@ namespace FlowForge.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("CK_notification_scope", "(project_id IS NULL OR work_item_id IS NOT NULL) AND (work_item_id IS NULL OR project_id IS NOT NULL) AND ((type = 'Invited' AND invitation_id IS NOT NULL AND project_id IS NULL) OR (type <> 'Invited' AND invitation_id IS NULL AND work_item_id IS NOT NULL))");
 
-                            t.HasCheckConstraint("CK_notification_type", "type IN ('Assigned', 'Mentioned', 'Overdue', 'Invited')");
+                            t.HasCheckConstraint("CK_notification_type", "type IN ('Assigned', 'Mentioned', 'Overdue', 'Invited', 'Workflow')");
                         });
                 });
 
@@ -527,6 +539,10 @@ namespace FlowForge.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("work_item_id");
 
+                    b.Property<Guid?>("WorkflowExecutionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("workflow_execution_id");
+
                     b.Property<Guid>("WorkspaceId")
                         .HasColumnType("uuid")
                         .HasColumnName("workspace_id");
@@ -544,6 +560,8 @@ namespace FlowForge.Infrastructure.Migrations
                     b.HasIndex("WorkspaceId", "OccurredAt");
 
                     b.HasIndex("WorkspaceId", "ProjectId");
+
+                    b.HasIndex("WorkspaceId", "WorkflowExecutionId");
 
                     b.ToTable("activity_records", (string)null);
                 });
@@ -582,6 +600,11 @@ namespace FlowForge.Infrastructure.Migrations
                         .HasColumnType("character varying(64)")
                         .HasColumnName("correlation_id");
 
+                    b.Property<string>("DeduplicationKey")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("deduplication_key");
+
                     b.Property<int>("Depth")
                         .HasColumnType("integer")
                         .HasColumnName("depth");
@@ -613,6 +636,14 @@ namespace FlowForge.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("project_id");
 
+                    b.Property<DateOnly?>("TriggerDate")
+                        .HasColumnType("date")
+                        .HasColumnName("trigger_date");
+
+                    b.Property<DateTimeOffset?>("WorkflowProcessedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("workflow_processed_at");
+
                     b.Property<Guid>("WorkspaceId")
                         .HasColumnType("uuid")
                         .HasColumnName("workspace_id");
@@ -621,7 +652,12 @@ namespace FlowForge.Infrastructure.Migrations
 
                     b.HasIndex("ActorUserId");
 
+                    b.HasIndex("DeduplicationKey")
+                        .IsUnique();
+
                     b.HasIndex("ProjectId", "OccurredAt");
+
+                    b.HasIndex("WorkflowProcessedAt", "OccurredAt");
 
                     b.HasIndex("WorkspaceId", "ProjectId");
 
@@ -1094,6 +1130,244 @@ namespace FlowForge.Infrastructure.Migrations
                     b.ToTable("labels", (string)null);
                 });
 
+            modelBuilder.Entity("FlowForge.Domain.Workflows.Workflow", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by_user_id");
+
+                    b.Property<int>("CurrentVersion")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("current_version");
+
+                    b.Property<DateTimeOffset?>("EnabledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("enabled_at");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_enabled");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("project_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("WorkspaceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("workspace_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("WorkspaceId", "ProjectId", "IsEnabled");
+
+                    b.ToTable("workflows", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_workflow_enabled", "NOT is_enabled OR enabled_at IS NOT NULL");
+
+                            t.HasCheckConstraint("CK_workflow_version", "current_version > 0");
+                        });
+                });
+
+            modelBuilder.Entity("FlowForge.Domain.Workflows.WorkflowActionResult", b =>
+                {
+                    b.Property<Guid>("ExecutionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("execution_id");
+
+                    b.Property<Guid>("ActionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("action_id");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempt_count");
+
+                    b.Property<DateTimeOffset?>("FinishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("finished_at");
+
+                    b.Property<string>("SafeError")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("safe_error");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.HasKey("ExecutionId", "ActionId");
+
+                    b.ToTable("workflow_action_results", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_workflow_action_attempts", "attempt_count >= 0");
+
+                            t.HasCheckConstraint("CK_workflow_action_status", "status IN ('Pending', 'Succeeded', 'Failed', 'Cancelled')");
+                        });
+                });
+
+            modelBuilder.Entity("FlowForge.Domain.Workflows.WorkflowExecution", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempt_count");
+
+                    b.Property<bool?>("ConditionsMatched")
+                        .HasColumnType("boolean")
+                        .HasColumnName("conditions_matched");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
+
+                    b.Property<DateTimeOffset?>("FinishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("finished_at");
+
+                    b.Property<Guid?>("LockId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lock_id");
+
+                    b.Property<DateTimeOffset>("NextAttemptAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_attempt_at");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("project_id");
+
+                    b.Property<string>("SafeError")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("safe_error");
+
+                    b.Property<DateTimeOffset?>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("WorkItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("work_item_id");
+
+                    b.Property<Guid>("WorkflowId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("workflow_id");
+
+                    b.Property<Guid>("WorkflowVersionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("workflow_version_id");
+
+                    b.Property<Guid>("WorkspaceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("workspace_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId", "WorkItemId");
+
+                    b.HasIndex("Status", "NextAttemptAt");
+
+                    b.HasIndex("WorkflowId", "CreatedAt");
+
+                    b.HasIndex("WorkflowId", "EventId")
+                        .IsUnique();
+
+                    b.HasIndex("WorkflowId", "WorkflowVersionId");
+
+                    b.HasIndex("WorkspaceId", "EventId");
+
+                    b.HasIndex("WorkspaceId", "ProjectId");
+
+                    b.HasIndex("WorkspaceId", "WorkflowId");
+
+                    b.ToTable("workflow_executions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_workflow_execution_attempts", "attempt_count >= 0");
+
+                            t.HasCheckConstraint("CK_workflow_execution_status", "status IN ('Pending', 'Running', 'Succeeded', 'Failed', 'Cancelled')");
+                        });
+                });
+
+            modelBuilder.Entity("FlowForge.Domain.Workflows.WorkflowVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Configuration")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("configuration");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("TriggerType")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("trigger_type");
+
+                    b.Property<int>("VersionNumber")
+                        .HasColumnType("integer")
+                        .HasColumnName("version_number");
+
+                    b.Property<Guid>("WorkflowId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("workflow_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkflowId", "VersionNumber")
+                        .IsUnique();
+
+                    b.ToTable("workflow_versions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_workflow_trigger", "trigger_type IN ('WorkItemCreated', 'WorkItemUpdated', 'WorkItemStatusChanged', 'WorkItemAssignmentChanged', 'CommentAdded', 'WorkItemDueDateReached', 'WorkItemDueDateOverdue')");
+                            t.HasCheckConstraint("CK_workflow_version_number", "version_number > 0");
+                        });
+                });
+
             modelBuilder.Entity("FlowForge.Domain.Workspaces.Workspace", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1272,6 +1546,11 @@ namespace FlowForge.Infrastructure.Migrations
 
             modelBuilder.Entity("FlowForge.Domain.Notifications.EmailDelivery", b =>
                 {
+                    b.HasOne("FlowForge.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("RecipientUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("FlowForge.Domain.Workspaces.Workspace", null)
                         .WithMany()
                         .HasForeignKey("WorkspaceId")
@@ -1287,6 +1566,12 @@ namespace FlowForge.Infrastructure.Migrations
                     b.HasOne("FlowForge.Domain.Notifications.Notification", null)
                         .WithMany()
                         .HasForeignKey("WorkspaceId", "NotificationId")
+                        .HasPrincipalKey("WorkspaceId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("FlowForge.Domain.Workflows.WorkflowExecution", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "WorkflowExecutionId")
                         .HasPrincipalKey("WorkspaceId", "Id")
                         .OnDelete(DeleteBehavior.Restrict);
                 });
@@ -1390,6 +1675,12 @@ namespace FlowForge.Infrastructure.Migrations
                     b.HasOne("FlowForge.Domain.Projects.Project", null)
                         .WithMany()
                         .HasForeignKey("WorkspaceId", "ProjectId")
+                        .HasPrincipalKey("WorkspaceId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("FlowForge.Domain.Workflows.WorkflowExecution", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "WorkflowExecutionId")
                         .HasPrincipalKey("WorkspaceId", "Id")
                         .OnDelete(DeleteBehavior.Restrict);
                 });
@@ -1567,6 +1858,83 @@ namespace FlowForge.Infrastructure.Migrations
                     b.HasOne("FlowForge.Domain.Projects.Project", null)
                         .WithMany()
                         .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FlowForge.Domain.Workflows.Workflow", b =>
+                {
+                    b.HasOne("FlowForge.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FlowForge.Domain.Workspaces.Workspace", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FlowForge.Domain.Projects.Project", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "ProjectId")
+                        .HasPrincipalKey("WorkspaceId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("FlowForge.Domain.Workflows.WorkflowActionResult", b =>
+                {
+                    b.HasOne("FlowForge.Domain.Workflows.WorkflowExecution", null)
+                        .WithMany()
+                        .HasForeignKey("ExecutionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FlowForge.Domain.Workflows.WorkflowExecution", b =>
+                {
+                    b.HasOne("FlowForge.Domain.WorkItems.WorkItem", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId", "WorkItemId")
+                        .HasPrincipalKey("ProjectId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FlowForge.Domain.Workflows.WorkflowVersion", null)
+                        .WithMany()
+                        .HasForeignKey("WorkflowId", "WorkflowVersionId")
+                        .HasPrincipalKey("WorkflowId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FlowForge.Domain.WorkItems.DomainEvent", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "EventId")
+                        .HasPrincipalKey("WorkspaceId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FlowForge.Domain.Projects.Project", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "ProjectId")
+                        .HasPrincipalKey("WorkspaceId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FlowForge.Domain.Workflows.Workflow", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId", "WorkflowId")
+                        .HasPrincipalKey("WorkspaceId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FlowForge.Domain.Workflows.WorkflowVersion", b =>
+                {
+                    b.HasOne("FlowForge.Domain.Workflows.Workflow", null)
+                        .WithMany()
+                        .HasForeignKey("WorkflowId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

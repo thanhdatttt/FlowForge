@@ -1,12 +1,292 @@
 # Backend test results
 
-Latest full backend audit: 2026-10-17 (+07), .NET SDK 10.0.112 and disposable PostgreSQL 17. All **143 automated tests passed**, including **26 Phase 4 cases** and **7 system-audit regressions**, with zero failures/skips. A separately running Release API passed **50 live checks** (46 HTTP requests and four state assertions). No application database or real SMTP service was used. See the full backend audit section for the three reproduced and corrected defects.
+Phase 5: [Endpoint matrix](#phase-5-rest-endpoint-matrix) · [Automated cases](#phase-5-automated-cases-by-category) · [Live HTTP results](#phase-5-live-release-api-individual-http-responses) · [Evidence and reproduction](#phase-5-evidence-and-reproduction).
+
+## Latest verification: Phase 5 backend — 2026-10-18 (+07)
+
+The latest Phase 5 endpoint/integration re-verification passes **210/210 tests**, with **zero failures and zero skips**, using .NET SDK 10.0.112 and disposable PostgreSQL 17. This includes the existing 143 cases and **67 Phase 5 cases**. The audit corrected exhausted-claim attempt counting, pre-enable comment mention validation and culture-dependent ISO dates, and exposed pinned definitions in execution history. See [the task-by-task completion audit](../docs/workflow_engine_audit.md).
+
+The current Release API passed **66 live checks** against a separate disposable database: **47 HTTP response checks and 19 state assertions**. All **9/9 workflow OpenAPI operations** succeeded over real HTTP. Nine additional polling requests are recorded separately. This replaces the earlier 40-check smoke run as the latest live evidence. No application database or real SMTP provider was used.
+
+| Verification | Result |
+| --- | --- |
+| Debug build | PASS; zero warnings/errors. |
+| Full backend suite | PASS; 210/210, no skipped PostgreSQL cases. |
+| Workflow condition/configuration rules | PASS; 31 cases. |
+| Workflow startup option validation | PASS; 5 cases. |
+| Workflow HTTP/integration/reliability | PASS; 29 cases. |
+| Workflow SignalR WebSocket journey | PASS; 1 case. |
+| Phase 4-to-5 migration and constraints | PASS; 1 case, including immutable versions, duplicate versions, trigger allowlist, legacy checkpoints and downgrade protection. |
+| EF Core model consistency | PASS; no pending model changes. |
+| Release publish | PASS. |
+| Docker Compose configuration | PASS, using `.env.example`. |
+| Current Release API HTTP/state journey | PASS; 66 checks (47 HTTP responses + 19 state assertions); all 9 workflow operations. |
+
+The audit's new regression run reproduced **4 failures** before fixes: an exhausted claim reported 6 attempts rather than the configured 5, invalid comment mentions passed configuration validation, and two non-Gregorian cultures broke ISO date handling. All four now pass. Additional HTTP assertions verify historical pinned definitions and state-version errors; recovery tests exercise actual cancellation and a final action committed before a process crash. API DTOs are split into six files without renaming existing contract fields.
+
+Workflow integration coverage exercises all seven triggers (including assignment/unassignment and both calendar triggers), all nine ordered action types, ALL/current-state conditions, version pinning, stale updates, enable/disable and disabled-event non-replay, management permissions, cross-workspace isolation, target revalidation, archived resources, notification and email authorization, separate notification/workflow consumption, rollback isolation, concurrent schedulers/runners, expired/exhausted claims, bounded transient retries, permanent failures, safe errors, completed-action preservation, poison event handling, depth limits, multi-workflow loops and reused HTTP trace IDs. The hosted-worker test runs registered scheduling/execution/date services. The WebSocket test verifies committed workflow notification IDs and execution outcome events against REST state.
+
+The first focused run passed 45/48 cases and reproduced three failures from one issue: EF Core wrapped an injected transient storage error in `DbUpdateException`, so workflow retries treated it as permanent. The runner now classifies the inner exception; retry, disable/revocation, attempt-limit and full-suite regressions pass.
+
+The live Release journey registers an owner, creates a workspace/project, validates/creates/reads/lists/enables/edits/disables/re-enables a workflow, triggers real background execution, verifies four ordered actions and optimistic versions, reads comments and linked activity, receives an in-app workflow notification, checks pinned configuration versions and disabled-event non-replay, and exercises authentication, invalid configuration/pagination, missing resources and stale-version responses.
+
+Latest evidence: [automated results](test-results/phase5/automated-results.json) and [live HTTP/state results](test-results/phase5/live-http.json). Source TRX: `/tmp/flowforge-phase5-dotnet-results/backend-phase5-dotnet.trx`; Release output: `/tmp/flowforge-phase5-dotnet-publish`. The detailed category, endpoint, individual test-case and live-result tables below are generated from these actual outcomes.
+
+Limits: Phase 5 is backend/API only. The workflow builder/frontend remains deferred. SMTP is exercised through the existing in-memory sender and failure simulation; real Gmail delivery remains unverified. SignalR uses actual WebSocket framing through TestServer; this is not a deployed browser or multi-instance backplane/load test. Workflow email action success means durable queueing; delivery status is reported separately. The existing SMTP ambiguity after provider acceptance remains. Workflow migration downgrade refuses to discard workflow history; use a pre-upgrade backup once workflows exist.
+
+### Phase 5 test scope and counting
+
+The current code was rebuilt and retested on 2026-10-18 (+07). The automated run finished at **2026-10-18T10:17:45+07:00**; the live Release journey started at **2026-10-18T10:17:55+07:00**. The API ran in Development mode on localhost to expose its OpenAPI contract, with real hosted workflow/notification workers and a separate disposable PostgreSQL 17 database. SMTP credentials were empty.
+
+The **67 Phase 5 automated cases** comprise 31 rules, 5 startup validation, 29 API/integration/reliability, 1 SignalR WebSocket and 1 migration case. API endpoint assertions are part of those integration cases; the endpoint matrix is a mapping of the same coverage, not nine extra automated cases. The full backend result is **210 passed, 0 failed, 0 skipped**.
+
+The separate live run has **66 checks: 47 HTTP response checks and 19 business-state assertions**. Another **9 polling HTTP requests** waited for eventual workflow/notification state. There were 56 actual HTTP requests in total; polling is recorded in JSON but is not counted again as business-state checks.
+
+### Phase 5 REST endpoint matrix
+
+All **9/9 workflow method/path operations** in the running API's OpenAPI document completed a successful live HTTP journey. The status sets below come from the recorded live requests; additional validation/permission paths appear in the automated integration case table. Base `W` is `/api/v1/workspaces/{workspaceId}/workflows`.
+
+| Method | Route | Expected live statuses | Actual live statuses | Result |
+| --- | --- | --- | --- | --- |
+| GET | `W` | 200, 401 | 200, 401 | PASS |
+| POST | `W` | 201, 403, 409 | 201, 403, 409 | PASS |
+| POST | `W/validate` | 200, 400 | 200, 400 | PASS |
+| GET | `W/{workflowId}` | 200, 404 | 200, 404 | PASS |
+| PUT | `W/{workflowId}` | 200, 400, 409 | 200, 400, 409 | PASS |
+| POST | `W/{workflowId}/disable` | 200, 400 | 200, 400 | PASS |
+| POST | `W/{workflowId}/enable` | 200, 400, 409 | 200, 400, 409 | PASS |
+| GET | `W/{workflowId}/executions` | 200, 400, 404 | 200, 400, 404 | PASS |
+| GET | `W/{workflowId}/executions/{executionId}` | 200, 404 | 200, 404 | PASS |
+
+A `400`, `401`, `403`, `404` or `409` in these tables is an expected rejection, not a failed test. The live runner checks the nine successful operations against the running OpenAPI document. It also verifies invalid triggers/mentions/state versions, developer management denial, outsider resource hiding, stale edits/enablement, history pagination, missing IDs and archived-project writes.
+
+### Phase 5 automated cases by category
+
+The following rows are taken from the final TRX outcome records. Parameterized rows are listed separately, matching the test runner's count. Expected outcome is PASS for each case; assertions inside each test define the HTTP/state/error expectations.
+
+#### Unit: condition/configuration rules — 31 passed
+
+Source: [PhaseFiveRulesTests.cs](tests/FlowForge.Api.Tests/PhaseFiveRulesTests.cs).
+
+| Test case | Expected | Actual |
+| --- | --- | --- |
+| `Conditions_use_typed_comparisons(field: "Actor", op: "Equals", value: "11111111-1111-1111-1111-111111111111", expected: True)` | PASS | PASS |
+| `Conditions_use_typed_comparisons(field: "DueDate", op: "Equals", value: "2026-10-18", expected: True)` | PASS | PASS |
+| `Conditions_use_typed_comparisons(field: "DueDate", op: "GreaterThan", value: "2026-10-19", expected: False)` | PASS | PASS |
+| `Conditions_use_typed_comparisons(field: "DueDate", op: "LessThan", value: "2026-10-19", expected: True)` | PASS | PASS |
+| `Conditions_use_typed_comparisons(field: "Label", op: "Equals", value: "urgent", expected: True)` | PASS | PASS |
+| `Conditions_use_typed_comparisons(field: "Label", op: "NotEquals", value: "bug", expected: False)` | PASS | PASS |
+| `Conditions_use_typed_comparisons(field: "Priority", op: "Equals", value: "High", expected: True)` | PASS | PASS |
+| `Conditions_use_typed_comparisons(field: "Priority", op: "GreaterThan", value: "Medium", expected: True)` | PASS | PASS |
+| `Conditions_use_typed_comparisons(field: "Priority", op: "GreaterThanOrEqual", value: "High", expected: True)` | PASS | PASS |
+| `Conditions_use_typed_comparisons(field: "Priority", op: "LessThan", value: "Critical", expected: True)` | PASS | PASS |
+| `Conditions_use_typed_comparisons(field: "Priority", op: "LessThanOrEqual", value: "Medium", expected: False)` | PASS | PASS |
+| `Conditions_use_typed_comparisons(field: "Priority", op: "NotEquals", value: "High", expected: False)` | PASS | PASS |
+| `Conditions_use_typed_comparisons(field: "Status", op: "Equals", value: "Todo", expected: True)` | PASS | PASS |
+| `Conditions_use_typed_comparisons(field: "Title", op: "Equals", value: "Example", expected: True)` | PASS | PASS |
+| `Conditions_use_typed_comparisons(field: "Type", op: "Equals", value: "Issue", expected: False)` | PASS | PASS |
+| `Empty_conditions_handle_nullable_and_collection_fields(field: "Assignee", op: "IsEmpty", expected: True)` | PASS | PASS |
+| `Empty_conditions_handle_nullable_and_collection_fields(field: "Assignee", op: "IsNotEmpty", expected: False)` | PASS | PASS |
+| `Empty_conditions_handle_nullable_and_collection_fields(field: "Description", op: "IsEmpty", expected: True)` | PASS | PASS |
+| `Empty_conditions_handle_nullable_and_collection_fields(field: "Label", op: "IsEmpty", expected: False)` | PASS | PASS |
+| `In_matches_any_allowlisted_value` | PASS | PASS |
+| `Invalid_condition_configurations_are_rejected(field: "Actor", op: "Equals", value: "not-a-user")` | PASS | PASS |
+| `Invalid_condition_configurations_are_rejected(field: "Assignee", op: "Equals", value: "00000000-0000-0000-0000-000000000000")` | PASS | PASS |
+| `Invalid_condition_configurations_are_rejected(field: "DueDate", op: "Equals", value: "tomorrow")` | PASS | PASS |
+| `Invalid_condition_configurations_are_rejected(field: "Priority", op: "Execute", value: "High")` | PASS | PASS |
+| `Invalid_condition_configurations_are_rejected(field: "Priority", op: "GreaterThan", value: "Urgent")` | PASS | PASS |
+| `Invalid_condition_configurations_are_rejected(field: "Script", op: "Equals", value: "code")` | PASS | PASS |
+| `Invalid_condition_configurations_are_rejected(field: "Status", op: "GreaterThan", value: "Todo")` | PASS | PASS |
+| `Invalid_condition_configurations_are_rejected(field: "Type", op: "Equals", value: "Epic")` | PASS | PASS |
+| `Iso_date_conditions_use_gregorian_dates_independently_of_host_culture(culture: "ar-SA")` | PASS | PASS |
+| `Iso_date_conditions_use_gregorian_dates_independently_of_host_culture(culture: "th-TH")` | PASS | PASS |
+| `Null_collections_duplicate_action_ids_and_unexpected_parameters_are_rejected` | PASS | PASS |
+
+#### Host: startup validation — 5 passed
+
+Source: [PhaseFiveHostTests.cs](tests/FlowForge.Api.Tests/PhaseFiveHostTests.cs).
+
+| Test case | Expected | Actual |
+| --- | --- | --- |
+| `Invalid_workflow_job_configuration_prevents_startup(setting: "BatchSize")` | PASS | PASS |
+| `Invalid_workflow_job_configuration_prevents_startup(setting: "DateScanIntervalMinutes")` | PASS | PASS |
+| `Invalid_workflow_job_configuration_prevents_startup(setting: "MaxAttempts")` | PASS | PASS |
+| `Invalid_workflow_job_configuration_prevents_startup(setting: "MaxDepth")` | PASS | PASS |
+| `Invalid_workflow_job_configuration_prevents_startup(setting: "PollSeconds")` | PASS | PASS |
+
+#### API, endpoint, integration and reliability — 29 passed
+
+Source: [PhaseFiveIntegrationTests.cs](tests/FlowForge.Api.Tests/PhaseFiveIntegrationTests.cs).
+
+| Test case | Expected | Actual |
+| --- | --- | --- |
+| `All_ordered_actions_preserve_versions_audit_mentions_notifications_and_email` | PASS | PASS |
+| `Api_events_schedule_and_execute_matching_rules(trigger: "CommentAdded")` | PASS | PASS |
+| `Api_events_schedule_and_execute_matching_rules(trigger: "WorkItemAssignmentChanged")` | PASS | PASS |
+| `Api_events_schedule_and_execute_matching_rules(trigger: "WorkItemCreated")` | PASS | PASS |
+| `Api_events_schedule_and_execute_matching_rules(trigger: "WorkItemStatusChanged")` | PASS | PASS |
+| `Api_events_schedule_and_execute_matching_rules(trigger: "WorkItemUpdated")` | PASS | PASS |
+| `Assignment_and_unassignment_events_remain_independent_when_http_trace_ids_are_reused` | PASS | PASS |
+| `Cancelled_worker_attempt_recovers_after_lease_without_repeating_committed_actions` | PASS | PASS |
+| `Comment_action_mentions_are_validated_before_creation_and_enablement` | PASS | PASS |
+| `Concurrent_schedulers_and_runners_deduplicate_and_break_multi_workflow_loops` | PASS | PASS |
+| `Conditions_read_current_state_once_and_nonmatches_preserve_items` | PASS | PASS |
+| `Date_triggers_include_unassigned_work_and_deduplicate_without_notification_side_effects` | PASS | PASS |
+| `Depth_limits_and_poison_events_do_not_starve_later_valid_events` | PASS | PASS |
+| `Disable_or_creator_revocation_cancels_unfinished_actions(revoke: False)` | PASS | PASS |
+| `Disable_or_creator_revocation_cancels_unfinished_actions(revoke: True)` | PASS | PASS |
+| `Enabling_revalidates_targets_and_cross_workspace_scope_cannot_be_referenced` | PASS | PASS |
+| `Exhausted_claim_with_committed_last_action_finishes_without_repeating_it` | PASS | PASS |
+| `Expired_claims_recover_and_exhausted_claims_finish_without_duplicate_effects` | PASS | PASS |
+| `Hosted_worker_schedules_executes_and_scans_dates_through_registered_services` | PASS | PASS |
+| `Management_permissions_validation_scope_and_archived_rules_follow_existing_policies` | PASS | PASS |
+| `Notifications_cannot_consume_workflow_events_and_rollback_leaves_no_scheduled_execution` | PASS | PASS |
+| `Pre_enable_and_disabled_events_are_not_replayed` | PASS | PASS |
+| `Queued_workflow_email_rechecks_recipient_access_and_missing_smtp_is_diagnosable` | PASS | PASS |
+| `Retry_resumes_after_committed_actions_and_terminal_errors_are_safe(permanent: False)` | PASS | PASS |
+| `Retry_resumes_after_committed_actions_and_terminal_errors_are_safe(permanent: True)` | PASS | PASS |
+| `Scheduled_work_cancels_when_item_or_project_is_archived(project: False)` | PASS | PASS |
+| `Scheduled_work_cancels_when_item_or_project_is_archived(project: True)` | PASS | PASS |
+| `Scheduling_pins_immutable_versions_and_rejects_stale_updates` | PASS | PASS |
+| `Transient_retries_stop_at_limit_and_never_repeat_completed_actions` | PASS | PASS |
+
+#### SignalR WebSocket integration — 1 passed
+
+Source: [PhaseFiveRealtimeTests.cs](tests/FlowForge.Api.Tests/PhaseFiveRealtimeTests.cs).
+
+| Test case | Expected | Actual |
+| --- | --- | --- |
+| `Workflow_notifications_and_execution_events_reach_authorized_websocket_clients_after_commit` | PASS | PASS |
+
+#### Migration, constraints and upgrade — 1 passed
+
+Source: [PhaseFiveMigrationTests.cs](tests/FlowForge.Api.Tests/PhaseFiveMigrationTests.cs).
+
+| Test case | Expected | Actual |
+| --- | --- | --- |
+| `Phase_four_upgrade_preserves_notification_outbox_and_checkpoints_history_without_replay` | PASS | PASS |
+
+### Phase 5 live Release API: individual HTTP responses
+
+These 47 recorded HTTP response checks ran against the published Release binary through TCP, separately from TestServer. Polling requests remain available in the JSON ledger.
+
+| Check | Method | Path | Expected | Actual | Result |
+| --- | --- | --- | --- | --- | --- |
+| API readiness | GET | `/health/ready` | 200 | 200 | PASS |
+| OpenAPI workflow routes | GET | `/openapi/v1.json` | 200 | 200 | PASS |
+| Register owner | POST | `/api/v1/auth/register` | 201 | 201 | PASS |
+| Register developer | POST | `/api/v1/auth/register` | 201 | 201 | PASS |
+| Read developer account | GET | `/api/v1/auth/me` | 200 | 200 | PASS |
+| Register outsider | POST | `/api/v1/auth/register` | 201 | 201 | PASS |
+| Read outsider account | GET | `/api/v1/auth/me` | 200 | 200 | PASS |
+| Read signed-in account | GET | `/api/v1/auth/me` | 200 | 200 | PASS |
+| Create workspace | POST | `/api/v1/workspaces` | 201 | 201 | PASS |
+| Create project | POST | `/api/v1/workspaces/{workspaceId}/projects` | 201 | 201 | PASS |
+| Add workspace developer | POST | `/api/v1/workspaces/{workspaceId}/members` | 201 | 201 | PASS |
+| Validate workflow | POST | `/api/v1/workspaces/{workspaceId}/workflows/validate` | 200 | 200 | PASS |
+| Reject invalid trigger | POST | `/api/v1/workspaces/{workspaceId}/workflows/validate` | 400 | 400 | PASS |
+| Require authentication | GET | `/api/v1/workspaces/{workspaceId}/workflows` | 401 | 401 | PASS |
+| Reject developer workflow management | POST | `/api/v1/workspaces/{workspaceId}/workflows` | 403 | 403 | PASS |
+| Reject inaccessible comment mention before enablement | POST | `/api/v1/workspaces/{workspaceId}/workflows/validate` | 400 | 400 | PASS |
+| Create workflow | POST | `/api/v1/workspaces/{workspaceId}/workflows` | 201 | 201 | PASS |
+| Read workflow | GET | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}` | 200 | 200 | PASS |
+| Hide workflow from outsider | GET | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}` | 404 | 404 | PASS |
+| Reject invalid state version | POST | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/enable` | 400 | 400 | PASS |
+| List workflows | GET | `/api/v1/workspaces/{workspaceId}/workflows` | 200 | 200 | PASS |
+| Enable workflow | POST | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/enable` | 200 | 200 | PASS |
+| Create triggering work item | POST | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items` | 201 | 201 | PASS |
+| Read execution history | GET | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions` | 200 | 200 | PASS |
+| Execution details | GET | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions/{executionId}` | 200 | 200 | PASS |
+| Hide execution history from developer | GET | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions` | 404 | 404 | PASS |
+| Read automated item | GET | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{workItemId}` | 200 | 200 | PASS |
+| Read automated comment | GET | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{workItemId}/comments` | 200 | 200 | PASS |
+| Read activity | GET | `/api/v1/workspaces/{workspaceId}/activity?projectId={projectId}&workItemId={workItemId}` | 200 | 200 | PASS |
+| Update workflow creates version | PUT | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}` | 200 | 200 | PASS |
+| Read historical execution after edit | GET | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions/{executionId}` | 200 | 200 | PASS |
+| Reject stale update | PUT | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}` | 409 | 409 | PASS |
+| Reject stale enable | POST | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/enable` | 409 | 409 | PASS |
+| Disable workflow | POST | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/disable` | 200 | 200 | PASS |
+| Create item while disabled | POST | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items` | 201 | 201 | PASS |
+| Reenable workflow | POST | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/enable` | 200 | 200 | PASS |
+| Create item after reenable | POST | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items` | 201 | 201 | PASS |
+| Read execution history after new version | GET | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions` | 200 | 200 | PASS |
+| Reject invalid pagination | GET | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions?pageSize=101` | 400 | 400 | PASS |
+| Reject missing execution | GET | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions/{executionId}` | 404 | 404 | PASS |
+| Disable after audit | POST | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/disable` | 200 | 200 | PASS |
+| Reject invalid disable version | POST | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/disable` | 400 | 400 | PASS |
+| Reject invalid workflow update | PUT | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}` | 400 | 400 | PASS |
+| Hide nonexistent workflow | GET | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}` | 404 | 404 | PASS |
+| Archive project | POST | `/api/v1/workspaces/{workspaceId}/projects/{projectId}/archive` | 200 | 200 | PASS |
+| Reject workflow enable on archived project | POST | `/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/enable` | 409 | 409 | PASS |
+| Reject workflow creation on archived project | POST | `/api/v1/workspaces/{workspaceId}/workflows` | 409 | 409 | PASS |
+
+### Phase 5 live Release API: business-state assertions
+
+| Check | Expected | Actual | Result |
+| --- | --- | --- | --- |
+| Workflow management appears in OpenAPI | true | true | PASS |
+| Mention validation returns field errors | true | true | PASS |
+| Created workflow starts disabled | true | true | PASS |
+| State validation returns version field error | true | true | PASS |
+| List contains created workflow | true | true | PASS |
+| Hosted worker completes workflow | true | true | PASS |
+| Execution exposes pinned version and definition | true | true | PASS |
+| Execution exposes original actor and source metadata | true | true | PASS |
+| All ordered actions succeeded | true | true | PASS |
+| Automation preserves item mutations | true | true | PASS |
+| Automated comment persisted once | true | true | PASS |
+| Audit exposes execution linkage | true | true | PASS |
+| Workflow notification persisted | true | true | PASS |
+| Historical definition remains inspectable after edit | true | true | PASS |
+| Configuration version increments | true | true | PASS |
+| Disabled events are not replayed | true | true | PASS |
+| Execution pins version | true | true | PASS |
+| History returns both immutable definitions | true | true | PASS |
+| All nine workflow OpenAPI operations succeed over HTTP | true | true | PASS |
+
+### Phase 5 evidence and reproduction
+
+Durable, sanitized evidence is saved in the repository:
+
+- [Automated results](test-results/phase5/automated-results.json): the overall totals, all 67 Phase 5 outcomes, source file/line, durations, run timestamps and source TRX SHA-256.
+- [Live HTTP/state results](test-results/phase5/live-http.json): all 66 checks plus every HTTP request, including polling. Routes use ID placeholders; no authentication tokens, passwords, request bodies or email addresses are stored.
+- [.NET live HTTP runner](tests/FlowForge.Api.SmokeTests/Program.cs): reproduces the published API journey using `HttpClient`, without new NuGet packages. The solution builds it in CI; it runs explicitly against a disposable API.
+- [Runner parity evidence](test-results/phase5/runner-parity.json): all 66 ordered check records exactly match the former runner, including names, methods, sanitized paths, expected/actual values and flags. A deliberate unexpected 404 also verified exit code 1 and persistence of the failed-check report.
+
+The source TRX is `/tmp/flowforge-phase5-dotnet-results/backend-phase5-dotnet.trx`; the verified Release output is `/tmp/flowforge-phase5-dotnet-publish`. Build/publish succeeded; EF Core reports no pending model changes. The test container and temporary API are stopped after verification.
+
+From the repository root, set `FLOWFORGE_TEST_CONNECTION` to an isolated PostgreSQL server, then run:
+
+```sh
+dotnet restore backend/FlowForge.sln -m:1
+dotnet build backend/FlowForge.sln --no-restore -m:1 /p:UseSharedCompilation=false
+dotnet test backend/FlowForge.sln --no-build --no-restore -m:1 \
+  --logger 'trx;LogFileName=backend-phase5-dotnet.trx' \
+  --results-directory /tmp/flowforge-phase5-dotnet-results
+```
+
+To run only Phase 5, add `--filter 'FullyQualifiedName~PhaseFive'`. For live HTTP, publish and start a disposable API/database with workflow and notification workers enabled and SMTP unset, then run:
+
+```sh
+dotnet run --project backend/tests/FlowForge.Api.SmokeTests --no-build --no-restore -- \
+  --base-url http://127.0.0.1:5197 \
+  --output backend/test-results/phase5/live-http.json
+```
+
+The .NET live runner creates disposable users/workspace/project/workflows and archives its project at the end. The runner preserves the original 200 ms polling cadence, 15-second execution deadline, 10-second notification deadline and 10-second HTTP timeout. Polling counts depend on worker timing.
+
+The full suite's 210-case total and its 67-case Phase 5 subset are counted once. Real SMTP inbox delivery, deployed-browser/multi-instance behavior and load/security certification remain outside these checks.
+
+
+The sections below retain the historical Phase 1–4 audits and their results; references there to unimplemented workflows describe the repository on 2026-10-17.
+
+Historical full backend audit: 2026-10-17 (+07), .NET SDK 10.0.112 and disposable PostgreSQL 17. All **143 automated tests passed**, including **26 Phase 4 cases** and **7 system-audit regressions**, with zero failures/skips. A separately running Release API passed **50 live checks** (46 HTTP requests and four state assertions). No application database or real SMTP service was used. See the full backend audit section for the three reproduced and corrected defects.
 
 Phase 4 covers notification APIs and permissions, assignment/self-notification rules, new/edited mentions, encrypted invitation email, cancellation after revocation/removal, overdue UTC boundaries and deduplication, concurrent dispatchers/scanners, expiring claims, retry limits, safe errors, rollback isolation, hosted-worker processing, Phase 3 migration upgrades, and real SignalR WebSocket handshake/subscription/event/reconnect journeys through TestServer. New regressions verify that slow SMTP does not block workspace writes or live dispatch, revoked access during an in-flight email cannot expose private resource data (including earlier queued bodies), a failed overdue scanner does not block outbox/email, and HTTP logs preserve method/path/status/duration without query tokens. Email uses the in-memory test sender; real Gmail inbox delivery remains unverified.
 
 The earlier Phase 3 retest and live HTTP evidence below are retained as historical results. The exception-handling regression run was performed on 2026-10-16 20:13 +07.
 
-## Results
+## Historical Phase 1–4 result summary
 
 | Run | Passed | Failed | Skipped | Total |
 | --- | ---: | ---: | ---: | ---: |
@@ -34,7 +314,7 @@ The latest build passed with zero warnings and zero errors. EF Core reported no 
 
 The earlier live run exercised all **34 endpoint operations available at that time** over real HTTP: 31 business operations, two health endpoints, and Development OpenAPI. Phase 3's **26 route operations** were exercised through both the ASP.NET Core HTTP pipeline with `WebApplicationFactory` and a separately running Development API process against disposable PostgreSQL. The live journey made 27 calls because it created two work items. The earlier live operation list was checked against that running API's OpenAPI document. Endpoint exercise is not a claim of exhaustive input, security, or line coverage.
 
-## Full backend audit
+## Historical full backend audit (2026-10-17; Phases 1–4)
 
 Scope: implemented backend Phases 1–4, identity/session handling, workspace/project access, work items and collaboration, files/audit, notifications/SignalR/background delivery, migrations, host configuration, CI/Compose configuration, and a Release publish. The frontend and future workflow/reporting/AI phases are not implemented.
 
@@ -228,7 +508,7 @@ curl -i "$BASE/api/v1/workspaces/$WORKSPACE_ID/projects?page=abc" \
   -H "Authorization: Bearer $OWNER_TOKEN"
 ```
 
-## Passing coverage
+## Historical Phase 1–4 passing coverage
 
 - Identity: registration and duplicate normalization, login failures, password hashing, current-user responses, access expiry/issuer/audience validation, refresh rotation and replay, independent session families, logout revocation/idempotence, inactive accounts, and IP rate limits.
 - Email verification: authentication, correct/incorrect/expired/single-use OTPs, five-attempt limits under concurrent guesses, malformed codes, leading zeros, resend cooldown/replacement, SMTP configuration and simulated delivery failures, persistent verified status, and the legacy OTP migration.
@@ -265,7 +545,7 @@ curl -i "$BASE/api/v1/workspaces/$WORKSPACE_ID/projects?page=abc" \
 | `SystemAuditTests` | 7 | 0 |
 | `WorkspacePermissionsTests` | 6 | 0 |
 
-## Live endpoint results
+## Historical Phase 1–4 live endpoint results
 
 PASS means the exercised responses matched expectations. The Phase 2 rows below are from the 2026-10-16 live run; the Phase 3 rows are from a new 2026-10-17 Development API process bound to `127.0.0.1:5187` with disposable PostgreSQL 17. The Phase 3 journey registered a user, created a workspace and project, then exercised every Phase 3 route operation, including a PDF upload and download. A 503 for missing SMTP and a 400 for OTP confirmation without a challenge are expected historical checks, not successful Gmail delivery. Successful OTP delivery/confirmation paths use `TestEmailSender` in the integration suite.
 
@@ -332,7 +612,7 @@ PASS means the exercised responses matched expectations. The Phase 2 rows below 
 | GET | `/health/ready` | 1 / 1 | PASS |
 | GET | `/openapi/v1.json` | 1 / 1 | PASS |
 
-## Every automated test result
+## Historical Phase 1–4 automated test results
 
 The original outcomes below came from the after-fix VSTest TRX output; the Phase 3 rows were checked against the latest `phase3.trx` and `backend-current.trx`. Parameterized test rows are listed separately.
 
@@ -574,7 +854,7 @@ The original outcomes below came from the after-fix VSTest TRX output; the Phase
 | PASSED | `Roles_grant_only_their_intended_permissions(role: Owner, manageMembers: True, manageProjects: True, writeWorkItems: True, transferOwnership: True)` |
 | PASSED | `Roles_grant_only_their_intended_permissions(role: Viewer, manageMembers: False, manageProjects: False, writeWorkItems: False, transferOwnership: False)` |
 
-## Every live HTTP check
+## Historical Phase 1–4 live HTTP checks
 
 The Phase 2 rows are from the 2026-10-16 external-process run. The Phase 3 rows are from the 2026-10-17 external-process run against disposable PostgreSQL.
 
@@ -695,7 +975,7 @@ The Phase 2 rows are from the 2026-10-16 external-process run. The Phase 3 rows 
 | PASS | Development, Phase 3 | Restore work item | 200 | 200 |
 | PASS | Development, Phase 3 | Delete label | 204 | 204 |
 
-## Reproduce the automated run
+## Reproduce the historical automated runs
 
 Phase 4 uses the same isolated PostgreSQL fixture and CI configuration. With `FLOWFORGE_TEST_CONNECTION` set to a test server, run:
 
@@ -720,7 +1000,7 @@ dotnet test FlowForge.sln --no-build -m:1 /p:UseSharedCompilation=false \
 
 The latest focused run exited with code 0: 9 passed, 0 failed, 0 skipped. The full run exited with code 0: 110 passed, 0 failed, 0 skipped. `dotnet ef migrations has-pending-model-changes --project src/FlowForge.Infrastructure --startup-project src/FlowForge.Api --no-build` reported no pending changes when run with the test connection and a valid `Jwt__SigningKey`. Without `FLOWFORGE_TEST_CONNECTION`, PostgreSQL-dependent tests are skipped, so that is not equivalent to these runs.
 
-## Limits
+## Historical verification limits
 
 - Phase 4 SignalR tests use real WebSocket/SignalR framing through ASP.NET Core TestServer, not a deployed browser or Redis backplane. The implementation targets a single API instance.
 - SMTP retries deduplicate queued jobs; an ambiguous provider acceptance followed by process/commit failure can still result in a repeated inbox message. No real email was sent during tests.

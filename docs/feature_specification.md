@@ -171,6 +171,14 @@ Validate configuration before enabling a workflow. - Enforce workflow
 scope and permissions for every action. - Define what happens to running
 executions when a workflow is disabled.
 
+### Phase 5 agreed backend policy
+
+Phase 5 delivers backend/API support; the workflow builder UI is deferred with the frontend. Owners/Admins manage workspace rules. Owners/Admins and explicitly assigned Managers manage project rules. Execution uses the creator's current project resource-write authority, rechecked before every action; creator and scope are immutable.
+
+Pin the configuration version at scheduling. Evaluate ALL conditions against current item state once when execution starts; the actor comes from the triggering event. Disabling prevents new scheduling and cancels unfinished actions while preserving committed actions. Enablement does not replay earlier events. Retries preserve completed actions; action effects, audit and completion records commit atomically. Generated events carry server-owned execution ancestry and bounded depth to stop recursive rules.
+
+The implemented API, exact trigger/condition/action vocabulary, UTC calendar semantics, email delivery diagnostics, configuration and migration behavior are specified in [workflow_engine.md](workflow_engine.md).
+
 ### Workflow UI/API
 
 Authorized users can create/edit workflows, select triggers, add/reorder

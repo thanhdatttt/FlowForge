@@ -289,5 +289,5 @@ public static class WorkItemEndpoints
         }
         return Results.Ok(await WorkItemSupport.ItemDtoAsync(db, project, item, ct));
     }
-    private static void Touch(WorkItem item) { item.Version++; item.UpdatedAt = DateTimeOffset.UtcNow; }
+    private static void Touch(WorkItem item) => Infrastructure.WorkItems.WorkResourceRules.Touch(item, DateTimeOffset.UtcNow);
 }

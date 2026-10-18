@@ -1,6 +1,7 @@
 using FlowForge.Application.Email;
 using FlowForge.Application.Notifications;
 using FlowForge.Domain.Notifications;
+using FlowForge.Infrastructure.Workflows;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -8,7 +9,7 @@ using Microsoft.Extensions.Options;
 namespace FlowForge.Infrastructure.Notifications;
 
 public sealed class EmailDeliveryProcessor(FlowForgeDbContext db, NotificationAccess access, IEmailSender sender,
-    IEmailContentProtector protector, TimeProvider clock, IOptions<NotificationJobOptions> options,
+    IEmailContentProtector protector, TimeProvider clock, WorkflowAccess workflows, IOptions<NotificationJobOptions> options,
     ILogger<EmailDeliveryProcessor> logger)
 {
     public async Task<bool> SendNextAsync(CancellationToken ct)
@@ -52,6 +53,7 @@ public sealed class EmailDeliveryProcessor(FlowForgeDbContext db, NotificationAc
             // Invitation tokens remain subject to the existing acceptance/revocation checks.
             var eligible = delivery.InvitationId is Guid invitationId
                 ? await access.InvitationIsDeliverableAsync(invitationId, ct)
+                : delivery.WorkflowExecutionId != null ? await WorkflowIsDeliverableAsync(delivery, ct)
                 : await NotificationIsDeliverableAsync(delivery, ct);
             if (eligible)
                 await sender.SendAsync(delivery.RecipientEmail, delivery.Subject,
@@ -79,6 +81,17 @@ public sealed class EmailDeliveryProcessor(FlowForgeDbContext db, NotificationAc
         return true;
     }
 
+    private async Task<bool> WorkflowIsDeliverableAsync(EmailDelivery delivery, CancellationToken ct)
+    {
+        var execution = await db.WorkflowExecutions.AsNoTracking().SingleOrDefaultAsync(x => x.Id == delivery.WorkflowExecutionId, ct);
+        if (execution == null || delivery.RecipientUserId is not Guid recipient) return false;
+        var creator = await db.Workflows.Where(x => x.Id == execution.WorkflowId).Select(x => x.CreatedByUserId).SingleAsync(ct);
+        return await workflows.CanExecuteAsync(delivery.WorkspaceId, execution.ProjectId, creator, ct) &&
+            await access.ProjectRecipients(delivery.WorkspaceId, execution.ProjectId).ContainsAsync(recipient, ct) &&
+            await db.Users.AnyAsync(x => x.Id == recipient && x.Email == delivery.RecipientEmail && x.IsActive, ct) &&
+            await db.WorkItems.AnyAsync(x => x.Id == execution.WorkItemId && x.ArchivedAt == null, ct);
+    }
+
     private async Task<bool> NotificationIsDeliverableAsync(EmailDelivery delivery, CancellationToken ct)
     {
         var notification = await db.Notifications.AsNoTracking().SingleOrDefaultAsync(x => x.Id == delivery.NotificationId, ct);
@@ -87,6 +100,7 @@ public sealed class EmailDeliveryProcessor(FlowForgeDbContext db, NotificationAc
         var item = await db.WorkItems.AsNoTracking().SingleOrDefaultAsync(x => x.Id == notification.WorkItemId && x.ArchivedAt == null &&
             db.Projects.Any(p => p.Id == x.ProjectId && p.ArchivedAt == null), ct);
         if (item == null) return false;
+        if (notification.Type == "Workflow") return true;
         if (notification.Type == "Mentioned")
             return await db.CommentMentions.AnyAsync(x => x.CommentId == notification.CommentId && x.MentionedUserId == notification.RecipientUserId &&
                 db.WorkComments.Any(c => c.Id == x.CommentId && c.DeletedAt == null), ct);

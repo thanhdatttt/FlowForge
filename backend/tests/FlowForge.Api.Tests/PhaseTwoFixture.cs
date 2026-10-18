@@ -75,6 +75,7 @@ public class PhaseTwoFixture : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("Jwt:SigningKey", SigningKey);
         builder.UseSetting("Database:AutoMigrate", "false");
         builder.UseSetting("Notifications:Enabled", "false");
+        builder.UseSetting("Workflows:Enabled", "false");
         builder.UseSetting("Attachments:StoragePath", AttachmentPath);
         builder.ConfigureServices(services =>
         {

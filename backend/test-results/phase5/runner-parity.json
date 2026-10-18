@@ -1,0 +1,35 @@
+{
+  "verifiedAt": "2026-10-18T10:20:01+07:00",
+  "checksCompared": 66,
+  "checkRecordsIdentical": true,
+  "checkOrderPreserved": true,
+  "baselineChecksSha256": "11252fa8b893756c5f9d7158d66b9fe489c90819f370bb20863cdeafc4db7141",
+  "dotnetChecksSha256": "11252fa8b893756c5f9d7158d66b9fe489c90819f370bb20863cdeafc4db7141",
+  "baselineTotals": {
+    "checks": 66,
+    "passed": 66,
+    "failed": 0,
+    "recordedHttpChecks": 47,
+    "stateChecks": 19,
+    "allHttpRequests": 58,
+    "pollingHttpRequests": 11
+  },
+  "dotnetTotals": {
+    "checks": 66,
+    "passed": 66,
+    "failed": 0,
+    "recordedHttpChecks": 47,
+    "stateChecks": 19,
+    "allHttpRequests": 56,
+    "pollingHttpRequests": 9
+  },
+  "expectedFailure": {
+    "exitCode": 1,
+    "checks": 1,
+    "failed": 1,
+    "expected": 200,
+    "actual": 404,
+    "reportWritten": true
+  },
+  "notes": "HTTP/state check records match exactly. Polling request count varies with hosted-worker timing; cadence and timeout limits are unchanged."
+}

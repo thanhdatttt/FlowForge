@@ -33,7 +33,7 @@ Each module separates API, application, domain, and infrastructure concerns. API
 ## Key flows and boundaries
 
 - **Request:** Authenticate, authorize workspace/project access, validate input, perform the use case, and commit related data and activity records together. Return DTOs and consistent problem-details errors; do not expose EF entities.
-- **Automation:** Persist a domain event and outbox entry with the business change. A background worker dispatches matching workflow versions, evaluates validated conditions, and runs ordered actions with idempotency, bounded retries, execution history, and loop protection.
+- **Automation:** Persist a domain event and outbox entry with the business change. Notification outbox delivery and workflow scheduling have independent durable checkpoints. A background worker schedules matching immutable workflow versions, evaluates validated conditions, and runs ordered actions with idempotency, bounded retries, execution history, and loop protection.
 - **Collaboration:** Publish compact SignalR events after commit. Clients refetch current state after reconnecting. Check authorization before group joins, file downloads, notifications, workflow actions, and AI context reads.
 - **Data:** PostgreSQL is the durable source of truth; Redis is not. Store attachment metadata in PostgreSQL and file bytes in private storage. Derive dashboard metrics from work-item state and history.
 

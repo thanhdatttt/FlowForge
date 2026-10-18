@@ -132,7 +132,7 @@ public static class AttachmentActivityEndpoints
                 x.ActorUserId, x.ActorKind, x.Action, x.EntityType, x.EntityId,
                 x.BeforeValues == null ? null : System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(x.BeforeValues),
                 x.AfterValues == null ? null : System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(x.AfterValues),
-                x.CorrelationId, x.OccurredAt)).ToList();
+                x.CorrelationId, x.OccurredAt, x.WorkflowExecutionId)).ToList();
             return Results.Ok(new PageDto<ActivityDto>(items, total, number, size));
         });
         return app;

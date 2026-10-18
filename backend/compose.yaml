@@ -33,6 +33,9 @@ services:
       Invitations__LifetimeDays: ${INVITATION_LIFETIME_DAYS:-7}
       Attachments__StoragePath: /app/private-attachments
       DataProtection__KeyPath: /app/private-email-keys
+      Workflows__Enabled: ${WORKFLOWS_ENABLED:-true}
+      Workflows__PollSeconds: ${WORKFLOWS_POLL_SECONDS:-5}
+      Workflows__DateScanIntervalMinutes: ${WORKFLOWS_DATE_SCAN_INTERVAL_MINUTES:-5}
       Notifications__Enabled: ${NOTIFICATIONS_ENABLED:-true}
       Notifications__PollSeconds: ${NOTIFICATIONS_POLL_SECONDS:-5}
       Notifications__OverdueIntervalMinutes: ${NOTIFICATIONS_OVERDUE_INTERVAL_MINUTES:-5}

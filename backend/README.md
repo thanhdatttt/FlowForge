@@ -1,6 +1,6 @@
 # FlowForge backend
 
-This is the .NET 10 modular-monolith backend. It includes authentication, Gmail SMTP email verification, workspaces, invitations, ownership transfer, projects, work items and collaboration, Phase 4 notifications and SignalR, OpenAPI, and health checks.
+This is the .NET 10 modular-monolith backend. It includes authentication, Gmail SMTP email verification, workspaces, invitations, ownership transfer, projects, work items and collaboration, Phase 4 notifications and SignalR, Phase 5 workflow automation, OpenAPI, and health checks.
 
 ## Projects
 
@@ -144,7 +144,7 @@ Archived projects permit reads and restore but reject metadata/member mutations.
 
 ## Request validation
 
-Request validators live under `FlowForge.Api/Validations`, grouped by Identity, Workspaces, Projects, WorkItems, Notifications, and Realtime, with shared input and pagination rules. They return field-specific errors as `400 application/problem+json` using `ValidationProblem`. Endpoints check resource authorization before exposing validation errors for scoped resources. `ApiRules` handles identity, authorization, and business-state guards; database-dependent checks remain in the use-case flow. Configuration errors still return `503`, and state conflicts `409`.
+Request validators live under `FlowForge.Api/Validations`, grouped by Identity, Workspaces, Projects, WorkItems, Notifications, Realtime, and Workflows, with shared input and pagination rules. They return field-specific errors as `400 application/problem+json` using `ValidationProblem`. Endpoints check resource authorization before exposing validation errors for scoped resources. `ApiRules` handles identity, authorization, and business-state guards; database-dependent checks remain in the use-case flow. Configuration errors still return `503`, and state conflicts `409`.
 
 Phase 4 notification queries use the shared `Validations/PaginationValidator.cs` directly: page 1–1,000,000, page size 1–100, with defaults of 1 and 20. ASP.NET Core rejects malformed integer/boolean query values before endpoint execution and validates GUID route/hub argument formats. `unreadOnly` is optional and defaults to no read-state filter. `Validations/Notifications/NotificationRequestValidator.cs` rejects an empty `notificationId` with a field-specific `400 ValidationProblem`; a non-empty ID that is absent or inaccessible still returns `404`. `Validations/Realtime/SubscriptionRequestValidator.cs` rejects empty `workspaceId`/`projectId` for all four join/leave methods with safe field-specific hub errors. Malformed GUIDs and missing hub arguments are rejected by SignalR binding. `read-all` has no input fields and does not need a separate validator. Hub subscription access and notification ownership remain authorization checks in their endpoint/service; they are not input validators. Background job option ranges are configuration validation in Infrastructure, enforced at startup by Data Annotations.
 
@@ -194,7 +194,7 @@ Work-item listing supports `search`, `status`, `priority`, `type`, `assigneeUser
 
 Attachments allow PNG, JPEG, PDF, and plain text up to 10 MiB. Metadata is in PostgreSQL, while bytes use a server-generated key in private storage. Configure `Attachments:StoragePath` outside the web root for host deployments. Docker Compose mounts `/app/private-attachments` in a persistent volume. Every download rechecks current project access. After a successful delete transaction, the private file is removed. If an upload transaction fails, its new file is removed; failed cleanup is logged without exposing the path to API clients.
 
-Work-item creation, updates, status/assignment changes, archive/restore, and comment creation persist typed `domain_events` and corresponding pending `outbox_messages` in the same database transaction as the resource and activity record. They contain IDs and safe event metadata, not comment bodies or attachment content. Phase 4 dispatches these messages for notifications and real-time updates. Workflow execution belongs to Phase 5. Comment edits/deletions and new invitations also persist events in Phase 4.
+Work-item creation, updates, status/assignment changes, archive/restore, and comment creation persist typed `domain_events` and corresponding pending `outbox_messages` in the same database transaction as the resource and activity record. They contain IDs and safe event metadata, not comment bodies or attachment content. Phase 4 dispatches these messages for notifications and real-time updates. Phase 5 independently schedules workflow execution from these durable events. Comment edits/deletions and new invitations also persist events in Phase 4.
 
 
 ## Phase 4: notifications and real-time updates
@@ -245,3 +245,27 @@ Idempotency keys prevent duplicate persisted notifications and queued emails. Si
 Compose maps the first three settings through `NOTIFICATIONS_ENABLED`, `NOTIFICATIONS_POLL_SECONDS`, and `NOTIFICATIONS_OVERDUE_INTERVAL_MINUTES`, and persists Data Protection keys in the private `email_keys` volume. Keep this volume across container replacements. Host deployments should set `DataProtection__KeyPath` to a persistent private directory outside the web root; back up keys with the database so pending invitation emails remain decryptable after restore. SMTP credentials continue to use environment configuration.
 
 The `PhaseFourNotifications` migration adds notifications and email delivery tables, outbox claim/failure fields, scope constraints/indexes, and optional project scope for workspace invitation events. Downgrade refuses to discard workspace-level event history that Phase 3 cannot represent; use a pre-upgrade backup if a full Phase 3 rollback is required.
+
+
+## Phase 5: workflow engine
+
+The backend implements scoped workflow management and validation, immutable versions, all seven triggers, typed ALL conditions, nine ordered action types, durable scheduling/execution, action-level idempotency, bounded retries, expiring claims, loop protection, activity history and authorized live updates. Owners/Admins manage workspace rules; Owners/Admins and assigned Managers manage project rules. Actions run under the creator's current project-write authority, rechecked before each action.
+
+Use `/api/v1/workspaces/{workspaceId}/workflows` to list/create rules; `/{workflowId}` to view/update; `/{workflowId}/enable` or `/disable` to change state; and `/{workflowId}/executions` or `/executions/{executionId}` for history/details. New rules start disabled; edits require the current configuration `version`. Disabling cancels unfinished actions and preserves committed effects. Workflow APIs follow the existing authorization, pagination, ValidationProblem and optimistic-conflict conventions.
+
+The `PhaseFiveWorkflows` migration preserves existing notification work and checkpoints historical events without replaying them into workflows. A separate scheduler checkpoint ensures notification dispatch cannot consume workflow events. Calendar triggers include unassigned items. Workflow execution, event scheduling, and calendar scanning have independent background loops; notification live delivery and workflow email use the existing notification worker.
+
+See [workflow engine contracts and operations](../docs/workflow_engine.md) for the full JSON example, endpoint/condition/action contracts, versioning, permissions, date semantics, disable/recovery behavior, email delivery diagnostics, configuration, and migration rollback limits. The workflow builder UI remains deferred with the frontend.
+
+
+### Live workflow HTTP checks
+
+`tests/FlowForge.Api.SmokeTests` is a .NET console runner built with the solution. Start a disposable Release API/database with workflow and notification workers enabled, then run from the repository root:
+
+```sh
+dotnet run --project backend/tests/FlowForge.Api.SmokeTests -- \
+  --base-url http://localhost:8080 \
+  --output backend/test-results/phase5/live-http.json
+```
+
+It creates disposable accounts/workspace/project/workflows, checks all nine workflow operations through real HTTP, verifies 47 HTTP responses plus 19 state assertions, and archives its project. It writes a sanitized JSON ledger even on an unexpected response and exits nonzero on failure. Polling requests are recorded separately. This runner uses only the .NET SDK and standard libraries; it runs explicitly after starting the API. See [test results](TEST_RESULTS.md) for the latest run and parity evidence.

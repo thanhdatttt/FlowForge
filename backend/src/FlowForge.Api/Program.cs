@@ -3,6 +3,7 @@ using FlowForge.Api;
 using FlowForge.Api.Realtime;
 using FlowForge.Application.Notifications;
 using FlowForge.Infrastructure.Notifications;
+using FlowForge.Infrastructure.Workflows;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpLogging;
 using System.Text;
@@ -44,6 +45,8 @@ var protection = builder.Services.AddDataProtection().SetApplicationName("FlowFo
 var keyPath = builder.Configuration["DataProtection:KeyPath"];
 if (!string.IsNullOrWhiteSpace(keyPath)) protection.PersistKeysToFileSystem(new DirectoryInfo(keyPath));
 builder.Services.AddHostedService<NotificationWorker>();
+builder.Services.AddOptions<WorkflowJobOptions>().BindConfiguration("Workflows").ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddHostedService<WorkflowWorker>();
 builder.Services.AddProblemDetails();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
@@ -120,6 +123,10 @@ app.Use(async (context, next) =>
     {
         await Results.Problem(statusCode: failure.Status, title: failure.Message).ExecuteAsync(context);
     }
+    catch (FlowForge.Infrastructure.WorkItems.WorkResourceFailure failure)
+    {
+        await Results.Problem(statusCode: 400, title: failure.Message).ExecuteAsync(context);
+    }
     catch (DbUpdateConcurrencyException)
     {
         await Results.Problem(statusCode: 409, title: "The resource changed. Reload and retry.").ExecuteAsync(context);
@@ -161,6 +168,7 @@ app.MapWorkItemEndpoints();
 app.MapCollaborationEndpoints();
 app.MapAttachmentActivityEndpoints();
 app.MapNotificationEndpoints();
+app.MapWorkflowEndpoints();
 app.MapHub<UpdatesHub>("/hubs/updates", options => options.CloseOnAuthenticationExpiration = true);
 
 app.Run();
