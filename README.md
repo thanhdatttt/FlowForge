@@ -1,6 +1,18 @@
 # FlowForge
 
-A modular project management platform. The backend includes authentication, Gmail SMTP email verification, workspace roles and invitations, ownership transfer, projects with explicit membership and archive controls, work items and collaboration, notifications, background email delivery, overdue checks, authorized SignalR updates, and configurable workflow automation with durable execution history. The frontend has not been implemented.
+A modular project management platform. The backend includes authentication, Gmail SMTP email verification, workspace roles and invitations, ownership transfer, projects with explicit membership and archive controls, work items and collaboration, notifications, background email delivery, overdue checks, authorized SignalR updates, and configurable workflow automation with durable execution history. The frontend has a foundation scaffold; product features have not been implemented.
+
+## Frontend setup
+
+The `frontend/` folder uses React, TypeScript, TanStack Query, Zustand, and shadcn/ui with Vite. With Node.js 24 LTS installed, run:
+
+```sh
+cd frontend
+npm ci
+npm run dev
+```
+
+Open <http://localhost:5173>. The app is intentionally blank. The development server proxies `/api`, `/hubs`, and `/health` to the backend at `http://localhost:8080`. See [frontend/README.md](frontend/README.md) for configuration and checks.
 
 ## Run locally with Docker
 
