@@ -39,8 +39,14 @@ public sealed class PhaseFourMigrationTests
             var e = new DomainEvent { WorkspaceId = workspace.Id, ProjectId = project.Id, EntityId = item.Id,
                 EventType = "WorkItemCreated", Payload = JsonSerializer.Serialize(new { item.AssigneeMembershipId }), CorrelationId = "upgrade" };
             db.Users.Add(user); db.Workspaces.Add(workspace); db.WorkspaceMemberships.Add(member);
-            db.Projects.AddRange(project, otherProject); db.ProjectStatuses.Add(status); db.WorkItems.Add(item); db.DomainEvents.Add(e);
+            db.Projects.AddRange(project, otherProject); db.ProjectStatuses.Add(status); db.WorkItems.Add(item);
             await db.SaveChangesAsync();
+            await db.Database.ExecuteSqlInterpolatedAsync($"""
+                INSERT INTO domain_events (id, workspace_id, project_id, entity_id, event_type, payload,
+                    actor_user_id, correlation_id, depth, occurred_at)
+                VALUES ({e.Id}, {workspace.Id}, {project.Id}, {item.Id}, {e.EventType}, {e.Payload}::jsonb,
+                    {user.Id}, {e.CorrelationId}, 0, {e.OccurredAt})
+                """);
             var outboxId = Guid.NewGuid();
             await db.Database.ExecuteSqlInterpolatedAsync($"""
                 INSERT INTO outbox_messages (id, event_id, message_type, available_at, attempt_count)

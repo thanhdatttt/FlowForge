@@ -4,6 +4,8 @@ using FlowForge.Domain.Workspaces;
 using FlowForge.Domain.Projects;
 using FlowForge.Domain.WorkItems;
 using FlowForge.Domain.Notifications;
+using FlowForge.Domain.Workflows;
+using FlowForge.Infrastructure.Workflows;
 
 namespace FlowForge.Infrastructure;
 
@@ -35,8 +37,14 @@ public sealed class FlowForgeDbContext(DbContextOptions<FlowForgeDbContext> opti
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<EmailDelivery> EmailDeliveries => Set<EmailDelivery>();
 
+    public DbSet<Workflow> Workflows => Set<Workflow>();
+    public DbSet<WorkflowVersion> WorkflowVersions => Set<WorkflowVersion>();
+    public DbSet<WorkflowExecution> WorkflowExecutions => Set<WorkflowExecution>();
+    public DbSet<WorkflowActionResult> WorkflowActionResults => Set<WorkflowActionResult>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        WorkflowModel.Configure(modelBuilder);
         modelBuilder.Entity<User>(entity =>
         {
             entity.ToTable("users");
@@ -340,7 +348,10 @@ public sealed class FlowForgeDbContext(DbContextOptions<FlowForgeDbContext> opti
         });
         modelBuilder.Entity<ActivityRecord>(e =>
         {
-            e.ToTable("activity_records"); e.HasKey(x => x.Id);
+            e.ToTable("activity_records");
+            e.Property(x => x.WorkflowExecutionId).HasColumnName("workflow_execution_id");
+            e.HasOne<WorkflowExecution>().WithMany().HasForeignKey(x => new { x.WorkspaceId, x.WorkflowExecutionId })
+                .HasPrincipalKey(x => new { x.WorkspaceId, x.Id }).OnDelete(DeleteBehavior.Restrict); e.HasKey(x => x.Id);
             e.HasIndex(x => new { x.WorkspaceId, x.OccurredAt });
             e.HasIndex(x => new { x.ProjectId, x.OccurredAt });
             e.HasIndex(x => new { x.WorkItemId, x.OccurredAt });
@@ -366,6 +377,12 @@ public sealed class FlowForgeDbContext(DbContextOptions<FlowForgeDbContext> opti
         modelBuilder.Entity<DomainEvent>(e =>
         {
             e.ToTable("domain_events", t => t.HasCheckConstraint("CK_domain_event_depth", "depth >= 0"));
+            e.HasAlternateKey(x => new { x.WorkspaceId, x.Id });
+            e.Property(x => x.TriggerDate).HasColumnName("trigger_date");
+            e.Property(x => x.WorkflowProcessedAt).HasColumnName("workflow_processed_at");
+            e.Property(x => x.DeduplicationKey).HasColumnName("deduplication_key").HasMaxLength(200);
+            e.HasIndex(x => x.DeduplicationKey).IsUnique();
+            e.HasIndex(x => new { x.WorkflowProcessedAt, x.OccurredAt });
             e.HasKey(x => x.Id);
             e.HasIndex(x => new { x.ProjectId, x.OccurredAt });
             e.Property(x => x.Id).HasColumnName("id");
@@ -405,7 +422,7 @@ public sealed class FlowForgeDbContext(DbContextOptions<FlowForgeDbContext> opti
         {
             e.ToTable("notifications", t =>
             {
-                t.HasCheckConstraint("CK_notification_type", "type IN ('Assigned', 'Mentioned', 'Overdue', 'Invited')");
+                t.HasCheckConstraint("CK_notification_type", "type IN ('Assigned', 'Mentioned', 'Overdue', 'Invited', 'Workflow')");
                 t.HasCheckConstraint("CK_notification_scope", "(project_id IS NULL OR work_item_id IS NOT NULL) AND (work_item_id IS NULL OR project_id IS NOT NULL) AND ((type = 'Invited' AND invitation_id IS NOT NULL AND project_id IS NULL) OR (type <> 'Invited' AND invitation_id IS NULL AND work_item_id IS NOT NULL))");
             });
             e.HasKey(x => x.Id);
@@ -442,13 +459,18 @@ public sealed class FlowForgeDbContext(DbContextOptions<FlowForgeDbContext> opti
             {
                 t.HasCheckConstraint("CK_email_delivery_status", "status IN ('Pending', 'Sent', 'Cancelled', 'Failed')");
                 t.HasCheckConstraint("CK_email_delivery_attempts", "attempt_count >= 0");
-                t.HasCheckConstraint("CK_email_delivery_target", "(notification_id IS NULL) <> (invitation_id IS NULL)");
+                t.HasCheckConstraint("CK_email_delivery_target", "num_nonnulls(notification_id, invitation_id, workflow_execution_id) = 1");
             });
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.WorkspaceId).HasColumnName("workspace_id");
             e.Property(x => x.NotificationId).HasColumnName("notification_id");
             e.Property(x => x.InvitationId).HasColumnName("invitation_id");
+            e.Property(x => x.WorkflowExecutionId).HasColumnName("workflow_execution_id");
+            e.Property(x => x.RecipientUserId).HasColumnName("recipient_user_id");
+            e.HasOne<WorkflowExecution>().WithMany().HasForeignKey(x => new { x.WorkspaceId, x.WorkflowExecutionId })
+                .HasPrincipalKey(x => new { x.WorkspaceId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.RecipientUserId).OnDelete(DeleteBehavior.Restrict);
             e.Property(x => x.RecipientEmail).HasColumnName("recipient_email").HasMaxLength(320);
             e.Property(x => x.Subject).HasColumnName("subject").HasMaxLength(200);
             e.Property(x => x.ProtectedBody).HasColumnName("protected_body");

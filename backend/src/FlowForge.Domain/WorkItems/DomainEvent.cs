@@ -13,5 +13,8 @@ public sealed class DomainEvent
     public required string CorrelationId { get; set; }
     public Guid? OriginExecutionId { get; set; }
     public int Depth { get; set; }
+    public DateTimeOffset? WorkflowProcessedAt { get; set; }
+    public DateOnly? TriggerDate { get; set; }
+    public string? DeduplicationKey { get; set; }
     public DateTimeOffset OccurredAt { get; set; } = DateTimeOffset.UtcNow;
 }

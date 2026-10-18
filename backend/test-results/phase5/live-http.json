@@ -1,0 +1,1180 @@
+{
+  "runAt": "2026-10-18T10:17:55\u002B07:00",
+  "baseUrl": "http://127.0.0.1:5197",
+  "checks": [
+    {
+      "kind": "http",
+      "check": "API readiness",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/health/ready",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "OpenAPI workflow routes",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/openapi/v1.json",
+      "polling": false
+    },
+    {
+      "kind": "state",
+      "check": "Workflow management appears in OpenAPI",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Register owner",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Register developer",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Read developer account",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Register outsider",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Read outsider account",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Read signed-in account",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Create workspace",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Create project",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/projects",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Add workspace developer",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/members",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Validate workflow",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/validate",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject invalid trigger",
+      "expected": 400,
+      "actual": 400,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/validate",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Require authentication",
+      "expected": 401,
+      "actual": 401,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject developer workflow management",
+      "expected": 403,
+      "actual": 403,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject inaccessible comment mention before enablement",
+      "expected": 400,
+      "actual": 400,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/validate",
+      "polling": false
+    },
+    {
+      "kind": "state",
+      "check": "Mention validation returns field errors",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Create workflow",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows",
+      "polling": false
+    },
+    {
+      "kind": "state",
+      "check": "Created workflow starts disabled",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Read workflow",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Hide workflow from outsider",
+      "expected": 404,
+      "actual": 404,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject invalid state version",
+      "expected": 400,
+      "actual": 400,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/enable",
+      "polling": false
+    },
+    {
+      "kind": "state",
+      "check": "State validation returns version field error",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "List workflows",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows",
+      "polling": false
+    },
+    {
+      "kind": "state",
+      "check": "List contains created workflow",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Enable workflow",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/enable",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Create triggering work item",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Read execution history",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions",
+      "polling": false
+    },
+    {
+      "kind": "state",
+      "check": "Hosted worker completes workflow",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Execution details",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions/{executionId}",
+      "polling": false
+    },
+    {
+      "kind": "state",
+      "check": "Execution exposes pinned version and definition",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Execution exposes original actor and source metadata",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Hide execution history from developer",
+      "expected": 404,
+      "actual": 404,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions",
+      "polling": false
+    },
+    {
+      "kind": "state",
+      "check": "All ordered actions succeeded",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Read automated item",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{workItemId}",
+      "polling": false
+    },
+    {
+      "kind": "state",
+      "check": "Automation preserves item mutations",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Read automated comment",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{workItemId}/comments",
+      "polling": false
+    },
+    {
+      "kind": "state",
+      "check": "Automated comment persisted once",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Read activity",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/activity?projectId={projectId}\u0026workItemId={workItemId}",
+      "polling": false
+    },
+    {
+      "kind": "state",
+      "check": "Audit exposes execution linkage",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Workflow notification persisted",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Update workflow creates version",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "PUT",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Read historical execution after edit",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions/{executionId}",
+      "polling": false
+    },
+    {
+      "kind": "state",
+      "check": "Historical definition remains inspectable after edit",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Configuration version increments",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Reject stale update",
+      "expected": 409,
+      "actual": 409,
+      "passed": true,
+      "method": "PUT",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject stale enable",
+      "expected": 409,
+      "actual": 409,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/enable",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Disable workflow",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/disable",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Create item while disabled",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reenable workflow",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/enable",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Create item after reenable",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items",
+      "polling": false
+    },
+    {
+      "kind": "state",
+      "check": "Disabled events are not replayed",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Read execution history after new version",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions",
+      "polling": false
+    },
+    {
+      "kind": "state",
+      "check": "Execution pins version",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "History returns both immutable definitions",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Reject invalid pagination",
+      "expected": 400,
+      "actual": 400,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions?pageSize=101",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject missing execution",
+      "expected": 404,
+      "actual": 404,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions/{executionId}",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Disable after audit",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/disable",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject invalid disable version",
+      "expected": 400,
+      "actual": 400,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/disable",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject invalid workflow update",
+      "expected": 400,
+      "actual": 400,
+      "passed": true,
+      "method": "PUT",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Hide nonexistent workflow",
+      "expected": 404,
+      "actual": 404,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Archive project",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/projects/{projectId}/archive",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject workflow enable on archived project",
+      "expected": 409,
+      "actual": 409,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/enable",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject workflow creation on archived project",
+      "expected": 409,
+      "actual": 409,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows",
+      "polling": false
+    },
+    {
+      "kind": "state",
+      "check": "All nine workflow OpenAPI operations succeed over HTTP",
+      "expected": true,
+      "actual": true,
+      "passed": true
+    }
+  ],
+  "requests": [
+    {
+      "kind": "http",
+      "check": "API readiness",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/health/ready",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "OpenAPI workflow routes",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/openapi/v1.json",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Register owner",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Register developer",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Read developer account",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Register outsider",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Read outsider account",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Read signed-in account",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Create workspace",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Create project",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/projects",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Add workspace developer",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/members",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Validate workflow",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/validate",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject invalid trigger",
+      "expected": 400,
+      "actual": 400,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/validate",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Require authentication",
+      "expected": 401,
+      "actual": 401,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject developer workflow management",
+      "expected": 403,
+      "actual": 403,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject inaccessible comment mention before enablement",
+      "expected": 400,
+      "actual": 400,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/validate",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Create workflow",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Read workflow",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Hide workflow from outsider",
+      "expected": 404,
+      "actual": 404,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject invalid state version",
+      "expected": 400,
+      "actual": 400,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/enable",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "List workflows",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Enable workflow",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/enable",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Create triggering work item",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Poll workflow execution",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions",
+      "polling": true
+    },
+    {
+      "kind": "http",
+      "check": "Poll workflow execution",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions",
+      "polling": true
+    },
+    {
+      "kind": "http",
+      "check": "Poll workflow execution",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions",
+      "polling": true
+    },
+    {
+      "kind": "http",
+      "check": "Read execution history",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Execution details",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions/{executionId}",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Hide execution history from developer",
+      "expected": 404,
+      "actual": 404,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Read automated item",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{workItemId}",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Read automated comment",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items/{workItemId}/comments",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Read activity",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/activity?projectId={projectId}\u0026workItemId={workItemId}",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Poll workflow notification",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/notifications",
+      "polling": true
+    },
+    {
+      "kind": "http",
+      "check": "Update workflow creates version",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "PUT",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Read historical execution after edit",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions/{executionId}",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject stale update",
+      "expected": 409,
+      "actual": 409,
+      "passed": true,
+      "method": "PUT",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject stale enable",
+      "expected": 409,
+      "actual": 409,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/enable",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Disable workflow",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/disable",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Create item while disabled",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reenable workflow",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/enable",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Create item after reenable",
+      "expected": 201,
+      "actual": 201,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/projects/{projectId}/work-items",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Poll workflow execution",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions",
+      "polling": true
+    },
+    {
+      "kind": "http",
+      "check": "Poll workflow execution",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions",
+      "polling": true
+    },
+    {
+      "kind": "http",
+      "check": "Poll workflow execution",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions",
+      "polling": true
+    },
+    {
+      "kind": "http",
+      "check": "Poll workflow execution",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions",
+      "polling": true
+    },
+    {
+      "kind": "http",
+      "check": "Poll workflow execution",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions",
+      "polling": true
+    },
+    {
+      "kind": "http",
+      "check": "Read execution history after new version",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject invalid pagination",
+      "expected": 400,
+      "actual": 400,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions?pageSize=101",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject missing execution",
+      "expected": 404,
+      "actual": 404,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/executions/{executionId}",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Disable after audit",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/disable",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject invalid disable version",
+      "expected": 400,
+      "actual": 400,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/disable",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject invalid workflow update",
+      "expected": 400,
+      "actual": 400,
+      "passed": true,
+      "method": "PUT",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Hide nonexistent workflow",
+      "expected": 404,
+      "actual": 404,
+      "passed": true,
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Archive project",
+      "expected": 200,
+      "actual": 200,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/projects/{projectId}/archive",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject workflow enable on archived project",
+      "expected": 409,
+      "actual": 409,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows/{workflowId}/enable",
+      "polling": false
+    },
+    {
+      "kind": "http",
+      "check": "Reject workflow creation on archived project",
+      "expected": 409,
+      "actual": 409,
+      "passed": true,
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/workflows",
+      "polling": false
+    }
+  ],
+  "totals": {
+    "checks": 66,
+    "passed": 66,
+    "failed": 0,
+    "recordedHttpChecks": 47,
+    "stateChecks": 19,
+    "allHttpRequests": 56,
+    "pollingHttpRequests": 9
+  }
+}

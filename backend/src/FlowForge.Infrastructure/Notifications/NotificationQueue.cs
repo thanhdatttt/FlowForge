@@ -27,13 +27,13 @@ public sealed class NotificationQueue(FlowForgeDbContext db, IEmailSender sender
         });
     }
 
-    public async Task<Notification> AddAsync(Notification notification, CancellationToken ct)
+    public async Task<Notification> AddAsync(Notification notification, CancellationToken ct, bool includeEmail = true)
     {
         var existing = await db.Notifications.SingleOrDefaultAsync(x => x.IdempotencyKey == notification.IdempotencyKey, ct);
         if (existing != null) return existing;
         notification.CreatedAt = clock.GetUtcNow();
         db.Notifications.Add(notification);
-        if (sender.IsConfigured && notification.Type != "Invited")
+        if (includeEmail && sender.IsConfigured && notification.Type != "Invited")
         {
             var email = await db.Users.Where(x => x.Id == notification.RecipientUserId && x.IsActive).Select(x => x.Email).SingleAsync(ct);
             db.EmailDeliveries.Add(new EmailDelivery

@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using FlowForge.Api.Contracts.WorkItems;
 using FlowForge.Domain.Projects;
 using FlowForge.Domain.WorkItems;
@@ -36,22 +35,10 @@ internal static partial class WorkItemSupport
     public static async Task<WorkspaceMembership?> MemberAsync(FlowForgeDbContext db, Guid workspaceId,
         Guid projectId, Guid? userId, CancellationToken ct)
     {
-        if (userId == null) return null;
-        var member = await db.WorkspaceMemberships.SingleOrDefaultAsync(x => x.WorkspaceId == workspaceId &&
-            x.UserId == userId && x.RemovedAt == null && x.User.IsActive, ct);
-        ApiRules.Require(member != null, 400, "The user must be an active workspace member.");
-        var eligible = member!.Role is WorkspaceRole.Owner or WorkspaceRole.Admin ||
-            await db.ProjectMemberships.AnyAsync(x => x.ProjectId == projectId && x.WorkspaceMembershipId == member.Id &&
-                x.RemovedAt == null, ct);
-        ApiRules.Require(eligible, 400, "The user must have project access.");
-        return member;
+        return await Infrastructure.WorkItems.WorkResourceRules.MemberAsync(db, workspaceId, projectId, userId, ct);
     }
-    public static async Task<ProjectStatus> StatusAsync(FlowForgeDbContext db, Guid projectId, string? name, CancellationToken ct)
-    {
-        var status = await db.ProjectStatuses.SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Name == name && x.IsActive, ct);
-        ApiRules.Require(status != null, 400, "Invalid project status.");
-        return status!;
-    }
+    public static Task<ProjectStatus> StatusAsync(FlowForgeDbContext db, Guid projectId, string? name, CancellationToken ct) =>
+        Infrastructure.WorkItems.WorkResourceRules.StatusAsync(db, projectId, name, ct);
     public static async Task CheckParentAsync(FlowForgeDbContext db, Guid projectId, Guid itemId, Guid? parentId, CancellationToken ct)
     {
         var seen = new HashSet<Guid> { itemId };
@@ -66,10 +53,7 @@ internal static partial class WorkItemSupport
     }
     public static async Task<List<Guid>> LabelsAsync(FlowForgeDbContext db, Guid projectId, IReadOnlyList<Guid>? labels, CancellationToken ct)
     {
-        var ids = labels?.Distinct().ToList() ?? [];
-        var count = await db.WorkLabels.CountAsync(x => x.ProjectId == projectId && ids.Contains(x.Id), ct);
-        ApiRules.Require(count == ids.Count, 400, "Labels must belong to this project.");
-        return ids;
+        return await Infrastructure.WorkItems.WorkResourceRules.LabelsAsync(db, projectId, labels, ct);
     }
     public static void Activity(FlowForgeDbContext db, Guid workspaceId, Guid? projectId, Guid actor,
         string action, string entityType, Guid entityId, object? before = null, object? after = null,
@@ -110,13 +94,6 @@ internal static partial class WorkItemSupport
             item.StartDate, item.DueDate, item.EstimateMinutes, labels, deps, isBlocked, needsReassignment, item.ArchivedAt,
             item.CreatedAt, item.UpdatedAt, item.Version);
     }
-    [GeneratedRegex(@"@\{([0-9a-fA-F-]{36})\}", RegexOptions.CultureInvariant)]
-    private static partial Regex MentionRegex();
-    public static async Task<List<Guid>> MentionsAsync(FlowForgeDbContext db, Guid workspaceId, Guid projectId, string body, CancellationToken ct)
-    {
-        var ids = MentionRegex().Matches(body).Select(x => Guid.TryParse(x.Groups[1].Value, out var id) ? id : Guid.Empty)
-            .Where(x => x != Guid.Empty).Distinct().ToList();
-        foreach (var id in ids) await MemberAsync(db, workspaceId, projectId, id, ct);
-        return ids;
-    }
+    public static Task<List<Guid>> MentionsAsync(FlowForgeDbContext db, Guid workspaceId, Guid projectId, string body, CancellationToken ct) =>
+        Infrastructure.WorkItems.WorkResourceRules.MentionsAsync(db, workspaceId, projectId, body, ct);
 }

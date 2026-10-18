@@ -13,6 +13,7 @@ public sealed class ActivityRecord
     public Guid EntityId { get; set; }
     public string? BeforeValues { get; set; }
     public string? AfterValues { get; set; }
+    public Guid? WorkflowExecutionId { get; set; }
     public string? CorrelationId { get; set; }
     public DateTimeOffset OccurredAt { get; set; } = DateTimeOffset.UtcNow;
 }

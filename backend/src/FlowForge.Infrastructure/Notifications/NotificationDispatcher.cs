@@ -97,6 +97,12 @@ public sealed class NotificationDispatcher(FlowForgeDbContext db, NotificationQu
 
     private async Task<List<Notification>> CreateNotificationsAsync(DomainEvent e, CancellationToken ct)
     {
+        if (e.EventType == "WorkflowNotificationCreated")
+        {
+            var notification = await db.Notifications.SingleOrDefaultAsync(x => x.Id == e.EntityId &&
+                x.WorkspaceId == e.WorkspaceId && x.ProjectId == e.ProjectId && x.Type == "Workflow", ct);
+            return notification == null ? [] : [notification];
+        }
         if (e.EventType == "InvitationCreated")
         {
             if (!await access.InvitationIsDeliverableAsync(e.EntityId, ct)) return [];

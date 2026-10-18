@@ -186,7 +186,7 @@ public sealed class PhaseFourRealtimeTests(PhaseFourFixture fixture) : IClassFix
         Assert.False((await socket.InvokeAsync("LeaveWorkspace", project.WorkspaceId)).TryGetProperty("error", out _));
     }
 
-    private async Task<HubSocket> ConnectAsync(HttpClient http, bool queryToken = false)
+    internal async Task<HubSocket> ConnectAsync(HttpClient http, bool queryToken = false)
     {
         var client = fixture.Server.CreateWebSocketClient();
         if (!queryToken) client.ConfigureRequest = request => request.Headers.Authorization = http.DefaultRequestHeaders.Authorization!.ToString();
@@ -199,7 +199,7 @@ public sealed class PhaseFourRealtimeTests(PhaseFourFixture fixture) : IClassFix
         return socket;
     }
 
-    private sealed class HubSocket(WebSocket socket) : IAsyncDisposable
+    internal sealed class HubSocket(WebSocket socket) : IAsyncDisposable
     {
         private int sequence;
         private string pending = "";

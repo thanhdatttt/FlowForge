@@ -4,6 +4,8 @@ public sealed class EmailDelivery
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid WorkspaceId { get; set; }
+    public Guid? WorkflowExecutionId { get; set; }
+    public Guid? RecipientUserId { get; set; }
     public Guid? NotificationId { get; set; }
     public Guid? InvitationId { get; set; }
     public required string RecipientEmail { get; set; }
