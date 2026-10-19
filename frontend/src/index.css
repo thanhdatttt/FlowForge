@@ -86,6 +86,10 @@
   --sidebar-ring: oklch(0.708 0 0);
   --font-display: "Geist Variable", sans-serif;
   --font-utility: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --auth-text-body: 1rem;
+  --auth-text-label: 0.875rem;
+  --auth-text-meta: 0.8125rem;
+  --auth-text-caption: 0.75rem;
 }
 
 .dark {
@@ -138,7 +142,7 @@
 
 body {
   margin: 0;
-  min-width: 320px;
+  min-width: 0;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -200,7 +204,7 @@ button svg,
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 35px 42px;
+  padding: 22px 32px;
 }
 
 .brand {
@@ -220,26 +224,26 @@ button svg,
 
 .brand-tagline {
   color: #777d90;
-  font: 9px var(--font-utility);
+  font: 11px var(--font-utility);
   letter-spacing: 1.8px;
 }
 
 .story-content {
   width: 100%;
   max-width: 700px;
-  margin: auto;
-  padding: 30px 52px 39px;
+  margin: 0 auto;
+  padding: 20px 36px 16px;
 }
 
 .story-intro {
-  padding-left: 14px;
+  padding-left: 8px;
 }
 
 .eyebrow {
   display: flex;
   align-items: center;
   gap: 9px;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 1.65px;
   color: #73768c;
@@ -258,7 +262,7 @@ button svg,
   font-weight: 550;
   letter-spacing: -3px;
   line-height: 1.1;
-  margin: 21px 0 24px;
+  margin: 14px 0 16px;
 }
 
 .flow-word {
@@ -279,14 +283,14 @@ button svg,
 }
 
 .story-intro > p {
-  font-size: 15px;
+  font-size: 18px;
   color: #6c7284;
-  line-height: 1.8;
+  line-height: 1.55;
   margin: 0;
 }
 
 .workflow-preview {
-  margin: 38px 0 0;
+  margin: 24px 0 0;
   position: relative;
   font-size: 10px;
   line-height: 1.5;
@@ -307,8 +311,8 @@ button svg,
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 17px 17px 13px;
-  font-size: 12px;
+  padding: 12px 14px 10px;
+  font-size: 14px;
 }
 
 .board-top > svg {
@@ -327,7 +331,7 @@ button svg,
 
 .preview-label {
   margin-left: auto;
-  font: 7px var(--font-utility);
+  font: 9px var(--font-utility);
   letter-spacing: 1px;
   color: #9295a5;
 }
@@ -336,15 +340,15 @@ button svg,
   padding: 0 18px;
   display: flex;
   align-items: center;
-  gap: 22px;
+  gap: 16px;
   border-bottom: 1px solid #ecedf4;
   color: #878b9b;
-  font-size: 9px;
-  height: 35px;
+  font-size: 12px;
+  height: 32px;
 }
 
 .board-tab {
-  height: 35px;
+  height: 32px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -357,7 +361,7 @@ button svg,
   border-radius: 3px;
   background: #f0effc;
   padding: 1px 4px;
-  font-size: 8px;
+  font-size: 10px;
 }
 
 .avatar-stack {
@@ -372,7 +376,7 @@ button svg,
   place-items: center;
   width: 21px;
   height: 21px;
-  font-size: 6px;
+  font-size: 8px;
   background: #e8def3;
   color: #755b91;
   border: 2px solid white;
@@ -393,8 +397,8 @@ button svg,
 .board-columns {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 9px;
-  padding: 15px 13px 14px;
+  gap: 8px;
+  padding: 12px 10px;
   background: #fbfbfd;
 }
 
@@ -402,14 +406,14 @@ button svg,
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 9px;
+  font-size: 11px;
   color: #707687;
-  margin: 0 3px 11px;
+  margin: 0 2px 6px;
   font-weight: 550;
 }
 
 .column-heading small {
-  font-size: 8px;
+  font-size: 10px;
   color: #989baa;
   margin-left: 2px;
 }
@@ -433,8 +437,8 @@ button svg,
 .task-card {
   border: 1px solid #e9eaf1;
   border-radius: 6px;
-  padding: 9px;
-  margin-top: 8px;
+  padding: 8px;
+  margin-top: 6px;
   background: white;
   box-shadow: 0 2px 3px #25264c03;
 }
@@ -443,21 +447,21 @@ button svg,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font: 7px var(--font-utility);
+  font: 10px var(--font-utility);
   color: #9296a5;
 }
 
 .task-card p {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
-  line-height: 1.5;
-  min-height: 28px;
-  margin: 6px 0 8px;
+  line-height: 1.4;
+  min-height: 34px;
+  margin: 5px 0 6px;
 }
 
 .task-label {
-  font-size: 7px;
-  padding: 3px 5px;
+  font-size: 10px;
+  padding: 2px 5px;
   border-radius: 3px;
   display: inline-block;
 }
@@ -481,7 +485,7 @@ button svg,
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 8px;
+  margin-top: 6px;
   color: #b0a0b8;
 }
 
@@ -491,7 +495,7 @@ button svg,
   gap: 3px;
   margin-left: auto;
   color: #989baa;
-  font-size: 7px;
+  font-size: 10px;
 }
 
 .avatar {
@@ -500,7 +504,7 @@ button svg,
   border-radius: 50%;
   width: 18px;
   height: 18px;
-  font-size: 6px;
+  font-size: 8px;
   font-style: normal;
   margin-left: 4px;
 }
@@ -526,7 +530,7 @@ button svg,
 
 .automation-connector {
   margin-left: 76%;
-  height: 34px;
+  height: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -545,11 +549,11 @@ button svg,
 
 .automation-card {
   position: relative;
-  margin: 0 -7px 0 24px;
+  margin: 0 0 0 12px;
   background: white;
   border: 1px solid #e2dff5;
   border-radius: 10px;
-  padding: 15px 17px;
+  padding: 12px 14px;
   box-shadow: 0 7px 20px -10px #6353b429;
   transform: rotate(1deg);
 }
@@ -557,11 +561,11 @@ button svg,
 .automation-heading {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 7px;
 }
 
 .automation-heading strong {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 550;
 }
 
@@ -580,7 +584,7 @@ button svg,
   align-items: center;
   gap: 4px;
   margin-left: auto;
-  font-size: 8px;
+  font-size: 10px;
   color: #46816a;
   border: 1px solid #e2eee8;
   padding: 3px 6px;
@@ -596,7 +600,7 @@ button svg,
 }
 
 .automation-flow {
-  margin: 13px 0 0 38px;
+  margin: 8px 0 0 36px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -605,15 +609,16 @@ button svg,
 
 .automation-flow > div > span {
   color: #8e90a2;
-  font: 7px var(--font-utility);
+  font: 10px var(--font-utility);
   letter-spacing: 1px;
 }
 
 .automation-flow p {
   margin: 5px 0 0;
-  font-size: 9px;
+  font-size: 12px;
   color: #6a6d80;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.4;
 }
 
 .automation-flow b {
@@ -621,7 +626,7 @@ button svg,
   align-items: center;
   gap: 2px;
   color: #40896e;
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 500;
   background: #edf7f1;
   padding: 2px 4px;
@@ -639,9 +644,9 @@ button svg,
   align-items: center;
   justify-content: center;
   gap: 9px;
-  font-size: 10px;
+  font-size: 12px;
   color: #85899a;
-  margin-top: 28px;
+  margin-top: 14px;
 }
 
 .caption-line {
@@ -654,9 +659,10 @@ button svg,
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  padding: 24px 42px 28px;
-  font-size: 10px;
+  padding: 14px 32px;
+  font-size: 12px;
   color: #85899a;
+  margin-top: auto;
 }
 
 .auth-panel {
@@ -667,15 +673,15 @@ button svg,
 }
 
 .auth-header {
-  padding: 39px 42px;
+  padding: 24px 32px;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  min-height: 104px;
+  min-height: 76px;
 }
 
 .auth-header > p {
-  font-size: 12px;
+  font-size: var(--auth-text-label);
   color: #697081;
   margin: 0;
   display: flex;
@@ -711,14 +717,14 @@ button svg,
 .auth-content {
   flex: 1;
   display: grid;
-  align-items: center;
-  padding: 38px 48px 60px;
+  align-items: start;
+  padding: 28px 32px 24px;
 }
 
 .auth-form-container,
 .account-panel {
   width: 100%;
-  max-width: 368px;
+  max-width: 420px;
   margin: 0 auto;
 }
 
@@ -731,7 +737,7 @@ button svg,
   background: #f3f2fd;
   border: 1px solid #e8e5fb;
   border-radius: 13px;
-  margin-bottom: 28px;
+  margin-bottom: 16px;
   position: relative;
 }
 
@@ -748,16 +754,16 @@ button svg,
 
 .auth-form-container > .eyebrow,
 .account-panel > .eyebrow {
-  font-size: 10px;
+  font-size: var(--auth-text-caption);
   letter-spacing: 1.6px;
   color: #737084;
-  margin-bottom: 9px;
+  margin-bottom: 6px;
 }
 
 .auth-content h1 {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 600;
-  line-height: 1.25;
+  line-height: 1.2;
   letter-spacing: -1.15px;
   margin: 0;
   text-wrap: balance;
@@ -766,10 +772,11 @@ button svg,
 
 .form-description {
   color: #7a7e8f;
-  font-size: 14px;
-  line-height: 1.8;
-  margin: 12px 0 30px;
+  font-size: var(--auth-text-body);
+  line-height: 1.55;
+  margin: 8px 0 20px;
   overflow-wrap: anywhere;
+  text-wrap: pretty;
 }
 
 .form-description strong {
@@ -785,15 +792,15 @@ fieldset {
 }
 
 .form-field {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .form-field > label {
   display: block;
-  font-size: 12px;
+  font-size: var(--auth-text-label);
   font-weight: 550;
   color: #414555;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .input-wrap {
@@ -807,8 +814,8 @@ fieldset {
   background: white;
   border: 1px solid var(--input);
   border-radius: 7px;
-  padding: 11px 13px;
-  font-size: 14px;
+  padding: 10px 13px;
+  font-size: var(--auth-text-body);
   color: var(--foreground);
   transition:
     border-color 0.15s,
@@ -851,16 +858,16 @@ fieldset {
 .password-toggle {
   position: absolute;
   right: 6px;
-  top: 5px;
+  top: 6px;
   width: 35px;
   height: 35px;
 }
 
 .field-error,
 .field-hint {
-  font-size: 11px;
-  line-height: 1.65;
-  margin: 7px 0 0;
+  font-size: var(--auth-text-meta);
+  line-height: 1.45;
+  margin: 6px 0 0;
 }
 
 .field-error {
@@ -876,8 +883,10 @@ fieldset {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin: -1px 0 26px;
-  font-size: 11px;
+  margin: 0 0 16px;
+  font-size: var(--auth-text-meta);
+  flex-wrap: wrap;
+  row-gap: 8px;
 }
 
 .form-options > span {
@@ -890,12 +899,12 @@ fieldset {
 .button {
   border-radius: 7px;
   min-height: 46px;
-  padding: 11px 16px;
+  padding: 10px 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  font-size: 13px;
+  font-size: var(--auth-text-body);
   font-weight: 550;
   border: 1px solid transparent;
   transition:
@@ -953,10 +962,10 @@ fieldset {
 .form-divider {
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 10px;
   color: #727789;
-  font-size: 10px;
-  margin: 29px 0 21px;
+  font-size: var(--auth-text-caption);
+  margin: 20px 0 12px;
   white-space: nowrap;
 }
 
@@ -969,9 +978,10 @@ fieldset {
 .auth-benefits {
   display: flex;
   justify-content: center;
-  gap: 19px;
+  gap: 8px 14px;
   color: #7d8192;
-  font-size: 10px;
+  font-size: var(--auth-text-caption);
+  flex-wrap: wrap;
 }
 
 .auth-benefits > span {
@@ -986,10 +996,10 @@ fieldset {
 }
 
 .form-switch {
-  font-size: 12px;
+  font-size: var(--auth-text-label);
   color: #818596;
   text-align: center;
-  margin: 37px 0 0;
+  margin: 20px 0 0;
 }
 
 .form-switch > button {
@@ -997,13 +1007,14 @@ fieldset {
 }
 
 .auth-footer {
-  padding: 25px 20px 28px;
+  padding: 14px 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   color: #6d7282;
-  font-size: 10px;
+  font-size: var(--auth-text-caption);
+  text-align: center;
 }
 
 .dialog-backdrop {
@@ -1020,7 +1031,7 @@ fieldset {
   top: 50%;
   transform: translate(-50%, -50%);
   width: min(440px, calc(100% - 40px));
-  padding: 32px;
+  padding: 24px;
   background: white;
   border: 1px solid var(--border);
   box-shadow: 0 22px 80px #1e203830;
@@ -1029,17 +1040,17 @@ fieldset {
 }
 
 .dialog-popup h2 {
-  font-size: 21px;
+  font-size: 24px;
   font-weight: 600;
   letter-spacing: -0.5px;
-  margin: 0 25px 15px 0;
+  margin: 0 25px 12px 0;
 }
 
 .dialog-popup p {
-  font-size: 13px;
-  line-height: 1.8;
+  font-size: var(--auth-text-body);
+  line-height: 1.55;
   color: var(--muted-foreground);
-  margin: 15px 0;
+  margin: 12px 0;
 }
 
 .dialog-popup > .button {
@@ -1060,10 +1071,10 @@ fieldset {
   border: 1px solid #f2d8dd;
   border-radius: 7px;
   padding: 11px 12px;
-  font-size: 12px;
-  line-height: 1.6;
+  font-size: var(--auth-text-label);
+  line-height: 1.5;
   color: #a22d40;
-  margin: 0 0 18px;
+  margin: 0 0 14px;
   overflow-wrap: anywhere;
 }
 
@@ -1072,9 +1083,9 @@ fieldset {
   align-items: center;
   gap: 7px;
   color: #307559;
-  font-size: 11px;
+  font-size: var(--auth-text-label);
   line-height: 1.6;
-  margin: 0 0 20px;
+  margin: 0 0 14px;
 }
 
 .account-panel > .error-notice {
@@ -1088,7 +1099,7 @@ fieldset {
 }
 
 .verification-note {
-  margin-top: 18px;
+  margin-top: 12px;
   text-align: center;
 }
 
@@ -1097,8 +1108,8 @@ fieldset {
   gap: 10px;
   align-items: center;
   border-top: 1px solid var(--border);
-  padding-top: 22px;
-  margin-top: 30px;
+  padding-top: 16px;
+  margin-top: 20px;
 }
 
 .account-avatar {
@@ -1118,14 +1129,14 @@ fieldset {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  font-size: 11px;
+  font-size: var(--auth-text-label);
   flex: 1;
   overflow-wrap: anywhere;
 }
 
 .signed-in-details > div > span {
   color: var(--muted-foreground);
-  font-size: 10px;
+  font-size: var(--auth-text-meta);
 }
 
 .signed-in-details .button {
@@ -1143,11 +1154,11 @@ fieldset {
   align-items: flex-start;
   gap: 11px;
   background: #f4f8f6;
-  padding: 18px;
+  padding: 14px;
   border: 1px solid #e0ece5;
   border-radius: 8px;
   color: #438365;
-  font-size: 12px;
+  font-size: var(--auth-text-body);
 }
 
 .account-ready svg {
@@ -1159,15 +1170,15 @@ fieldset {
 }
 
 .account-ready p {
-  font-size: 11px;
+  font-size: var(--auth-text-label);
   color: #6e7e76;
-  line-height: 1.7;
+  line-height: 1.5;
   margin: 6px 0 0;
 }
 
 .muted {
   color: var(--muted-foreground);
-  font-size: 12px;
+  font-size: var(--auth-text-label);
 }
 
 .skeleton {
@@ -1179,7 +1190,7 @@ fieldset {
 .skeleton-icon {
   height: 49px;
   width: 49px;
-  margin-bottom: 28px;
+  margin-bottom: 16px;
 }
 
 .skeleton-title {
@@ -1191,7 +1202,7 @@ fieldset {
 .skeleton-copy {
   height: 14px;
   width: 90%;
-  margin-bottom: 25px;
+  margin-bottom: 16px;
 }
 
 .skip-link {
@@ -1230,32 +1241,32 @@ fieldset {
 @media (min-width: 1600px) {
   .story-content {
     max-width: 760px;
-    padding: 40px 60px;
+    padding: 24px 44px 16px;
   }
   .story-intro h2 {
     font-size: 76px;
   }
   .story-intro > p {
-    font-size: 17px;
+    font-size: 18px;
   }
   .workflow-preview {
-    margin-top: 48px;
+    margin-top: 24px;
   }
   .auth-form-container,
   .account-panel {
-    max-width: 400px;
+    max-width: 440px;
   }
 }
 
 @media (max-width: 1150px) {
   .story-header {
-    padding: 30px;
+    padding: 22px 24px;
   }
   .brand-tagline {
     display: none;
   }
   .story-content {
-    padding: 28px 28px 35px;
+    padding: 18px 24px 16px;
   }
   .story-intro {
     padding-left: 5px;
@@ -1264,21 +1275,21 @@ fieldset {
     font-size: 58px;
   }
   .story-footer {
-    padding: 24px 28px;
-    font-size: 9px;
+    padding: 14px 24px;
+    font-size: 12px;
   }
   .auth-header {
-    padding: 32px 28px;
+    padding: 22px 24px;
   }
   .auth-content {
-    padding: 30px 35px 50px;
+    padding: 24px 24px 20px;
   }
   .automation-card {
     margin-left: 6px;
     padding: 13px;
   }
   .automation-heading strong {
-    font-size: 10px;
+    font-size: 12px;
   }
   .automation-flow {
     margin-left: 0;
@@ -1306,39 +1317,39 @@ fieldset {
     font-size: 51px;
   }
   .story-intro > p {
-    font-size: 13px;
+    font-size: 16px;
   }
   .story-intro .eyebrow {
-    font-size: 8px;
+    font-size: 11px;
     letter-spacing: 1px;
   }
   .story-content {
-    padding: 25px 22px;
+    padding: 18px;
   }
   .automation-flow p {
-    font-size: 8px;
+    font-size: 11px;
   }
   .task-card p {
-    font-size: 9px;
+    font-size: 11px;
   }
   .automation-heading strong {
-    font-size: 9px;
+    font-size: 11px;
   }
   .story-footer span:first-child {
     display: none;
   }
   .auth-header > p {
-    font-size: 10px;
+    font-size: 14px;
   }
   .auth-content {
-    padding: 30px 27px 50px;
+    padding: 20px;
   }
   .auth-benefits {
-    gap: 9px;
-    font-size: 8px;
+    gap: 8px 12px;
+    font-size: 12px;
   }
   .form-options {
-    font-size: 9px;
+    font-size: 13px;
   }
 }
 
@@ -1353,10 +1364,11 @@ fieldset {
     min-height: 100svh;
   }
   .auth-header {
-    padding: 24px;
+    padding: 20px 24px;
     justify-content: space-between;
-    gap: 15px;
-    min-height: 90px;
+    gap: 12px;
+    min-height: 76px;
+    flex-wrap: wrap;
   }
   .mobile-brand {
     display: block;
@@ -1370,29 +1382,29 @@ fieldset {
     height: 29px;
   }
   .auth-header > p {
-    font-size: 10px;
+    font-size: 13px;
     justify-content: flex-end;
     gap: 4px;
-    max-width: 170px;
+    max-width: 190px;
   }
   .auth-header > p > .text-link {
     min-height: 28px;
   }
   .auth-content {
-    padding: 45px 28px 55px;
+    padding: 20px 24px;
   }
   .auth-form-container,
   .account-panel {
-    max-width: 390px;
+    max-width: 420px;
   }
   .auth-content h1 {
-    font-size: 34px;
+    font-size: 36px;
   }
   .form-description {
-    font-size: 13px;
+    font-size: 16px;
   }
   .form-field > label {
-    font-size: 12px;
+    font-size: 14px;
   }
   .input-wrap input {
     min-height: 48px;
@@ -1403,50 +1415,52 @@ fieldset {
   }
   .button {
     min-height: 46px;
-    font-size: 13px;
+    font-size: 16px;
   }
   .auth-footer {
-    padding: 22px 15px;
+    padding: 14px 20px;
   }
   .auth-benefits {
-    font-size: 10px;
-  }
-  .form-options {
-    font-size: 11px;
-  }
-  .form-switch {
     font-size: 12px;
   }
+  .form-options {
+    font-size: 13px;
+  }
+  .form-switch {
+    font-size: 14px;
+  }
   .form-emblem {
-    margin-bottom: 25px;
+    margin-bottom: 16px;
   }
 }
 
 @media (max-width: 380px) {
   .auth-header {
-    padding: 20px;
+    padding: 16px 20px;
   }
   .auth-header > p {
-    max-width: 140px;
+    max-width: none;
+    width: 100%;
+    justify-content: flex-start;
   }
   .auth-header .brand {
     font-size: 18px;
   }
   .auth-content {
-    padding: 30px 22px 40px;
+    padding: 16px 20px;
   }
   .auth-content h1 {
-    font-size: 30px;
+    font-size: 32px;
   }
   .auth-benefits {
-    font-size: 9px;
-    gap: 11px;
+    font-size: 12px;
+    gap: 8px 12px;
   }
   .form-options {
-    font-size: 10px;
+    font-size: 13px;
   }
   .form-switch {
-    font-size: 11px;
+    font-size: 14px;
   }
 }
 
