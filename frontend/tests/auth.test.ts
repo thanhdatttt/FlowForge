@@ -286,3 +286,41 @@ test('rate limits, offline failures, and unavailable services have actionable me
     /unavailable right now/,
   )
 })
+
+test('password recovery verifies OTP anonymously before resetting the password', async () => {
+  const calls: string[] = []
+  const grant = { resetToken: 'single-use-reset-token', expiresAt: new Date(Date.now() + 600_000).toISOString() }
+  globalThis.fetch = async (url, init) => {
+    calls.push(String(url))
+    assert.equal(init?.method, 'POST')
+    assert.equal((init?.headers as Record<string, string>)?.Authorization, undefined)
+    const body = JSON.parse(init?.body as string)
+    if (String(url).endsWith('/verify')) {
+      assert.deepEqual(body, { email: user.email, code: '000123' })
+      return json(grant)
+    }
+    if (String(url).endsWith('/reset-password'))
+      assert.deepEqual(body, { resetToken: grant.resetToken, password: 'NewPassword1!' })
+    else assert.deepEqual(body, { email: user.email })
+    return new Response(null, { status: 204 })
+  }
+  await authApi.forgotPassword(user.email)
+  assert.deepEqual(await authApi.verifyPasswordReset(user.email, '000123'), grant)
+  await authApi.resetPassword(grant.resetToken, 'NewPassword1!')
+  assert.deepEqual(calls, [
+    '/api/v1/auth/forgot-password',
+    '/api/v1/auth/forgot-password/verify',
+    '/api/v1/auth/reset-password',
+  ])
+  assert.equal(useSessionStore.getState().tokens, null)
+})
+
+test('recovery reports expired codes, invalid grants, and weak-password field errors', async () => {
+  globalThis.fetch = async () => json({ title: 'Invalid or expired verification code.' }, 400)
+  await assert.rejects(authApi.verifyPasswordReset(user.email, '000123'), { status: 400 })
+  globalThis.fetch = async () => json({ title: 'Validation failed', errors: { password: ['Use a stronger password.'] } }, 400)
+  await assert.rejects(authApi.resetPassword('grant', 'weak'), (error: unknown) =>
+    error instanceof ApiError && error.fields.password?.[0] === 'Use a stronger password.')
+  globalThis.fetch = async () => json({ title: 'Invalid or expired password reset token.' }, 400)
+  await assert.rejects(authApi.resetPassword('expired', 'NewPassword1!'), { status: 400 })
+})

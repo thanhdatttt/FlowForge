@@ -30,6 +30,18 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify({ refreshToken }),
     }),
+  forgotPassword: (email: string) =>
+    api<void>('/auth/forgot-password', {
+      method: 'POST', body: JSON.stringify({ email }),
+    }),
+  verifyPasswordReset: (email: string, code: string) =>
+    api<{ resetToken: string; expiresAt: string }>('/auth/forgot-password/verify', {
+      method: 'POST', body: JSON.stringify({ email, code }),
+    }),
+  resetPassword: (resetToken: string, password: string) =>
+    api<void>('/auth/reset-password', {
+      method: 'POST', body: JSON.stringify({ resetToken, password }),
+    }),
   requestCode: () =>
     api<void>('/auth/email-verification/request', { method: 'POST' }, true),
   confirmCode: (code: string) =>
