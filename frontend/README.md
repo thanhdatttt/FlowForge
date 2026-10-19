@@ -82,7 +82,7 @@ The `frontend` job in [Frontend CI](../.github/workflows/frontend-ci.yml) runs o
 
 Frontend CI reads Node.js 24 from `.nvmrc`, caches npm downloads using `frontend/package-lock.json`, and runs `npm ci`, lint, typecheck, tests, and the production build. A failed step fails the job. Tests use mocked HTTP responses and require no backend, database, SMTP credentials, or Vercel secrets.
 
-This covers the frontend's Phase 1 CI requirement. A successful local run does not confirm a GitHub-hosted run; the workflow must be committed and pushed to trigger GitHub Actions. End-to-end sign-in and verification against a real backend/SMTP service remain separate acceptance checks. This workflow validates the client; it does not deploy it.
+This covers the frontend's Phase 1 CI requirement. A successful local run does not confirm a GitHub-hosted run; a matching push to `main` or pull request targeting `main` is needed to trigger GitHub Actions. The [Phase 1 verification report](../docs/phase1_verification.md) records successful real-backend sign-in, token rotation, and logout, including a browser sign-in/sign-out check. Actual SMTP delivery and OTP confirmation remain unverified. This workflow validates the client; it does not deploy it.
 
 The shadcn CLI and build-time CSS dependency is pinned to `4.22.0`. The import `shadcn/tailwind.css` in `src/index.css` requires this package's CSS export; `shadcn@1.0.0` does not provide it and causes both development CSS loading and production builds to fail. The current npm audit report can suggest downgrading to `1.0.0` with `npm audit fix --force`; that downgrade is incompatible with this setup. Review dependency changes before accepting an audit fix.
 
