@@ -1,12 +1,16 @@
-name: CI
+name: Backend CI
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'backend/**'
   pull_request:
     branches:
       - main
+    paths:
+      - 'backend/**'
 
 permissions:
   contents: read

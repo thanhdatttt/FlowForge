@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="700" viewBox="0 0 660 700" fill="none">
+  <defs>
+    <linearGradient id="flow-top" x1="24" y1="250" x2="574" y2="16" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#087CFF"/>
+      <stop offset="1" stop-color="#119BFC"/>
+    </linearGradient>
+    <linearGradient id="flow-stem" x1="19" y1="650" x2="198" y2="363" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0C43A6"/>
+      <stop offset="1" stop-color="#074FBF"/>
+    </linearGradient>
+    <linearGradient id="flow-middle" x1="35" y1="465" x2="365" y2="219" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0758DA"/>
+      <stop offset="1" stop-color="#006BFA"/>
+    </linearGradient>
+    <linearGradient id="flow-badge" x1="451" y1="390" x2="627" y2="215" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0068F5"/>
+      <stop offset="1" stop-color="#0667FF"/>
+    </linearGradient>
+  </defs>
+  <path d="M24 272V245C24 117 122 16 248 16H624C638 16 647 27 642 41L630 77C609 133 553 169 498 169H230C141 169 72 211 24 272Z" fill="url(#flow-top)"/>
+  <path d="M19 410C19 310 112 220 230 219H389C405 219 418 232 418 248V281C418 328 381 362 335 362H198V554C198 626 143 681 72 681H44C30 681 19 671 19 657V410Z" fill="url(#flow-stem)"/>
+  <path d="M19 520V410C19 307 116 219 230 219H389C405 219 418 232 418 248V281C418 328 381 362 335 362H198C114 362 43 422 19 520Z" fill="url(#flow-middle)"/>
+  <rect x="451" y="215" width="176" height="175" rx="40" fill="url(#flow-badge)"/>
+  <path d="M497 299L527 330L581 272" stroke="white" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
