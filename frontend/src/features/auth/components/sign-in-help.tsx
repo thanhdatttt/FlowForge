@@ -12,7 +12,7 @@ export function SignInHelp() {
   const [open, setOpen] = useState(false)
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger className="text-link">Trouble signing in?</Dialog.Trigger>
+      <Dialog.Trigger className="text-link">Forgot password?</Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Backdrop className="dialog-backdrop" />
         <Dialog.Popup className="dialog-popup password-recovery-dialog">

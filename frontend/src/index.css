@@ -717,8 +717,8 @@ button svg,
 .auth-content {
   flex: 1;
   display: grid;
-  align-items: start;
-  padding: 28px 32px 24px;
+  place-items: center;
+  padding: 24px 32px;
 }
 
 .auth-form-container,
@@ -1282,7 +1282,7 @@ fieldset {
     padding: 22px 24px;
   }
   .auth-content {
-    padding: 24px 24px 20px;
+    padding: 24px;
   }
   .automation-card {
     margin-left: 6px;

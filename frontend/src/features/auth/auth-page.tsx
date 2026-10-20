@@ -139,7 +139,7 @@ export function AuthPage() {
               POSSIBILITY.
             </span>
             <h2>
-              Good work.
+              Good work
               <br />
               Great{' '}
               <span className="flow-word">
@@ -152,7 +152,6 @@ export function AuthPage() {
                   <path d="M3 9C40 2 106 1 166 7" />
                 </svg>
               </span>
-              .
             </h2>
             <p>
               Your projects, people, and processes.
