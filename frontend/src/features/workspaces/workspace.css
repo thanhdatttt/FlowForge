@@ -584,6 +584,21 @@
   line-height: 1.8;
   margin-block: 16px;
 }
+
+.workspace-card .error-notice,
+.workspace-dialog .error-notice {
+  margin: 0 0 14px;
+  font-size: var(--auth-text-label);
+  line-height: 1.5;
+  text-align: center;
+}
+.workspace-card .error-notice p,
+.workspace-dialog .error-notice p {
+  margin: 6px 0 0;
+  font-size: inherit;
+  line-height: inherit;
+  text-align: inherit;
+}
 @media (max-width: 700px) {
   .workspace-account {
     margin-block: 16px;

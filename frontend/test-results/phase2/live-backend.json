@@ -1,6 +1,6 @@
 {
-  "date": "2026-10-21T01:13:23.613Z",
-  "transport": "actual frontend clients \u2192 Vite proxy \u2192 unmodified ASP.NET Core API \u2192 disposable PostgreSQL 17",
+  "date": "2026-10-21T07:55:24.309Z",
+  "transport": "actual frontend clients → Vite proxy → unmodified ASP.NET Core API → disposable PostgreSQL 17",
   "smtp": "not configured; OTP challenges seeded only in disposable test database",
   "totals": {
     "passed": 24,
@@ -104,503 +104,6 @@
     {
       "name": "logout returns 204 and revoked refresh cannot restore the session",
       "passed": true
-    }
-  ],
-  "http": [
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/register",
-      "status": 400
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/register",
-      "status": 201
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/auth/me",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/register",
-      "status": 201
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/auth/me",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/register",
-      "status": 201
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/auth/me",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/register",
-      "status": 201
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/auth/me",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/login",
-      "status": 401
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/login",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/email-verification/request",
-      "status": 503
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/email-verification/confirm",
-      "status": 204
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/auth/me",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/email-verification/confirm",
-      "status": 400
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/email-verification/request",
-      "status": 204
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces",
-      "status": 201
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces",
-      "status": 201
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces",
-      "status": 200
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c",
-      "status": 200
-    },
-    {
-      "method": "PUT",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c",
-      "status": 200
-    },
-    {
-      "method": "PUT",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c",
-      "status": 400
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members",
-      "status": 201
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members",
-      "status": 201
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members",
-      "status": 409
-    },
-    {
-      "method": "PUT",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members/5942934c-b3bd-4361-a876-6894b2521ccc/role",
-      "status": 200
-    },
-    {
-      "method": "PUT",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members/5942934c-b3bd-4361-a876-6894b2521ccc/role",
-      "status": 200
-    },
-    {
-      "method": "DELETE",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members/5942934c-b3bd-4361-a876-6894b2521ccc",
-      "status": 204
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members",
-      "status": 201
-    },
-    {
-      "method": "DELETE",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members/2881b9a3-1182-48ca-8903-9b30205753a3",
-      "status": 403
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members",
-      "status": 400
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
-      "status": 201
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
-      "status": 409
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
-      "status": 400
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
-      "status": 200
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
-      "status": 200
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
-      "status": 200
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
-      "status": 200
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
-      "status": 200
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
-      "status": 400
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/members",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/members",
-      "status": 201
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/members",
-      "status": 409
-    },
-    {
-      "method": "DELETE",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/members/5942934c-b3bd-4361-a876-6894b2521ccc",
-      "status": 204
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/members",
-      "status": 201
-    },
-    {
-      "method": "DELETE",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/members/4a0b3284-679a-4e62-b6f3-b7cbace4e55c",
-      "status": 409
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
-      "status": 200
-    },
-    {
-      "method": "PUT",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
-      "status": 200
-    },
-    {
-      "method": "PUT",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
-      "status": 409
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
-      "status": 403
-    },
-    {
-      "method": "PUT",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c",
-      "status": 403
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/invitations",
-      "status": 403
-    },
-    {
-      "method": "PUT",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
-      "status": 200
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
-      "status": 200
-    },
-    {
-      "method": "PUT",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
-      "status": 403
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/archive",
-      "status": 403
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/members",
-      "status": 403
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c",
-      "status": 404
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
-      "status": 404
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/52cbb218-4119-4369-9bcc-701ea6d2f627/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
-      "status": 404
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/archive",
-      "status": 200
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
-      "status": 200
-    },
-    {
-      "method": "PUT",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
-      "status": 409
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/members",
-      "status": 409
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/restore",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/invitations",
-      "status": 201
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/invitations",
-      "status": 200
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/invitations/35010a1c-756e-43f7-bd82-786283f0920a",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/invitations/accept",
-      "status": 403
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/email-verification/confirm",
-      "status": 204
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/auth/me",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/invitations/accept",
-      "status": 204
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/invitations/accept",
-      "status": 409
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/52cbb218-4119-4369-9bcc-701ea6d2f627/invitations",
-      "status": 201
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/invitations/reject",
-      "status": 204
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/invitations/63c520db-b365-4e48-b8ad-b0f9962b28d5",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/52cbb218-4119-4369-9bcc-701ea6d2f627/invitations",
-      "status": 201
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/52cbb218-4119-4369-9bcc-701ea6d2f627/invitations/ce7f27d0-0b07-423b-8d0b-0ea6999c1de3/revoke",
-      "status": 204
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/52cbb218-4119-4369-9bcc-701ea6d2f627/invitations",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/ownership/transfer",
-      "status": 400
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/ownership/transfer",
-      "status": 204
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c",
-      "status": 200
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/refresh",
-      "status": 200
-    },
-    {
-      "method": "GET",
-      "path": "/api/v1/workspaces",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/forgot-password",
-      "status": 503
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/forgot-password/verify",
-      "status": 400
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/forgot-password/verify",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/reset-password",
-      "status": 400
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/reset-password",
-      "status": 204
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/reset-password",
-      "status": 400
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/login",
-      "status": 401
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/login",
-      "status": 200
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/logout",
-      "status": 204
-    },
-    {
-      "method": "POST",
-      "path": "/api/v1/auth/refresh",
-      "status": 401
     }
   ],
   "operations": [
@@ -739,6 +242,503 @@
     {
       "method": "PUT",
       "path": "/api/v1/workspaces/:id/projects/:id"
+    }
+  ],
+  "http": [
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "status": 401
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/request",
+      "status": 503
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/confirm",
+      "status": 204
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/confirm",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/request",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/members",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/members",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/members",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/members",
+      "status": 409
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/members/cde1eebf-8bc4-411a-86b9-6eb5d0201e19/role",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/members/cde1eebf-8bc4-411a-86b9-6eb5d0201e19/role",
+      "status": 200
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/members/cde1eebf-8bc4-411a-86b9-6eb5d0201e19",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/members",
+      "status": 201
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/members/d0d551e7-ff35-4462-bb48-d78716b62453",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/members",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects",
+      "status": 400
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects",
+      "status": 400
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f/members",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f/members",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f/members",
+      "status": 409
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f/members/cde1eebf-8bc4-411a-86b9-6eb5d0201e19",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f/members",
+      "status": 201
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f/members/2580b4e6-cbd2-4a0c-8d16-56c8722a499d",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects",
+      "status": 403
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/invitations",
+      "status": 403
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f/archive",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f/members",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/fb2b282f-6d99-4953-a10f-2aefb72afa40/projects/eca79995-2bdb-4fb1-9759-37185beab81f",
+      "status": 404
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f/archive",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f/members",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/projects/eca79995-2bdb-4fb1-9759-37185beab81f/restore",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/invitations",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/invitations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/invitations/8b4101cd-e27b-4906-a4e1-d11948f76cf8",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/invitations/accept",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/confirm",
+      "status": 204
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/invitations/accept",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/invitations/accept",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/fb2b282f-6d99-4953-a10f-2aefb72afa40/invitations",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/invitations/reject",
+      "status": 204
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/invitations/d408efc9-3811-481d-8996-784d642c23d2",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/fb2b282f-6d99-4953-a10f-2aefb72afa40/invitations",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/fb2b282f-6d99-4953-a10f-2aefb72afa40/invitations/da8dcf6c-60c5-4d91-9d26-c1625aaf1b33/revoke",
+      "status": 204
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/fb2b282f-6d99-4953-a10f-2aefb72afa40/invitations",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/ownership/transfer",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056/ownership/transfer",
+      "status": 204
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/93335aa8-bc07-434d-a76b-416bff395056",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/refresh",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/forgot-password",
+      "status": 503
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/forgot-password/verify",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/forgot-password/verify",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/reset-password",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/reset-password",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/reset-password",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "status": 401
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/logout",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/refresh",
+      "status": 401
     }
   ]
 }

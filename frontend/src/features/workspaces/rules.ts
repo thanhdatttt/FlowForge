@@ -44,22 +44,30 @@ export type Route = {
   workspaceId?: string
   section: 'projects' | 'members' | 'invitations' | 'settings'
   projectId?: string
+  projectSection?: 'work-items' | 'labels' | 'activity'
+  itemId?: string
 }
 export function parseRoute(path: string): Route {
   const match =
-    /^\/workspaces\/([^/]+)(?:\/(projects|members|invitations|settings))?(?:\/([^/]+))?\/?$/.exec(
+    /^\/workspaces\/([^/]+)(?:\/(projects|members|invitations|settings))?(?:\/([^/]+))?(?:\/(work-items|labels|activity)(?:\/([^/]+))?)?\/?$/.exec(
       path,
     )
   if (
     !match ||
     !uuid.test(match[1]) ||
-    (match[3] && (match[2] !== 'projects' || !uuid.test(match[3])))
+    (match[3] && (match[2] !== 'projects' || !uuid.test(match[3]))) ||
+    (match?.[4] && !match[3]) ||
+    (match?.[5] && (match[4] !== 'work-items' || !uuid.test(match[5])))
   )
     return { section: 'projects' }
   return {
     workspaceId: match[1],
     section: (match[2] as Route['section']) || 'projects',
     projectId: match[3],
+    ...(match[4]
+      ? { projectSection: match[4] as Route['projectSection'] }
+      : {}),
+    ...(match[5] ? { itemId: match[5] } : {}),
   }
 }
 

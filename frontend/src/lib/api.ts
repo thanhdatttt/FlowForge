@@ -14,13 +14,19 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+async function request<T>(
+  path: string,
+  init: RequestInit = {},
+  responseType: 'json' | 'blob' = 'json',
+): Promise<T> {
   let response: Response
   try {
     response = await fetch(`/api/v1${path}`, {
       ...init,
       headers: {
-        ...(init.body ? { 'Content-Type': 'application/json' } : {}),
+        ...(init.body && !(init.body instanceof FormData)
+          ? { 'Content-Type': 'application/json' }
+          : {}),
         ...init.headers,
       },
       signal: init.signal ?? AbortSignal.timeout(30_000),
@@ -50,7 +56,9 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
   return response.status === 204
     ? (undefined as T)
-    : (response.json() as Promise<T>)
+    : ((responseType === 'blob'
+        ? response.blob()
+        : response.json()) as Promise<T>)
 }
 
 let refreshPromise: Promise<AuthTokens> | null = null
@@ -97,18 +105,23 @@ export async function api<T>(
   path: string,
   init: RequestInit = {},
   authenticated = false,
+  responseType: 'json' | 'blob' = 'json',
 ): Promise<T> {
-  if (!authenticated) return request<T>(path, init)
+  if (!authenticated) return request<T>(path, init, responseType)
   let tokens = useSessionStore.getState().tokens
   if (!tokens)
     throw new ApiError('Your session has ended. Please sign in again.', 401)
   if (Date.parse(tokens.accessTokenExpiresAt) <= Date.now() + 30_000)
     tokens = await refresh()
   const send = (accessToken: string) =>
-    request<T>(path, {
-      ...init,
-      headers: { ...init.headers, Authorization: `Bearer ${accessToken}` },
-    })
+    request<T>(
+      path,
+      {
+        ...init,
+        headers: { ...init.headers, Authorization: `Bearer ${accessToken}` },
+      },
+      responseType,
+    )
   try {
     return await send(tokens.accessToken)
   } catch (error) {

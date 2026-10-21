@@ -1,0 +1,73 @@
+{
+  "date": "2026-10-21",
+  "scope": "Phase 3 frontend completion audit and full regression; no backend source changes",
+  "requiredFrontendTasks": {
+    "completed": 12,
+    "outstanding": 0
+  },
+  "fixes": [
+    "Preserve loaded editors/drafts across transient background read failures; hide content for 401/403/404",
+    "Preserve unchanged time-entry instants across native datetime normalization, microsecond precision and DST overlap",
+    "Normalize project item keys without floating-point rounding"
+  ],
+  "frontend": {
+    "tests": 48,
+    "passed": 48,
+    "failed": 0,
+    "lint": "passed without warnings",
+    "typecheck": "passed",
+    "productionBuild": "passed"
+  },
+  "backend": {
+    "tests": 227,
+    "passed": 227,
+    "failed": 0,
+    "skipped": 0,
+    "evidence": "backend-suite.json"
+  },
+  "liveClients": {
+    "authAndPhase2": {
+      "scenarios": 24,
+      "passed": 24,
+      "requests": 99,
+      "evidence": "../phase2/live-backend.json"
+    },
+    "phase3": {
+      "scenarios": 13,
+      "passed": 13,
+      "requests": 107,
+      "evidence": "live-backend.json"
+    }
+  },
+  "browser": {
+    "method": "Manual CUA against unchanged backend and disposable PostgreSQL; loopback proxy injected read-only faults",
+    "draftRecovery": {
+      "injected503Reads": 13,
+      "titlePreserved": true,
+      "descriptionPreserved": true,
+      "staleSaveDisabled": true,
+      "recoveryRefreshSucceeded": true,
+      "screenshot": "browser-draft-recovery.jpg"
+    },
+    "noteOnlyTimeEdit": {
+      "startedAtBefore": "2026-10-21T02:00:00.000123+00:00",
+      "startedAtAfter": "2026-10-21T02:00:00.000123+00:00",
+      "exactMatch": true
+    },
+    "deepLinkSignInAndReload": "passed",
+    "labelCreation": "passed",
+    "viewerReadOnly": "passed",
+    "mobile": {
+      "viewport": 390,
+      "client": 375,
+      "scroll": 375,
+      "horizontalOverflow": false
+    },
+    "finalConsoleWarningsOrErrors": 0,
+    "viewerScreenshot": "browser-recheck-viewer.jpg"
+  },
+  "limitations": [
+    "Real SMTP delivery, production hosting, and large-project load were not tested",
+    "Browser verification is manual, not an automated browser suite"
+  ]
+}

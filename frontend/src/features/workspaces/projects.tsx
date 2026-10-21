@@ -60,7 +60,7 @@ function ProjectForm({
     >
       {conflict ? (
         <div>
-          <p role="alert">
+          <p className="error-notice" role="alert">
             The project changed while you were editing. Close this dialog and
             reopen it to edit the latest version. Your changes were not saved.
           </p>

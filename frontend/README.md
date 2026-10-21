@@ -2,7 +2,7 @@
 
 Frontend for the stack defined in [the architecture document](../docs/architecture.md): React, TypeScript, TanStack Query, Zustand, and shadcn/ui. Vite provides development and production builds; Tailwind CSS provides shadcn/ui styling. The SignalR client package is installed for future live updates.
 
-The first product slice implements responsive sign-in, registration, account confirmation, email verification, rotating access/refresh tokens, and sign-out. Shared buttons and fields use the existing shadcn theme; Base UI handles accessible dialog behavior. Phase 2 adds workspace, membership, invitation, ownership and project screens. SignalR connections remain a later frontend phase. See [Phase 2 scope and verification](../docs/phase2_frontend.md). Design decisions and boundaries are in [the frontend design document](../docs/frontend-design.md).
+The first product slice implements responsive sign-in, registration, account confirmation, email verification, rotating access/refresh tokens, and sign-out. Shared buttons and fields use the existing shadcn theme; Base UI handles accessible dialog behavior. Phase 2 adds workspace, membership, invitation, ownership and project screens. Phase 3 adds task/issue management, labels, subtasks, dependencies, comments/mentions, attachments, time entries and activity inside projects. SignalR connections remain a later frontend phase. See [Phase 2 scope and verification](../docs/phase2_frontend.md), [Phase 3 scope and verification](../docs/phase3_frontend.md), and [the frontend design document](../docs/frontend-design.md).
 
 ## Run locally
 

@@ -21,7 +21,8 @@ import { text } from './rules'
 import { WorkspaceSettings } from './workspace-settings'
 import { WorkspaceMembers } from './workspace-members'
 import { WorkspaceInvitations } from './workspace-invitations'
-import { ProjectDetail, Projects } from './projects'
+import { Projects } from './projects'
+import { ProjectWork } from '@/features/work-items/project'
 import { InvitationEntry, InvitationPage } from './invitation-page'
 
 export function WorkspaceApp({
@@ -215,6 +216,7 @@ export function WorkspaceApp({
               variant="secondary"
               onClick={() => {
                 void client.invalidateQueries({ queryKey: ['phase2'] })
+                void client.invalidateQueries({ queryKey: ['phase3'] })
                 void user.refetch()
               }}
             >
@@ -225,6 +227,7 @@ export function WorkspaceApp({
         <ErrorNotice error={logoutError} />
         <QueryState
           pending={user.isPending}
+          hasData={!!user.data}
           error={user.error}
           retry={user.refetch}
         >
@@ -247,6 +250,7 @@ export function WorkspaceApp({
             ) : route.workspaceId ? (
               <QueryState
                 pending={selected.isPending}
+                hasData={!!selected.data}
                 error={selected.error}
                 retry={selected.refetch}
               >
@@ -417,10 +421,12 @@ function WorkspaceContent({
     )
   if (route.projectId)
     return (
-      <ProjectDetail
+      <ProjectWork
         key={route.projectId}
         workspace={workspace}
-        projectId={route.projectId}
+        route={route}
+        userId={user.id}
+        navigate={navigate}
       />
     )
   return <Projects workspace={workspace} navigate={navigate} />

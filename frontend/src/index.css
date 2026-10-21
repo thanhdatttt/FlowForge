@@ -1067,6 +1067,13 @@ fieldset {
 }
 
 .error-notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
   background: #fff3f4;
   border: 1px solid #f2d8dd;
   border-radius: 7px;
@@ -1076,6 +1083,29 @@ fieldset {
   color: #a22d40;
   margin: 0 0 14px;
   overflow-wrap: anywhere;
+  text-align: center;
+}
+
+/* The same message rhythm applies inside cards, forms and dialogs. */
+.error-notice > div {
+  min-width: 0;
+  width: 100%;
+}
+
+.error-notice p {
+  margin: 6px 0 0;
+  font-size: inherit;
+  line-height: inherit;
+  text-align: inherit;
+}
+
+.error-notice.error-summary {
+  list-style: none;
+}
+
+.error-notice.error-summary li {
+  margin: 0;
+  padding: 0;
 }
 
 .success-notice {
@@ -1151,7 +1181,8 @@ fieldset {
 
 .account-ready {
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
   gap: 11px;
   background: #f4f8f6;
   padding: 14px;
@@ -1163,6 +1194,14 @@ fieldset {
 
 .account-ready svg {
   flex-shrink: 0;
+}
+
+.account-ready-heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 100%;
 }
 
 .account-ready strong {
@@ -1553,6 +1592,9 @@ fieldset {
   justify-content: center;
   margin-block: 20px;
 }
+.account-panel .success-notice svg {
+  flex-shrink: 0;
+}
 .account-panel .verification-note {
   margin-top: 20px;
   line-height: 1.8;
@@ -1560,11 +1602,11 @@ fieldset {
 .account-panel .account-ready {
   justify-content: center;
   padding: 20px;
-  gap: 14px;
-  text-align: left;
+  gap: 8px;
+  text-align: center;
 }
 .account-panel .account-ready p {
-  margin-top: 8px;
+  margin: 0;
   line-height: 1.7;
 }
 .account-panel .signed-in-details {

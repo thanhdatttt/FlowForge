@@ -29,7 +29,7 @@ export function InvitationEntry({
           )
           if (!link) {
             setError(
-              'Enter a full invitation link including its #token= fragment.',
+              'Invalid invitation link.',
             )
             return
           }

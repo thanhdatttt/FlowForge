@@ -37,41 +37,63 @@ export function QueryState({
   error,
   retry,
   children,
+  hasData = false,
 }: {
   pending: boolean
   error: unknown
   retry: () => unknown
   children?: ReactNode
+  hasData?: boolean
 }) {
-  if (pending)
+  if (pending && !hasData)
     return (
       <p role="status" className="workspace-empty">
         Loading…
       </p>
     )
-  if (error)
-    return (
-      <>
-        <ErrorNotice error={error} />
-        <Button variant="secondary" onClick={() => void retry()}>
-          Refresh
-        </Button>
-      </>
-    )
-  return <>{children}</>
+  const transient =
+    error instanceof ApiError &&
+    (error.status === 0 || error.status === 429 || error.status >= 500)
+  return (
+    <>
+      {error && (
+        <div>
+          <ErrorNotice error={error} />
+          <Button variant="secondary" onClick={() => void retry()}>
+            Refresh
+          </Button>
+        </div>
+      )}
+      {(!error || (hasData && transient)) && children}
+    </>
+  )
 }
 export function SelectField({
   label,
   children,
+  error,
   ...props
-}: SelectHTMLAttributes<HTMLSelectElement> & { label: string }) {
+}: SelectHTMLAttributes<HTMLSelectElement> & {
+  label: string
+  error?: string
+}) {
   const id = useId()
   return (
     <div className="form-field">
       <label htmlFor={id}>{label}</label>
-      <select id={id} {...props}>
+      <select
+        id={id}
+        {...props}
+        aria-invalid={!!error}
+        aria-describedby={error ? `${id}-error` : undefined}
+      >
         {children}
       </select>
+      {error && (
+        <p id={`${id}-error`} className="field-error">
+          {error}
+        </p>
+      )}
     </div>
   )
 }
@@ -151,12 +173,16 @@ export function ActionForm({
   label = 'Save',
   done,
   onConflict,
+  invalidateKeys = [['phase2']],
+  disabled = false,
 }: {
   children: (fieldError: (name: string) => string | undefined) => ReactNode
   submit: (data: FormData) => Promise<unknown>
   label?: string
   done?: () => void
   onConflict?: (error: ApiError) => void
+  invalidateKeys?: readonly (readonly unknown[])[]
+  disabled?: boolean
 }) {
   const client = useQueryClient()
   const [busy, setBusy] = useState(false)
@@ -165,13 +191,17 @@ export function ActionForm({
   const form = useRef<HTMLFormElement>(null)
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (busy) return
+    if (busy || disabled) return
     const data = new FormData(event.currentTarget)
     setBusy(true)
     setError(null)
     try {
       await submit(data)
-      await client.invalidateQueries({ queryKey: ['phase2'] })
+      await Promise.all(
+        invalidateKeys.map((queryKey) =>
+          client.invalidateQueries({ queryKey }),
+        ),
+      )
       done?.()
     } catch (failure) {
       setError(failure)
@@ -179,7 +209,11 @@ export function ActionForm({
         failure instanceof ApiError &&
         [403, 404, 409].includes(failure.status)
       ) {
-        await client.invalidateQueries({ queryKey: ['phase2'] })
+        await Promise.all(
+          invalidateKeys.map((queryKey) =>
+            client.invalidateQueries({ queryKey }),
+          ),
+        )
         if (failure.status === 409) onConflict?.(failure)
       }
       requestAnimationFrame(() =>
@@ -204,7 +238,7 @@ export function ActionForm({
         {children(fieldError)}
         <ErrorNotice error={error} />
         {error instanceof ApiError && Object.keys(error.fields).length > 0 && (
-          <ul role="alert" className="field-error">
+          <ul role="alert" className="error-notice error-summary">
             {Object.entries(error.fields).map(([name, messages]) => (
               <li key={name}>
                 {name}: {messages.join(' ')}
@@ -212,7 +246,7 @@ export function ActionForm({
             ))}
           </ul>
         )}
-        <Button type="submit" loading={busy}>
+        <Button type="submit" loading={busy} disabled={disabled}>
           {label}
         </Button>
       </fieldset>
@@ -224,16 +258,23 @@ export function ConfirmAction({
   description,
   label,
   run,
+  invalidateKeys,
 }: {
   title: string
   description: string
   label: string
   run: () => Promise<unknown>
+  invalidateKeys?: readonly (readonly unknown[])[]
 }) {
   return (
     <Modal title={title} description={description} trigger={label}>
       {(close) => (
-        <ActionForm label={label} submit={run} done={close}>
+        <ActionForm
+          label={label}
+          submit={run}
+          done={close}
+          invalidateKeys={invalidateKeys}
+        >
           {() => null}
         </ActionForm>
       )}

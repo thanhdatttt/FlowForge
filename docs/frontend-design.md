@@ -55,3 +55,9 @@ TanStack Query owns workspace/project/member/invitation data using workspace/pro
 ### Account and status presentation
 
 Center the account card within the application content and align account headings, verification copy and the OTP field to its center. Keep identity details left-aligned within their row. Use red text and a pale red surface for sign-out, green for active/accepted states, amber for pending invitations and slate for archived/expired/revoked or disabled controls. Retain explicit labels alongside color. Give headings, descriptions, identity rows and verification hints enough vertical separation and comfortable line height on desktop and mobile.
+
+## Phase 3 work items and collaboration
+
+Extend the existing project with Overview, Work items, Labels and Activity navigation. Continue the workspace theme and native controls/Base UI dialogs. Use readable keys, wrapping item rows, explicit status/priority text and subtle badges. Label colors appear as small swatches with readable names rather than arbitrary text/background combinations. Keep dependency blocking separate from the item's status.
+
+Item details group metadata, related work, comments, files, time and activity into the existing bordered surfaces, with anchor links for long pages. Comments are plain text with member mentions. Archived projects/items and Viewer access explicitly show read-only behavior. Snapshot item/comment forms preserve drafts on conflict and require reopening with the current version before saving. Scope, routes, API limitations and verification are in [phase3_frontend.md](phase3_frontend.md).

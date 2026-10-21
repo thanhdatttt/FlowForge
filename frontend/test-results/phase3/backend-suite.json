@@ -1,0 +1,931 @@
+{
+  "date": "2026-10-21",
+  "counters": {
+    "total": "227",
+    "executed": "227",
+    "passed": "227",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "tests": [
+    {
+      "name": "FlowForge.Api.Tests.PasswordResetTests.Request_is_generic_normalizes_email_and_silently_limits_resends",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Workspace_names_are_required_for_creation_and_update(name: \"\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Empty_conditions_handle_nullable_and_collection_fields(field: \"Assignee\", op: \"IsNotEmpty\", expected: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseThreeCoverageTests.Remaining_phase_three_endpoint_operations_complete_a_project_journey",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoIntegrationTests.Projects_enforce_explicit_membership_role_rules_and_workspace_isolation",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.BackendCoverageTests.Malformed_json_returns_a_client_error_without_mutating_the_workspace(body: \"null\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Retry_resumes_after_committed_actions_and_terminal_errors_are_safe(permanent: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Numeric_and_unknown_roles_are_rejected(role: \"Unknown\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Conditions_use_typed_comparisons(field: \"Type\", op: \"Equals\", value: \"Issue\", expected: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PasswordHashingTests.Hash_is_salted_and_verifies_only_the_original_password",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Queued_workflow_email_rechecks_recipient_access_and_missing_smtp_is_diagnosable",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Otp_accepts_leading_zeros",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourRealtimeTests.Signalr_authorizes_subscriptions_delivers_compact_events_and_recovers_by_refetch_after_reconnect",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Iso_date_conditions_use_gregorian_dates_independently_of_host_culture(culture: \"th-TH\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoRulesTests.Project_permissions_distinguish_metadata_management_and_resource_writes(role: Manager, create: False, manage: True, write: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.SystemAuditTests.Signed_tokens_with_missing_malformed_or_empty_subject_are_rejected_at_authentication(subject: \"00000000-0000-0000-0000-000000000000\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Empty_conditions_handle_nullable_and_collection_fields(field: \"Assignee\", op: \"IsEmpty\", expected: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseThreeCoverageTests.Work_item_filters_activity_details_and_outbox_follow_committed_changes",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.BackendCoverageTests.Malformed_json_returns_a_client_error_without_mutating_the_workspace(body: \"{\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Invalid_condition_configurations_are_rejected(field: \"Type\", op: \"Equals\", value: \"Epic\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Api_events_schedule_and_execute_matching_rules(trigger: \"WorkItemStatusChanged\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.BackendCoverageTests.Registration_normalizes_identity_and_persists_only_password_and_refresh_hashes",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.GmailSmtpEmailSenderTests.Gmail_credentials_accept_grouped_app_passwords_without_sending_formatting_whitespace(password: \"abcdefghijklmnop\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.WorkspacePermissionsTests.Roles_grant_only_their_intended_permissions(role: Viewer, manageMembers: False, manageProjects: False, writeWorkItems: False, transferOwnership: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Empty_member_and_owner_identifiers_are_reported_on_the_correct_fields",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Pagination_accepts_defaults_and_boundaries(page: 1000000, pageSize: 100)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Concurrent_schedulers_and_runners_deduplicate_and_break_multi_workflow_loops",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.In_matches_any_allowlisted_value",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoIntegrationTests.Feature_endpoints_return_field_validation_errors_after_authorizing_the_request",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoRulesTests.Project_permissions_distinguish_metadata_management_and_resource_writes(role: Owner, create: True, manage: True, write: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RegisterRequestValidationTests.Accepts_strong_passwords_at_length_boundaries(length: 128)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Depth_limits_and_poison_events_do_not_starve_later_valid_events",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseThreeIntegrationTests.Work_items_assignments_cycles_archiving_and_permissions",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.GmailSmtpEmailSenderTests.Missing_credentials_fail_before_attempting_delivery(username: null, password: \"abcdefghijklmnop\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PasswordResetTests.Anonymous_recovery_changes_only_password_and_revokes_all_refresh_families",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoIntegrationTests.Invitation_roles_identity_expiration_revocation_and_rejection_are_enforced",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Invalid_project_keys_are_rejected(key: \"1AB\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.HostConfigurationTests.Missing_or_short_signing_keys_prevent_startup(key: \"too-short\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourReliabilityTests.Disabled_smtp_keeps_in_app_notifications_available_without_creating_email_jobs",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoIntegrationTests.Project_validation_unique_keys_search_pagination_and_archive_behavior",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Otp_requires_six_ascii_digits(code: \"12345\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.WorkspacePermissionsTests.Admin_cannot_assign_or_modify_owner_or_admin_roles",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.BackendCoverageTests.Workspace_reads_renames_role_changes_and_removal_use_current_membership",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RegisterRequestValidationTests.Rejects_short_or_weak_passwords(password: \"Aa1!abc\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RegisterRequestValidationTests.Rejects_short_or_weak_passwords(password: \"Abcdef12\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Invalid_project_keys_are_rejected(key: \"A\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Invalid_condition_configurations_are_rejected(field: \"Priority\", op: \"Execute\", value: \"High\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourReliabilityTests.Retry_classification_does_not_retry_permanent_smtp_failures(status: MailboxUnavailable, retry: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Hosted_worker_schedules_executes_and_scans_dates_through_registered_services",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Empty_conditions_handle_nullable_and_collection_fields(field: \"Description\", op: \"IsEmpty\", expected: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Retry_resumes_after_committed_actions_and_terminal_errors_are_safe(permanent: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Conditions_use_typed_comparisons(field: \"DueDate\", op: \"GreaterThan\", value: \"2026-10-19\", expected: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Numeric_and_unknown_roles_are_rejected(role: \"1\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoIntegrationTests.Malformed_codes_count_as_attempts_and_leading_zero_codes_are_supported",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveHostTests.Invalid_workflow_job_configuration_prevents_startup(setting: \"BatchSize\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Conditions_use_typed_comparisons(field: \"Status\", op: \"Equals\", value: \"Todo\", expected: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveHostTests.Invalid_workflow_job_configuration_prevents_startup(setting: \"DateScanIntervalMinutes\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoIntegrationTests.Verification_requires_authentication_and_matching_unexpired_single_use_code",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.BackendCoverageTests.Malformed_json_returns_a_client_error_without_mutating_the_workspace(body: \"{\\\"name\\\":123}\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PasswordResetTests.Weak_password_does_not_consume_grant_and_parallel_resets_have_one_winner",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.SystemAuditTests.Signed_tokens_with_missing_malformed_or_empty_subject_are_rejected_at_authentication(subject: null)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Scheduling_pins_immutable_versions_and_rejects_stale_updates",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Valid_project_key_boundaries_and_same_day_dates_are_accepted(key: \"AB\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoIntegrationTests.Invitation_can_precede_registration_and_acceptance_is_atomic",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Project_validation_collects_all_invalid_fields",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Conditions_read_current_state_once_and_nonmatches_preserve_items",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourLoggingTests.Request_logs_preserve_method_path_status_and_duration_without_query_tokens",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Invalid_condition_configurations_are_rejected(field: \"Actor\", op: \"Equals\", value: \"not-a-user\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.BackendCoverageTests.Expired_refresh_and_inactive_accounts_cannot_authenticate",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Role_syntax_accepts_named_roles_independently_of_assignment_permissions(role: \"Viewer\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Otp_requires_six_ascii_digits(code: \"abcdef\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Conditions_use_typed_comparisons(field: \"Priority\", op: \"LessThanOrEqual\", value: \"Medium\", expected: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Conditions_use_typed_comparisons(field: \"Title\", op: \"Equals\", value: \"Example\", expected: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RegisterRequestValidationTests.Rejects_short_or_weak_passwords(password: \"\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoIntegrationTests.Database_rejects_cross_workspace_project_membership_and_leads",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Conditions_use_typed_comparisons(field: \"Priority\", op: \"NotEquals\", value: \"High\", expected: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Api_events_schedule_and_execute_matching_rules(trigger: \"CommentAdded\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PasswordResetTests.Expired_wrong_and_malformed_codes_cannot_issue_a_token_and_lock_after_five_attempts",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoIntegrationTests.Ownership_transfer_requires_a_verified_active_member_and_serializes_concurrent_transfers",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoIntegrationTests.Otp_attempt_limit_is_persisted_under_concurrent_wrong_guesses",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.BackendCoverageTests.Project_filters_sorts_and_pagination_return_only_matching_authorized_rows",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Api_events_schedule_and_execute_matching_rules(trigger: \"WorkItemCreated\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Role_syntax_accepts_named_roles_independently_of_assignment_permissions(role: \"Developer\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Conditions_use_typed_comparisons(field: \"Priority\", op: \"GreaterThanOrEqual\", value: \"High\", expected: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.BackendCoverageTests.Invitation_pages_terminal_states_and_admin_role_restrictions_are_enforced",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourReliabilityTests.Hosted_worker_runs_registered_overdue_dispatch_and_email_services",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourReliabilityTests.Retry_classification_does_not_retry_permanent_smtp_failures(status: MailboxBusy, retry: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseThreeCoverageTests.Upload_removes_private_file_if_the_database_commit_fails",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Invalid_condition_configurations_are_rejected(field: \"Status\", op: \"GreaterThan\", value: \"Todo\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Conditions_use_typed_comparisons(field: \"Priority\", op: \"LessThan\", value: \"Critical\", expected: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.BackendCoverageTests.Project_lead_changes_member_removal_and_archive_idempotency_preserve_versions_and_history",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.WorkspacePermissionsTests.Roles_grant_only_their_intended_permissions(role: Owner, manageMembers: True, manageProjects: True, writeWorkItems: True, transferOwnership: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourReliabilityTests.Malformed_events_and_exhausted_crash_claims_fail_without_poisoning_other_messages",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourIntegrationTests.Comment_edits_notify_only_new_mentions_and_deletions_cancel_pending_email",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoIntegrationTests.Concurrent_project_creation_and_membership_addition_preserve_unique_constraints",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Workspace_names_are_required_for_creation_and_update(name: null)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Empty_conditions_handle_nullable_and_collection_fields(field: \"Label\", op: \"IsEmpty\", expected: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PasswordResetTests.Confirmation_is_bound_to_account_purpose_and_is_single_use_even_concurrently",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Api_events_schedule_and_execute_matching_rules(trigger: \"WorkItemAssignmentChanged\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.SystemAuditTests.Concurrent_refresh_reuse_revokes_the_winning_replacement",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.SystemAuditTests.Time_entries_accept_offset_timestamps_and_persist_the_same_instant_in_utc(offsetHours: -5)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoIntegrationTests.Expired_verification_and_delivery_failures_never_verify_the_user",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.BackendCoverageTests.Invalid_query_value_types_return_a_client_error(query: \"page=abc\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Api_events_schedule_and_execute_matching_rules(trigger: \"WorkItemUpdated\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourReliabilityTests.Failing_overdue_scan_does_not_block_outbox_or_email_jobs",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.EmailVerificationMigrationTests.Otp_upgrade_expires_legacy_tokens_and_preserves_previously_verified_accounts",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoIntegrationTests.Workspace_creation_and_member_roles_preserve_the_owner_and_database_rejects_ownerless_creation",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RegisterRequestValidationTests.Rejects_short_or_weak_passwords(password: \"Abcdefg!\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Conditions_use_typed_comparisons(field: \"Priority\", op: \"GreaterThan\", value: \"Medium\", expected: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Scheduled_work_cancels_when_item_or_project_is_archived(project: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Role_syntax_accepts_named_roles_independently_of_assignment_permissions(role: \"owner\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.SystemAuditTests.Logout_revokes_a_replacement_token_when_refresh_commits_concurrently",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RegisterRequestValidationTests.Rejects_short_or_weak_passwords(password: null)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Valid_project_key_boundaries_and_same_day_dates_are_accepted(key: \"ABCDEFGHIJ\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Invalid_condition_configurations_are_rejected(field: \"Priority\", op: \"GreaterThan\", value: \"Urgent\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Enabling_revalidates_targets_and_cross_workspace_scope_cannot_be_referenced",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourReliabilityTests.Rolled_back_events_are_never_published_or_notified",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Otp_requires_six_ascii_digits(code: \"\uff11\uff12\uff13\uff14\uff15\uff16\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PasswordResetTests.Concurrent_login_refresh_and_reset_leave_no_old_password_sessions_alive",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Conditions_use_typed_comparisons(field: \"Actor\", op: \"Equals\", value: \"11111111-1111-1111-1111-111111111111\", expected: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourIntegrationTests.Overdue_checks_use_utc_skip_completed_archived_and_unassigned_and_deduplicate_concurrent_runs",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Notifications_cannot_consume_workflow_events_and_rollback_leaves_no_scheduled_execution",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RegisterRequestValidationTests.Rejects_passwords_over_the_maximum_length",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Role_syntax_accepts_named_roles_independently_of_assignment_permissions(role: \"Admin\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Workspace_names_use_trimmed_length_boundaries",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Conditions_use_typed_comparisons(field: \"Label\", op: \"Equals\", value: \"urgent\", expected: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PasswordResetTests.Expired_or_inactive_or_email_changed_grants_cannot_reset",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Conditions_use_typed_comparisons(field: \"Label\", op: \"NotEquals\", value: \"bug\", expected: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.All_ordered_actions_preserve_versions_audit_mentions_notifications_and_email",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RegisterRequestValidationTests.Rejects_short_or_weak_passwords(password: \"abcdef1!\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoIntegrationTests.Verified_accounts_do_not_receive_another_code_and_remain_verified_after_sign_in",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourIntegrationTests.Invitation_email_is_encrypted_background_delivery_and_revocation_hides_notification",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Disable_or_creator_revocation_cancels_unfinished_actions(revoke: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.HostConfigurationTests.Production_hides_openapi_and_unavailable_database_fails_readiness_but_not_liveness",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.BackendCoverageTests.Rate_limits_apply_per_client_and_refresh_logout_share_a_budget",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RegisterRequestValidationTests.Rejects_short_or_weak_passwords(password: \"abcdefgh\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Expired_claims_recover_and_exhausted_claims_finish_without_duplicate_effects",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Invalid_condition_configurations_are_rejected(field: \"DueDate\", op: \"Equals\", value: \"tomorrow\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.GmailSmtpEmailSenderTests.Gmail_credentials_accept_grouped_app_passwords_without_sending_formatting_whitespace(password: \"abcd efgh ijkl mnop\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Conditions_use_typed_comparisons(field: \"DueDate\", op: \"Equals\", value: \"2026-10-18\", expected: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Iso_date_conditions_use_gregorian_dates_independently_of_host_culture(culture: \"ar-SA\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourMigrationTests.Phase_three_upgrade_preserves_pending_events_and_enforces_notification_scope_and_deduplication",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.GmailSmtpEmailSenderTests.Missing_credentials_fail_before_attempting_delivery(username: \" \", password: \"abcdefghijklmnop\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourReliabilityTests.Email_transient_failure_backs_off_and_stops_at_attempt_limit",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Valid_project_key_boundaries_and_same_day_dates_are_accepted(key: \"a1\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourReliabilityTests.Retry_classification_does_not_retry_permanent_smtp_failures(status: GeneralFailure, retry: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourRealtimeTests.Leaving_project_and_workspace_stops_delivery_and_workspace_subscriptions_exclude_private_projects",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.ScaffoldSmokeTests.Host_exposes_liveness_and_openapi_in_development",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseThreeCoverageTests.Comment_time_and_attachment_validation_and_moderation",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Conditions_use_typed_comparisons(field: \"Priority\", op: \"Equals\", value: \"High\", expected: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Invitations_and_membership_requests_report_email_and_role_errors_together",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Scheduled_work_cancels_when_item_or_project_is_archived(project: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.BackendCoverageTests.Protected_endpoint_groups_reject_missing_expired_and_invalid_tokens",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Management_permissions_validation_scope_and_archived_rules_follow_existing_policies",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveHostTests.Invalid_workflow_job_configuration_prevents_startup(setting: \"PollSeconds\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Numeric_and_unknown_roles_are_rejected(role: null)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoRulesTests.Otp_codes_are_six_digits_and_hashes_are_bound_to_the_user_challenge_and_secret",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.WorkspacePermissionsTests.Roles_grant_only_their_intended_permissions(role: Admin, manageMembers: True, manageProjects: True, writeWorkItems: True, transferOwnership: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Null_collections_duplicate_action_ids_and_unexpected_parameters_are_rejected",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoIntegrationTests.Invitations_do_not_retain_a_removed_inviters_authority",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RegisterRequestValidationTests.Registration_returns_password_validation_errors_before_accessing_the_database",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Invalid_project_keys_are_rejected(key: \"FLOW-KEY\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Identity_validation_does_not_apply_registration_complexity_to_login",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveHostTests.Invalid_workflow_job_configuration_prevents_startup(setting: \"MaxAttempts\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourReliabilityTests.Slow_email_does_not_block_workspace_writes_or_realtime_dispatch_and_contains_no_private_data",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Invalid_condition_configurations_are_rejected(field: \"Assignee\", op: \"Equals\", value: \"00000000-0000-0000-0000-000000000000\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Numeric_and_unknown_roles_are_rejected(role: \" Admin \")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Conditions_use_typed_comparisons(field: \"DueDate\", op: \"LessThan\", value: \"2026-10-19\", expected: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Pagination_accepts_defaults_and_boundaries(page: null, pageSize: null)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Query_validation_reports_pagination_search_sort_and_identifier_errors",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RegisterRequestValidationTests.Rejects_short_or_weak_passwords(password: \"Abcdef1 \")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.WorkspacePermissionsTests.Roles_grant_only_their_intended_permissions(role: Manager, manageMembers: False, manageProjects: True, writeWorkItems: True, transferOwnership: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseThreeMigrationTests.Completion_upgrade_backfills_existing_work_item_activity",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.BackendCoverageTests.Invalid_query_value_types_return_a_client_error(query: \"leadUserId=not-a-uuid\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseThreeMigrationTests.Initial_phase_three_upgrade_seeds_statuses_for_existing_projects",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.BackendCoverageTests.Healthy_database_is_reported_ready_and_invalid_routes_are_rejected",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RegisterRequestValidationTests.Rejects_short_or_weak_passwords(password: \"ABCDEF1!\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourReliabilityTests.Realtime_failure_retries_after_commit_without_duplicate_notifications_or_email",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveHostTests.Invalid_workflow_job_configuration_prevents_startup(setting: \"MaxDepth\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Pre_enable_and_disabled_events_are_not_replayed",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Comment_action_mentions_are_validated_before_creation_and_enablement",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourRealtimeTests.Existing_signalr_connection_stops_receiving_project_events_after_access_revocation",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.GmailSmtpEmailSenderTests.Gmail_credentials_accept_grouped_app_passwords_without_sending_formatting_whitespace(password: \"  abcd\\tefgh\\nijkl\\r\\nmnop  \")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Identity_endpoints_return_field_errors_before_accessing_the_database",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveMigrationTests.Phase_four_upgrade_preserves_notification_outbox_and_checkpoints_history_without_replay",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseThreeIntegrationTests.Collaboration_activity_and_file_access_are_project_scoped",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Date_triggers_include_unassigned_work_and_deduplicate_without_notification_side_effects",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoRulesTests.Project_permissions_distinguish_metadata_management_and_resource_writes(role: Developer, create: False, manage: False, write: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Otp_requires_six_ascii_digits(code: \"1234567\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourRealtimeTests.Hub_validates_empty_ids_for_all_subscription_methods_and_binding_rejects_malformed_guids",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Role_syntax_accepts_named_roles_independently_of_assignment_permissions(role: \"Manager\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PasswordResetTests.Leading_zero_code_is_preserved_and_smtp_configuration_is_required",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RegisterRequestValidationTests.Accepts_strong_passwords_at_length_boundaries(length: 8)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoRulesTests.Tokens_have_random_entropy_and_stable_nonplaintext_hashes",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.GmailSmtpEmailSenderTests.Missing_credentials_fail_before_attempting_delivery(username: \"sender@example.com\", password: \" \\t\\r\\n\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Otp_requires_six_ascii_digits(code: null)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.WorkspacePermissionsTests.Roles_grant_only_their_intended_permissions(role: Developer, manageMembers: False, manageProjects: False, writeWorkItems: True, transferOwnership: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Invalid_project_keys_are_rejected(key: \"ABCDEFGHIJK\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Cancelled_worker_attempt_recovers_after_lease_without_repeating_committed_actions",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourIntegrationTests.Notification_endpoints_enforce_authentication_paging_and_read_all_recipient_isolation",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoRulesTests.Project_permissions_distinguish_metadata_management_and_resource_writes(role: Admin, create: True, manage: True, write: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Exhausted_claim_with_committed_last_action_finishes_without_repeating_it",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.SystemAuditTests.Signed_tokens_with_missing_malformed_or_empty_subject_are_rejected_at_authentication(subject: \"not-a-guid\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseThreeCoverageTests.Labels_relationships_and_activity_respect_project_scope",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Disable_or_creator_revocation_cancels_unfinished_actions(revoke: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.BackendCoverageTests.Invalid_query_value_types_return_a_client_error(query: \"archived=invalid\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PasswordResetTests.All_recovery_routes_validate_input_and_share_an_ip_rate_limit",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourReliabilityTests.Concurrent_dispatchers_and_recovered_claims_process_each_notification_once",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoIntegrationTests.Removing_members_preserves_history_and_removes_project_access_and_lead_assignments",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourRealtimeTests.Signalr_comment_events_and_notification_ids_match_committed_rest_resources",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Pagination_accepts_defaults_and_boundaries(page: 1, pageSize: 1)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.SystemAuditTests.Time_entries_accept_offset_timestamps_and_persist_the_same_instant_in_utc(offsetHours: 7)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoRulesTests.Invitation_state_preserves_terminal_outcomes_and_expired_history",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourIntegrationTests.Assignment_mentions_read_apis_and_email_are_idempotent_and_authorized",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.RequestValidationTests.Workspace_names_are_required_for_creation_and_update(name: \"   \")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoIntegrationTests.Resending_replaces_the_old_code_and_uses_a_ten_minute_expiry",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PasswordResetTests.Resending_invalidates_old_otp_and_reset_grant_but_delivery_failure_rolls_back",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Transient_retries_stop_at_limit_and_never_repeat_completed_actions",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRulesTests.Invalid_condition_configurations_are_rejected(field: \"Script\", op: \"Equals\", value: \"code\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourIntegrationTests.Empty_notification_id_returns_field_validation_problem_before_resource_lookup",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Assignment_and_unassignment_events_remain_independent_when_http_trace_ids_are_reused",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFourIntegrationTests.Removed_members_cannot_read_or_receive_queued_project_notifications",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveRealtimeTests.Workflow_notifications_and_execution_events_reach_authorized_websocket_clients_after_commit",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.GmailSmtpEmailSenderTests.Missing_credentials_fail_before_attempting_delivery(username: \"sender@example.com\", password: null)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.BackendCoverageTests.Login_refresh_replay_and_logout_enforce_session_family_boundaries",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.HostConfigurationTests.Missing_or_short_signing_keys_prevent_startup(key: \"\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseTwoRulesTests.Project_permissions_distinguish_metadata_management_and_resource_writes(role: Viewer, create: False, manage: False, write: False)",
+      "outcome": "Passed"
+    }
+  ]
+}
