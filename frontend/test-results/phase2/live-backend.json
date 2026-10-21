@@ -1,0 +1,744 @@
+{
+  "date": "2026-10-21T01:13:23.613Z",
+  "transport": "actual frontend clients \u2192 Vite proxy \u2192 unmodified ASP.NET Core API \u2192 disposable PostgreSQL 17",
+  "smtp": "not configured; OTP challenges seeded only in disposable test database",
+  "totals": {
+    "passed": 24,
+    "failed": 0,
+    "httpRequests": 99,
+    "operations": 34
+  },
+  "checks": [
+    {
+      "name": "Vite health proxy reaches the real API and PostgreSQL",
+      "passed": true
+    },
+    {
+      "name": "registration validation uses actual backend field errors",
+      "passed": true
+    },
+    {
+      "name": "four users register with actual JWT/refresh-token response contracts",
+      "passed": true
+    },
+    {
+      "name": "invalid login is 401; valid login has the expected token shape",
+      "passed": true
+    },
+    {
+      "name": "email request without SMTP is a safe 503, not a false success",
+      "passed": true
+    },
+    {
+      "name": "real email confirmation accepts a seeded leading-zero OTP and is single-use",
+      "passed": true
+    },
+    {
+      "name": "workspace create/list/get/rename response format",
+      "passed": true
+    },
+    {
+      "name": "direct member add/list/role change/removal and duplicate rules",
+      "passed": true
+    },
+    {
+      "name": "project create/get: GUIDs, nullable fields, ISO dates, numeric version",
+      "passed": true
+    },
+    {
+      "name": "project search, lead/archive filters, all sort fields and pagination",
+      "passed": true
+    },
+    {
+      "name": "project membership pagination and add/remove response contracts",
+      "passed": true
+    },
+    {
+      "name": "project updates send the expected version and reject stale writes",
+      "passed": true
+    },
+    {
+      "name": "Manager manages an assigned project but cannot create projects or manage workspace",
+      "passed": true
+    },
+    {
+      "name": "Viewer can read an assigned project but cannot mutate it",
+      "passed": true
+    },
+    {
+      "name": "outsider and cross-workspace resources return 404",
+      "passed": true
+    },
+    {
+      "name": "archive/restore uses POST, returns Project and enforces read-only state",
+      "passed": true
+    },
+    {
+      "name": "invitation create/list/get: actual token, fragment URL, uppercase email and paginated DTO",
+      "passed": true
+    },
+    {
+      "name": "unverified invitation response is 403; verified acceptance is 204, replay 409",
+      "passed": true
+    },
+    {
+      "name": "invitation rejection and revocation use correct payload and terminal states",
+      "passed": true
+    },
+    {
+      "name": "ownership transfer rejects unverified targets and changes both roles after success",
+      "passed": true
+    },
+    {
+      "name": "automatic refresh rotates through the real /auth/refresh endpoint",
+      "passed": true
+    },
+    {
+      "name": "password recovery request handles unconfigured SMTP without inventing success",
+      "passed": true
+    },
+    {
+      "name": "password-reset OTP/grant/request formats work with seeded test challenge",
+      "passed": true
+    },
+    {
+      "name": "logout returns 204 and revoked refresh cannot restore the session",
+      "passed": true
+    }
+  ],
+  "http": [
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "status": 401
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/request",
+      "status": 503
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/confirm",
+      "status": 204
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/confirm",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/request",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members",
+      "status": 409
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members/5942934c-b3bd-4361-a876-6894b2521ccc/role",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members/5942934c-b3bd-4361-a876-6894b2521ccc/role",
+      "status": 200
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members/5942934c-b3bd-4361-a876-6894b2521ccc",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members",
+      "status": 201
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members/2881b9a3-1182-48ca-8903-9b30205753a3",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/members",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
+      "status": 400
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
+      "status": 400
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/members",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/members",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/members",
+      "status": 409
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/members/5942934c-b3bd-4361-a876-6894b2521ccc",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/members",
+      "status": 201
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/members/4a0b3284-679a-4e62-b6f3-b7cbace4e55c",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
+      "status": 403
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/invitations",
+      "status": 403
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/archive",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/members",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/52cbb218-4119-4369-9bcc-701ea6d2f627/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
+      "status": 404
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/archive",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/members",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/projects/d97ae709-fd77-4182-83c8-a67e4cb2ba0b/restore",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/invitations",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/invitations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/invitations/35010a1c-756e-43f7-bd82-786283f0920a",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/invitations/accept",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/confirm",
+      "status": 204
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/invitations/accept",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/invitations/accept",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/52cbb218-4119-4369-9bcc-701ea6d2f627/invitations",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/invitations/reject",
+      "status": 204
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/invitations/63c520db-b365-4e48-b8ad-b0f9962b28d5",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/52cbb218-4119-4369-9bcc-701ea6d2f627/invitations",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/52cbb218-4119-4369-9bcc-701ea6d2f627/invitations/ce7f27d0-0b07-423b-8d0b-0ea6999c1de3/revoke",
+      "status": 204
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/52cbb218-4119-4369-9bcc-701ea6d2f627/invitations",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/ownership/transfer",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c/ownership/transfer",
+      "status": 204
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/0d89d064-038f-46de-8d71-1823b1f2d36c",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/refresh",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/forgot-password",
+      "status": 503
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/forgot-password/verify",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/forgot-password/verify",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/reset-password",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/reset-password",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/reset-password",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "status": 401
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/logout",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/refresh",
+      "status": 401
+    }
+  ],
+  "operations": [
+    {
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/:id/members/:id"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/:id/projects/:id/members/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/auth/me"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/invitations/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/:id/invitations"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/:id/members"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/:id/projects"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/:id/projects/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/:id/projects/:id/members"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/confirm"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/request"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/forgot-password"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/forgot-password/verify"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/logout"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/refresh"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/register"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/reset-password"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/invitations/accept"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/invitations/reject"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/:id/invitations"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/:id/invitations/:id/revoke"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/:id/members"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/:id/ownership/transfer"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/:id/projects"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/:id/projects/:id/archive"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/:id/projects/:id/members"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/:id/projects/:id/restore"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/:id"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/:id/members/:id/role"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/workspaces/:id/projects/:id"
+    }
+  ]
+}

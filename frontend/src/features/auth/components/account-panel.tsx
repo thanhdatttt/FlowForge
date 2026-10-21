@@ -85,6 +85,7 @@ export function AccountPanel() {
         </Button>
         <Button
           variant="text"
+          className="button--logout"
           onClick={() => logout.mutate()}
           loading={logout.isPending}
         >
@@ -127,7 +128,7 @@ export function AccountPanel() {
           <CircleCheck size={20} />
           <div>
             <strong>Your account is ready</strong>
-            <p>Workspace and project screens are coming next.</p>
+            <p>Open your workspaces from the sidebar.</p>
           </div>
         </div>
       ) : (
@@ -204,6 +205,7 @@ export function AccountPanel() {
         </div>
         <Button
           variant="text"
+          className="button--logout"
           aria-label="Sign out"
           onClick={() => logout.mutate()}
           loading={logout.isPending}

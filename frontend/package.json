@@ -12,7 +12,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "typecheck": "tsc -b --pretty false",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:live": "node --import ./tests/register.mjs tests/live-backend.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

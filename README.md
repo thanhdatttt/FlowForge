@@ -1,6 +1,6 @@
 # FlowForge
 
-A modular project management platform. The backend includes authentication, Gmail SMTP email verification, workspace roles and invitations, ownership transfer, projects with explicit membership and archive controls, work items and collaboration, notifications, background email delivery, overdue checks, authorized SignalR updates, and configurable workflow automation with durable execution history. The frontend's first product slice includes responsive sign-in, registration, email verification, session refresh, and sign-out.
+A modular project management platform. The backend includes authentication, Gmail SMTP email verification, workspace roles and invitations, ownership transfer, projects with explicit membership and archive controls, work items and collaboration, notifications, background email delivery, overdue checks, authorized SignalR updates, and configurable workflow automation with durable execution history. The frontend includes responsive authentication plus Phase 2 workspace, member, invitation, ownership and project management. See [Phase 2 frontend notes](docs/phase2_frontend.md) for scope and verification limits.
 
 ## Frontend setup
 

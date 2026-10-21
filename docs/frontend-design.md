@@ -39,9 +39,19 @@ Below 761px hide the illustration and move the brand into the form header. Keep 
 - All API calls use implemented relative `/api/v1/auth` endpoints. Authenticated requests refresh near expiry or once after a 401, sharing concurrent token refreshes. Invalid refresh credentials clear the session. Logout clears the account cache only after server revocation succeeds.
 - Tokens do not enter localStorage, sessionStorage, URLs, or logs. Reloading requires sign-in. Persistent sessions require a separately designed backend cookie/session contract.
 - Verification requests are explicit, leading zeroes are preserved, resends have a 60-second UI cooldown, and server validation remains authoritative. Already verified accounts skip verification. Code lifetime is configurable on the server, so the client makes no fixed expiry promise.
-- Password recovery and OAuth are not implemented server-side. Sign-in help explains the recovery limitation; no invented endpoint or success state is used.
-- Signed-in users see an account confirmation; workspace/project UI is a later slice.
+- Password recovery uses the implemented OTP/reset endpoints. OAuth remains unavailable.
+- Signed-in users enter the workspace application; account verification is accessible from its sidebar. See the Phase 2 notes below.
 
 ### Verification
 
 Run `npm test`, `npm run lint`, `npm run typecheck`, and `npm run build` in `frontend/` with Node 24. Tests exercise the real auth client with mocked HTTP responses; they do not claim a live database/SMTP integration. Browser checks should cover desktop/mobile layouts, validation and focus, show/hide password, help dialog dismissal/focus restoration, mode switching/history, and unavailable-service feedback. Live account creation and OTP delivery additionally require the configured backend and SMTP.
+
+## Phase 2 workspace and project UI
+
+Continue the auth palette and Geist typography with a white navigation sidebar, cool canvas, bordered content surfaces, indigo navigation state and restrained project keys. Keep forms and dialogs on the existing Button/FormField and Base UI foundation. The sidebar becomes a natural-flow header on mobile, with wrapping navigation and 16px inputs.
+
+TanStack Query owns workspace/project/member/invitation data using workspace/project-scoped keys. Forms keep transient state locally. Freeze project fields and their optimistic version together while editing. Display server permission/conflict failures and refresh current data after writes. Invitation secrets stay in memory and fragment-based links, never persistent storage or query caches. The user approved frontend invitation links plus input support for existing backend links. Detailed routes, behavior and verification limits are in [phase2_frontend.md](phase2_frontend.md).
+
+### Account and status presentation
+
+Center the account card within the application content and align account headings, verification copy and the OTP field to its center. Keep identity details left-aligned within their row. Use red text and a pale red surface for sign-out, green for active/accepted states, amber for pending invitations and slate for archived/expired/revoked or disabled controls. Retain explicit labels alongside color. Give headings, descriptions, identity rows and verification hints enough vertical separation and comfortable line height on desktop and mobile.

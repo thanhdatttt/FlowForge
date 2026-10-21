@@ -99,6 +99,10 @@ INVITATION_LIFETIME_DAYS=7
 
 The username is your full Gmail address. Enable Google 2-Step Verification and generate an App Password; use that password here, rather than your ordinary Gmail password. Both credential values are intentionally blank in the template. The local `.env` is ignored by Git. Compose maps these settings automatically. For `dotnet run`, set `Smtp__Username`, `Smtp__AppPassword`, `EmailVerification__LifetimeMinutes`, and `Invitations__LifetimeDays` as process environment variables; .NET does not load `.env` automatically.
 
+If sending returns `503`, check the API's SMTP warning logs. A logged SMTP status `535` (`5.7.8`, BadCredentials) means Gmail rejected the configured username/App Password, even if TLS connects successfully. Create a new App Password for the exact `SMTP_USERNAME` account and update `backend/.env`; an ordinary Gmail password does not work. The sender removes formatting whitespace from grouped App Passwords. Never paste credentials or OTPs into logs or chat.
+
+After changing `.env`, recreate the API container to load the new values (`docker compose up -d --build --no-deps --force-recreate api` from `backend/`); a container restart alone keeps its original environment. Logs report status/type without provider text, addresses, passwords, or email bodies. Network timeouts and missing SMTP settings are logged separately. A rejected send rolls back the new OTP and preserves the previous one.
+
 Registration and sign-in remain available before email verification. After sign-in:
 
 1. `POST /api/v1/auth/email-verification/request` with the Bearer token and no body sends a six-digit OTP code to the account's email.
