@@ -1604,10 +1604,40 @@ fieldset {
   padding: 20px;
   gap: 8px;
   text-align: center;
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
 }
 .account-panel .account-ready p {
   margin: 0;
   line-height: 1.7;
+}
+.account-panel .form-field:has(.code-input) .input-wrap {
+  width: 180px;
+  max-width: 100%;
+  margin-inline: auto;
+}
+.account-panel .account-verification-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.account-verification-form .form-field {
+  width: 100%;
+}
+.account-panel > .account-resend {
+  display: flex;
+  margin: 24px auto 0;
+}
+.button.button--archive:not(:disabled) {
+  color: #9a3412;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+}
+.button.button--archive:hover:not(:disabled) {
+  color: #7c2d12;
+  background: #ffedd5;
+  border-color: #fb923c;
 }
 .account-panel .signed-in-details {
   margin-top: 32px;

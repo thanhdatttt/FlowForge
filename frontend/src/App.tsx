@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { AuthPage } from '@/features/auth/auth-page'
 import { useSessionStore } from '@/features/auth/session-store'
 import { WorkspaceApp } from '@/features/workspaces/workspace-app'
@@ -9,6 +10,14 @@ import {
 
 export default function App() {
   const tokens = useSessionStore((state) => state.tokens)
+  const client = useQueryClient()
+  const authenticated = !!tokens
+  useEffect(() => {
+    if (!authenticated) {
+      void client.cancelQueries()
+      client.clear()
+    }
+  }, [authenticated, client])
   const [path, setPath] = useState(window.location.pathname)
   const [invitation, setInvitation] = useState<InvitationLink | null>(() =>
     parseInvitationLink(window.location.href),
@@ -35,12 +44,18 @@ export default function App() {
   }, [])
   function navigate(next: string) {
     if (!next.startsWith('/invitations/')) setInvitation(null)
-    if (next !== window.location.pathname)
+    if (next !== window.location.pathname + window.location.hash)
       window.history.pushState(null, '', next)
-    setPath(next)
-    requestAnimationFrame(() =>
-      document.getElementById('workspace-content')?.focus(),
-    )
+    setPath(next.split('#')[0])
+    requestAnimationFrame(() => {
+      const comments = next.endsWith('#work-comments')
+        ? document.getElementById('work-comments')
+        : null
+      if (comments) {
+        comments.scrollIntoView({ block: 'start' })
+        comments.focus({ preventScroll: true })
+      } else document.getElementById('workspace-content')?.focus()
+    })
   }
   if (!tokens)
     return (

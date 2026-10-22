@@ -308,7 +308,9 @@ export function Projects({
                 <div className="workspace-section-heading">
                   <span className="workspace-key">{project.projectKey}</span>
                   {project.archivedAt && (
-                    <span className="workspace-badge" data-status="archived">Archived</span>
+                    <span className="workspace-badge" data-status="archived">
+                      Archived
+                    </span>
                   )}
                 </div>
                 <h3>{project.name}</h3>
@@ -383,7 +385,10 @@ function ProjectContent({
             <h2>{project.name}</h2>
           </div>
           <div className="workspace-actions">
-            <span className="workspace-badge" data-status={project.archivedAt ? 'archived' : 'active'}>
+            <span
+              className="workspace-badge"
+              data-status={project.archivedAt ? 'archived' : 'active'}
+            >
               {project.archivedAt ? 'Archived · Read only' : 'Active'}
             </span>
             {manage && (
@@ -409,6 +414,9 @@ function ProjectContent({
                       : 'The project will become read only. You can restore it later.'
                   }
                   label={project.archivedAt ? 'Restore' : 'Archive'}
+                  triggerClassName={
+                    project.archivedAt ? undefined : 'button--archive'
+                  }
                   run={() =>
                     projectApi.archive(
                       workspace.id,
@@ -480,7 +488,7 @@ function ProjectMembers({
   const writable = managesProject(workspace.role) && !project.archivedAt
   return (
     <section className="workspace-card">
-      <div className="workspace-section-heading">
+      <div className="workspace-section-heading project-members-heading">
         <div>
           <h2>Project members</h2>
           <p className="muted">
@@ -493,6 +501,7 @@ function ProjectMembers({
             title="Add project member"
             description="Select an active workspace member. The server checks for existing project membership."
             trigger="Add member"
+            popupClassName="project-member-dialog"
           >
             {(close) => (
               <QueryState

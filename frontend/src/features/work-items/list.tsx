@@ -261,15 +261,15 @@ export function WorkList({
         <ul className="workspace-rows work-item-list">
           {items.data?.items.map((item) => (
             <li key={item.id}>
-              <div className="work-item-main">
-                <WorkLink
-                  className="work-item-link"
-                  href={workPath(workspace.id, project.id, item.id)}
-                  navigate={navigate}
-                >
+              <WorkLink
+                className="work-item-main work-item-card"
+                href={workPath(workspace.id, project.id, item.id)}
+                navigate={navigate}
+              >
+                <div className="work-item-link">
                   <span className="workspace-key">{item.key}</span>
                   <strong>{item.title}</strong>
-                </WorkLink>
+                </div>
                 <ItemBadges item={item} />
                 <p className="muted work-item-meta">
                   {members.data?.find((m) => m.userId === item.assigneeUserId)
@@ -289,7 +289,7 @@ export function WorkList({
                     ))}
                   </div>
                 )}
-              </div>
+              </WorkLink>
             </li>
           ))}
         </ul>

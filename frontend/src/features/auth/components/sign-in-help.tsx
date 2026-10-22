@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { Dialog } from '@base-ui/react/dialog'
-import { X } from 'lucide-react'
+import { Eye, EyeOff, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { FormField } from '@/components/ui/form-field'
 import { ApiError } from '@/lib/api'
@@ -32,6 +32,8 @@ function PasswordRecovery() {
   const [code, setCode] = useState('')
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmation, setShowConfirmation] = useState(false)
   const [resetToken, setResetToken] = useState('')
   const [error, setError] = useState('')
   const [cooldownUntil, setCooldownUntil] = useState(0)
@@ -128,12 +130,26 @@ function PasswordRecovery() {
               autoComplete="one-time-code" required maxLength={6} value={code} error={fieldError}
               onChange={(event) => { setCode(event.target.value); clearErrors() }} />}
             {step === 'password' && <>
-              <FormField label="New password" name="password" type="password" autoComplete="new-password"
+              <FormField label="New password" name="password" type={showPassword ? 'text' : 'password'} autoComplete="new-password"
                 required maxLength={128} value={password} error={fieldError}
                 hint="8–128 characters, with uppercase, lowercase, a number, and a symbol."
+                trailing={
+                  <button className="password-toggle icon-button" type="button"
+                    aria-label={showPassword ? 'Hide new password' : 'Show new password'}
+                    aria-pressed={showPassword} onClick={() => setShowPassword((visible) => !visible)}>
+                    {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
+                  </button>
+                }
                 onChange={(event) => { setPassword(event.target.value); clearErrors() }} />
-              <FormField label="Confirm new password" name="confirmation" type="password" autoComplete="new-password"
+              <FormField label="Confirm new password" name="confirmation" type={showConfirmation ? 'text' : 'password'} autoComplete="new-password"
                 required maxLength={128} value={confirmation}
+                trailing={
+                  <button className="password-toggle icon-button" type="button"
+                    aria-label={showConfirmation ? 'Hide password confirmation' : 'Show password confirmation'}
+                    aria-pressed={showConfirmation} onClick={() => setShowConfirmation((visible) => !visible)}>
+                    {showConfirmation ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
+                  </button>
+                }
                 onChange={(event) => { setConfirmation(event.target.value); clearErrors() }} />
             </>}
             {fieldError && <span role="alert" className="recovery-error-announcement">{fieldError}</span>}
@@ -146,7 +162,7 @@ function PasswordRecovery() {
               {remaining > 0 ? `Resend code in ${remaining}s` : 'Resend code'}
             </Button>}
             {step !== 'email' && <Button type="button" variant="text" onClick={() => {
-              clearErrors(); setResetToken(''); setPassword(''); setConfirmation(''); setStep('email')
+              clearErrors(); setResetToken(''); setPassword(''); setConfirmation(''); setShowPassword(false); setShowConfirmation(false); setStep('email')
             }}>Start again</Button>}
           </fieldset>
         </form>

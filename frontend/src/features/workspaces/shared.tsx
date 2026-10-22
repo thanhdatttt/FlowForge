@@ -11,6 +11,7 @@ import { Dialog } from '@base-ui/react/dialog'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ApiError } from '@/lib/api'
+import { cn } from '@/lib/utils'
 
 export function ErrorNotice({ error }: { error: unknown }) {
   if (!error) return null
@@ -136,21 +137,29 @@ export function Modal({
   description,
   trigger,
   children,
+  triggerClassName,
+  popupClassName,
 }: {
   title: string
   description?: string
   trigger: string
+  triggerClassName?: string
+  popupClassName?: string
   children: (close: () => void) => ReactNode
 }) {
   const [open, setOpen] = useState(false)
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger className="button button--secondary">
+      <Dialog.Trigger
+        className={cn('button button--secondary', triggerClassName)}
+      >
         {trigger}
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Backdrop className="dialog-backdrop" />
-        <Dialog.Popup className="dialog-popup workspace-dialog">
+        <Dialog.Popup
+          className={cn('dialog-popup workspace-dialog', popupClassName)}
+        >
           <Dialog.Title>{title}</Dialog.Title>
           <Dialog.Description className="muted">
             {description || 'Complete the fields below.'}
@@ -175,6 +184,7 @@ export function ActionForm({
   onConflict,
   invalidateKeys = [['phase2']],
   disabled = false,
+  submitClassName,
 }: {
   children: (fieldError: (name: string) => string | undefined) => ReactNode
   submit: (data: FormData) => Promise<unknown>
@@ -183,6 +193,7 @@ export function ActionForm({
   onConflict?: (error: ApiError) => void
   invalidateKeys?: readonly (readonly unknown[])[]
   disabled?: boolean
+  submitClassName?: string
 }) {
   const client = useQueryClient()
   const [busy, setBusy] = useState(false)
@@ -246,7 +257,12 @@ export function ActionForm({
             ))}
           </ul>
         )}
-        <Button type="submit" loading={busy} disabled={disabled}>
+        <Button
+          type="submit"
+          loading={busy}
+          disabled={disabled}
+          className={submitClassName}
+        >
           {label}
         </Button>
       </fieldset>
@@ -259,21 +275,29 @@ export function ConfirmAction({
   label,
   run,
   invalidateKeys,
+  triggerClassName,
 }: {
   title: string
   description: string
   label: string
   run: () => Promise<unknown>
   invalidateKeys?: readonly (readonly unknown[])[]
+  triggerClassName?: string
 }) {
   return (
-    <Modal title={title} description={description} trigger={label}>
+    <Modal
+      title={title}
+      description={description}
+      trigger={label}
+      triggerClassName={triggerClassName}
+    >
       {(close) => (
         <ActionForm
           label={label}
           submit={run}
           done={close}
           invalidateKeys={invalidateKeys}
+          submitClassName={triggerClassName}
         >
           {() => null}
         </ActionForm>

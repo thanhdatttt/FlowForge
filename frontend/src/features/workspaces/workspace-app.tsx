@@ -24,6 +24,11 @@ import { WorkspaceInvitations } from './workspace-invitations'
 import { Projects } from './projects'
 import { ProjectWork } from '@/features/work-items/project'
 import { InvitationEntry, InvitationPage } from './invitation-page'
+import {
+  NotificationCenter,
+  LiveStatus,
+} from '@/features/notifications/notification-center'
+import { useLiveUpdates } from '@/features/notifications/use-live-updates'
 
 export function WorkspaceApp({
   path,
@@ -59,6 +64,10 @@ export function WorkspaceApp({
     retry: false,
   })
   const route = parseRoute(path)
+  const live = useLiveUpdates({
+    workspaceId: route.workspaceId,
+    projectId: route.projectId,
+  })
   const selected = useQuery({
     queryKey: ['phase2', route.workspaceId, 'workspace'],
     queryFn: ({ signal }) => workspaceApi.get(route.workspaceId!, signal),
@@ -209,6 +218,10 @@ export function WorkspaceApp({
             </h1>
           </div>
           <div className="workspace-actions">
+            <NotificationCenter
+              navigate={navigate}
+              openInvitation={openInvitation}
+            />
             {workspace && (
               <span className="workspace-badge">{workspace.role}</span>
             )}
@@ -217,6 +230,7 @@ export function WorkspaceApp({
               onClick={() => {
                 void client.invalidateQueries({ queryKey: ['phase2'] })
                 void client.invalidateQueries({ queryKey: ['phase3'] })
+                void client.invalidateQueries({ queryKey: ['phase4'] })
                 void user.refetch()
               }}
             >
@@ -224,6 +238,7 @@ export function WorkspaceApp({
             </Button>
           </div>
         </header>
+        <LiveStatus state={live.state} retry={live.retry} />
         <ErrorNotice error={logoutError} />
         <QueryState
           pending={user.isPending}
@@ -367,11 +382,11 @@ function WorkspaceHome({
               invitation below.
             </Empty>
           )}
-          <ul className="workspace-rows">
+          <ul className="workspace-rows workspace-list">
             {workspaces.map((item) => (
               <li key={item.id}>
                 <a
-                  className="text-link"
+                  className="workspace-entry-card"
                   href={`/workspaces/${item.id}/projects`}
                   onClick={(event) => {
                     if (
@@ -386,9 +401,11 @@ function WorkspaceHome({
                     }
                   }}
                 >
-                  {item.name} <span aria-hidden="true">→</span>
+                  <strong>
+                    {item.name} <span aria-hidden="true">→</span>
+                  </strong>
+                  <span className="workspace-badge">{item.role}</span>
                 </a>
-                <span className="workspace-badge">{item.role}</span>
               </li>
             ))}
           </ul>

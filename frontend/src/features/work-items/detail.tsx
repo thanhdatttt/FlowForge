@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { Project, Workspace } from '@/features/workspaces/api'
 import {
@@ -181,6 +182,16 @@ export function WorkDetail({
   const labels = useLabels(scope)
   const members = useMembers(scope)
   const item = result.data
+  const loadedItemId = item?.id
+  useEffect(() => {
+    if (!loadedItemId || window.location.hash !== '#work-comments') return
+    const frame = requestAnimationFrame(() => {
+      const section = document.getElementById('work-comments')
+      section?.scrollIntoView({ block: 'start' })
+      section?.focus({ preventScroll: true })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [loadedItemId])
   const writable = canWriteWork(
     workspace.role,
     !!project.archivedAt,
@@ -224,6 +235,9 @@ export function WorkDetail({
                 {canWriteWork(workspace.role, !!project.archivedAt) && (
                   <WorkConfirm
                     scope={scope}
+                    triggerClassName={
+                      item.archivedAt ? undefined : 'button--archive'
+                    }
                     title={
                       item.archivedAt
                         ? 'Restore work item?'

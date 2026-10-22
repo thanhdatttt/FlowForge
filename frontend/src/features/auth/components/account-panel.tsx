@@ -111,9 +111,7 @@ export function AccountPanel() {
         {verified ? 'YOU’RE ALL SET' : 'ONE MORE THING'}
       </span>
       <h1 id="account-title">
-        {verified
-          ? `Welcome, ${user.data.displayName}.`
-          : 'Make it official.'}
+        {verified ? `Welcome, ${user.data.displayName}.` : 'Make it official.'}
       </h1>
       <p className="form-description">
         {verified ? (
@@ -149,7 +147,11 @@ export function AccountPanel() {
                 <Check size={16} aria-hidden="true" />
                 <span>Code sent. Check your inbox, including spam.</span>
               </p>
-              <form onSubmit={verify} noValidate>
+              <form
+                onSubmit={verify}
+                noValidate
+                className="account-verification-form"
+              >
                 <FormField
                   label="Verification code"
                   name="code"
@@ -178,6 +180,7 @@ export function AccountPanel() {
               </form>
               <Button
                 variant="text"
+                className="account-resend"
                 onClick={() => send.mutate()}
                 disabled={remaining > 0 || busy}
                 loading={send.isPending}

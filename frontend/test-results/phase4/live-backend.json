@@ -1,0 +1,18 @@
+{
+  "executedAt": "2026-10-21T15:37:31.992Z",
+  "checks": [
+    "real accounts, authorized project and separate invitation recipient",
+    "short-lived authenticated connection joins before REST recovery",
+    "assignment and mention reach the recipient via SignalR and authorized REST",
+    "read-one and read-all remain idempotent and recipient isolated",
+    "server token-expiry disconnect refreshes once and rejoins/refetches",
+    "transport interruption rejoins and recovers current REST versions",
+    "invitation notification exposes metadata without token; revoked invitations disappear",
+    "removed project access hides historical notifications and denies subscription",
+    "overdue worker creates the correct recipient reminder"
+  ],
+  "requests": 79,
+  "notificationEvents": 2,
+  "projectEvents": 2,
+  "recoveries": 3
+}

@@ -101,6 +101,17 @@ async function refresh() {
   return refreshPromise
 }
 
+// Share rotation with HTTP requests: SignalR reconnects must not reuse an expired
+// access token or independently rotate the same single-use refresh token.
+export async function accessToken() {
+  const tokens = useSessionStore.getState().tokens
+  if (!tokens)
+    throw new ApiError('Your session has ended. Please sign in again.', 401)
+  return (Date.parse(tokens.accessTokenExpiresAt) <= Date.now() + 30_000
+    ? await refresh()
+    : tokens).accessToken
+}
+
 export async function api<T>(
   path: string,
   init: RequestInit = {},

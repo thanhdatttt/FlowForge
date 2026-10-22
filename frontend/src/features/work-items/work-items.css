@@ -83,11 +83,51 @@
   text-decoration: underline;
   text-underline-offset: 4px;
 }
+.work-item-list {
+  display: grid;
+  gap: 14px;
+}
+.work-item-list > li {
+  border: 0;
+  padding: 0;
+}
+.work-item-card {
+  display: block;
+  width: 100%;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: inherit;
+  background: #fff;
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+.work-item-card:hover,
+.work-item-card:focus-visible {
+  border-color: var(--primary);
+}
+.work-item-card:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
 .work-item-meta {
   font-size: 13px;
 }
 .work-badges {
-  gap: 6px;
+  gap: 8px;
+}
+.work-badges .workspace-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  max-width: 100%;
+  padding: 7px 12px;
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 .work-label {
   display: inline-flex;

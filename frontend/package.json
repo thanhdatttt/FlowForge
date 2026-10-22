@@ -14,7 +14,8 @@
     "typecheck": "tsc -b --pretty false",
     "preview": "vite preview",
     "test:live": "node --import ./tests/register.mjs tests/live-backend.ts",
-    "test:phase3:live": "node --import ./tests/register.mjs tests/phase3-live.ts"
+    "test:phase3:live": "node --import ./tests/register.mjs tests/phase3-live.ts",
+    "test:phase4:live": "node --import ./tests/register.mjs tests/phase4-live.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

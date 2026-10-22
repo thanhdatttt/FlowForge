@@ -1,0 +1,24 @@
+.notification-trigger { white-space: nowrap; }
+.notification-count { display: inline-grid; place-items: center; min-width: 1.35rem; padding: .1rem .3rem; border-radius: 1rem; background: var(--primary, #5146d6); color: white; font-size: .75rem; }
+.notification-dialog { width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; }
+.notification-toolbar { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.notification-toolbar .form-field { flex: 1; min-width: 170px; }
+.notification-feedback:empty { display: none; }
+.notification-feedback { font-size: .875rem; color: var(--muted-foreground, #697081); }
+.notification-list { padding: 0; margin: 16px 0; list-style: none; }
+.notification-list > li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 12px; border-bottom: 1px solid var(--border, #e5e7ef); border-left: 3px solid transparent; }
+.notification-list > li[data-unread='true'] { background: #f5f4ff; border-left-color: #5146d6; }
+.notification-copy { flex: 1 1 240px; min-width: 0; overflow-wrap: anywhere; }
+.notification-copy strong { font-size: .9rem; font-weight: 550; }
+.notification-copy p { margin: 6px 0 0; font-size: .8rem; }
+.notification-invitation { margin-top: 20px; border: 1px solid var(--border, #e5e7ef); border-radius: 10px; padding: 16px; }
+.notification-invitation p { line-height: 1.6; overflow-wrap: anywhere; }
+.live-status { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 0 0 16px; color: var(--muted-foreground, #697081); font-size: .8rem; }
+.live-status > span { display: inline-flex; align-items: center; gap: 7px; }
+.live-status-dot { width: 7px; height: 7px; border-radius: 50%; background: #a26b15; }
+.live-status[data-state='connected'] .live-status-dot { background: #21804b; }
+@media (max-width: 600px) { .notification-dialog { padding: 24px 16px; } .notification-toolbar { align-items: stretch; } .notification-list > li { padding: 14px 8px; } }
+@media (max-width: 600px) {
+  .workspace-topbar { flex-direction: column; align-items: stretch; }
+  .workspace-topbar > .workspace-actions { justify-content: flex-start; }
+}
