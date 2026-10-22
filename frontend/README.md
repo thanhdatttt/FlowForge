@@ -1,8 +1,8 @@
 # FlowForge frontend
 
-Frontend for the stack defined in [the architecture document](../docs/architecture.md): React, TypeScript, TanStack Query, Zustand, and shadcn/ui. Vite provides development and production builds; Tailwind CSS provides shadcn/ui styling. The SignalR client package is installed for future live updates.
+Frontend for the stack defined in [the architecture document](../docs/architecture.md): React, TypeScript, TanStack Query, Zustand, and shadcn/ui. Vite provides development and production builds; Tailwind CSS provides shadcn/ui styling. SignalR supplies authorized live updates and reconnect recovery.
 
-The first product slice implements responsive sign-in, registration, account confirmation, email verification, rotating access/refresh tokens, and sign-out. Shared buttons and fields use the existing shadcn theme; Base UI handles accessible dialog behavior. Workspace/project screens and SignalR connections are not implemented yet. Design decisions and boundaries are in [the frontend design document](../docs/frontend-design.md).
+The first product slice implements responsive sign-in, registration, account confirmation, email verification, rotating access/refresh tokens, and sign-out. Shared buttons and fields use the existing shadcn theme; Base UI handles accessible dialog behavior. Phase 2 adds workspace, membership, invitation, ownership and project screens. Phase 3 adds task/issue management, labels, subtasks, dependencies, comments/mentions, attachments, time entries and activity inside projects. Phase 4 adds user-wide in-app notifications, read state, notification navigation, and authorized SignalR subscriptions with shared token refresh and reconnect recovery. See [Phase 2 scope and verification](../docs/phase2_frontend.md), [Phase 3 scope and verification](../docs/phase3_frontend.md), and [Phase 4 scope and verification](../docs/phase4_frontend.md), and [the frontend design document](../docs/frontend-design.md).
 
 ## Run locally
 
@@ -52,7 +52,8 @@ src/
   features/auth/    Forms, auth contracts, session store, verification, illustration
   lib/api.ts        HTTP errors and authenticated token refresh
   lib/utils.ts       shadcn/ui class-name utility
-  App.tsx            Auth application root
+  features/workspaces/ Phase 2 screens, API contracts, permissions and styles
+  App.tsx            Authenticated routing and invitation handoff
   index.css          Tailwind, theme tokens, responsive auth styles
   main.tsx           React entry point
 ```
@@ -61,7 +62,7 @@ src/
 
 See [the backend README](../backend/README.md) for Bearer authentication, rotating refresh tokens, API errors, and SignalR subscription/reconnect contracts. Tokens live only in memory: reloading requires sign-in. Concurrent refreshes share a request; invalid refresh credentials clear the session. No credentials are saved to browser storage. Sign-out revokes the session before clearing client state. A persistent session would require a separately designed backend cookie contract.
 
-Verification sends a code only on request, preserves leading zeroes, and enforces a resend cooldown. It requires working backend SMTP configuration. Password recovery and OAuth have no backend endpoints, so the UI offers sign-in guidance rather than simulated recovery or social sign-in. After authentication, the account screen explains that workspace and project screens are next.
+Verification sends a code only on request, preserves leading zeroes, and enforces a resend cooldown. It requires working backend SMTP configuration. Password recovery uses the implemented email → OTP → reset-password flow. OAuth remains unavailable. After authentication, users enter the workspace application. Account verification remains available from the sidebar.
 
 ## Checks
 
@@ -82,8 +83,14 @@ The `frontend` job in [Frontend CI](../.github/workflows/frontend-ci.yml) runs o
 
 Frontend CI reads Node.js 24 from `.nvmrc`, caches npm downloads using `frontend/package-lock.json`, and runs `npm ci`, lint, typecheck, tests, and the production build. A failed step fails the job. Tests use mocked HTTP responses and require no backend, database, SMTP credentials, or Vercel secrets.
 
-This covers the frontend's Phase 1 CI requirement. A successful local run does not confirm a GitHub-hosted run; the workflow must be committed and pushed to trigger GitHub Actions. End-to-end sign-in and verification against a real backend/SMTP service remain separate acceptance checks. This workflow validates the client; it does not deploy it.
+This covers the frontend's Phase 1 CI requirement. A successful local run does not confirm a GitHub-hosted run; a matching push to `main` or pull request targeting `main` is needed to trigger GitHub Actions. The checked-in `test-results/phase1/live-client.json` records earlier real-backend authentication checks. Actual SMTP delivery and OTP confirmation remain unverified in that report. This workflow validates the client; it does not deploy it.
 
 The shadcn CLI and build-time CSS dependency is pinned to `4.22.0`. The import `shadcn/tailwind.css` in `src/index.css` requires this package's CSS export; `shadcn@1.0.0` does not provide it and causes both development CSS loading and production builds to fail. The current npm audit report can suggest downgrading to `1.0.0` with `npm audit fix --force`; that downgrade is incompatible with this setup. Review dependency changes before accepting an audit fix.
 
 The setup follows the official [Vite guide](https://vite.dev/guide/) and [shadcn/ui Vite installation](https://ui.shadcn.com/docs/installation/vite).
+
+## Phase 2 workspace and project UI
+
+See [Phase 2 implementation and verification](../docs/phase2_frontend.md) for routes, invitation-link compatibility, permission behavior, concurrency handling and the isolated browser fixture. Backend-generated invitation links can be pasted into the workspace home screen; newly copied links open the frontend directly.
+
+`npm run test:live` runs the actual frontend API clients through a running Vite proxy against a real backend and disposable PostgreSQL. It requires explicit test-only environment variables and Docker access for OTP challenge seeding; see [real-backend reproduction instructions and results](../docs/phase2_frontend.md#real-backend-verification--2026-10-21). It is separate from `npm test` so normal CI needs no database or secrets. The latest audit exercised all 34 frontend API operations: 24 scenarios, 99 real HTTP requests; the full backend suite passed 220 tests without skips.

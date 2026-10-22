@@ -74,6 +74,18 @@ Workspace routes support create/list/view/rename; member list/add/role change/re
 
 Owners cannot be removed or demoted through ordinary membership routes. `POST /api/v1/workspaces/{workspaceId}/ownership/transfer` accepts `{ "newOwnerUserId": "<uuid>" }`. Only the current Owner may call it; the target must be another active workspace member with a verified email. The old Owner becomes Admin. A workspace row lock serializes mutations; a deferred PostgreSQL constraint trigger enforces exactly one Owner at transaction commit. The new Owner may subsequently change the previous Owner's role.
 
+## Password recovery by OTP
+
+These endpoints are anonymous and share a limit of 10 requests per minute per IP:
+
+1. `POST /api/v1/auth/forgot-password` with `{ "email": "you@example.com" }`. Returns `204` for existing, unknown, inactive, and cooldown-limited accounts. An active account receives a six-digit OTP through the existing Gmail SMTP configuration. Resends are limited to once per minute per account.
+2. `POST /api/v1/auth/forgot-password/verify` with `{ "email": "you@example.com", "code": "012345" }`. A valid OTP returns `{ "resetToken": "...", "expiresAt": "..." }`. Codes expire after 10 minutes, allow five failed attempts, and can be confirmed only once.
+3. `POST /api/v1/auth/reset-password` with `{ "resetToken": "...", "password": "NewPassword1!" }`. Requires the same password rules as registration. Returns `204`; the user signs in again. The reset token expires 10 minutes after OTP confirmation and is single use.
+
+Requesting a new code invalidates previous recovery codes and reset grants. SMTP failures return `503` and preserve the previous challenge. OTPs and reset tokens are stored only as hashes in a separate recovery table; they cannot be used for email verification. Successful reset revokes all refresh sessions and preserves the account's email-verification state. Existing access JWTs retain their normal validity (up to 15 minutes), consistent with logout. Credential checks and reset serialize on the user row, and reset shares the existing refresh-family locks to prevent concurrent login/refresh from retaining an old session.
+
+The sign-in help dialog implements email → OTP → new password → sign in, including resend cooldown and confirmation of the new password. Apply the `PasswordResetOtp` migration before using these endpoints. Registration, login response contracts, and email-verification requirements remain unchanged.
+
 ## Gmail SMTP email verification
 
 Gmail SMTP connects directly to `smtp.gmail.com:587` with STARTTLS. No separate email service is needed. In `backend/.env`, fill in:
@@ -86,6 +98,10 @@ INVITATION_LIFETIME_DAYS=7
 ```
 
 The username is your full Gmail address. Enable Google 2-Step Verification and generate an App Password; use that password here, rather than your ordinary Gmail password. Both credential values are intentionally blank in the template. The local `.env` is ignored by Git. Compose maps these settings automatically. For `dotnet run`, set `Smtp__Username`, `Smtp__AppPassword`, `EmailVerification__LifetimeMinutes`, and `Invitations__LifetimeDays` as process environment variables; .NET does not load `.env` automatically.
+
+If sending returns `503`, check the API's SMTP warning logs. A logged SMTP status `535` (`5.7.8`, BadCredentials) means Gmail rejected the configured username/App Password, even if TLS connects successfully. Create a new App Password for the exact `SMTP_USERNAME` account and update `backend/.env`; an ordinary Gmail password does not work. The sender removes formatting whitespace from grouped App Passwords. Never paste credentials or OTPs into logs or chat.
+
+After changing `.env`, recreate the API container to load the new values (`docker compose up -d --build --no-deps --force-recreate api` from `backend/`); a container restart alone keeps its original environment. Logs report status/type without provider text, addresses, passwords, or email bodies. Network timeouts and missing SMTP settings are logged separately. A rejected send rolls back the new OTP and preserves the previous one.
 
 Registration and sign-in remain available before email verification. After sign-in:
 

@@ -79,12 +79,15 @@ export function AccountPanel() {
     return (
       <div className="account-panel">
         <h1>Let’s try that again</h1>
-        <p className="form-description">{user.error.message}</p>
+        <p className="error-notice" role="alert">
+          {user.error.message}
+        </p>
         <Button onClick={() => void user.refetch()} loading={user.isFetching}>
           Try again
         </Button>
         <Button
           variant="text"
+          className="button--logout"
           onClick={() => logout.mutate()}
           loading={logout.isPending}
         >
@@ -108,9 +111,7 @@ export function AccountPanel() {
         {verified ? 'YOU’RE ALL SET' : 'ONE MORE THING'}
       </span>
       <h1 id="account-title">
-        {verified
-          ? `Welcome, ${user.data.displayName.split(' ')[0]}.`
-          : 'Make it official.'}
+        {verified ? `Welcome, ${user.data.displayName}.` : 'Make it official.'}
       </h1>
       <p className="form-description">
         {verified ? (
@@ -123,12 +124,12 @@ export function AccountPanel() {
         )}
       </p>
       {verified ? (
-        <div className="account-ready">
-          <CircleCheck size={20} />
-          <div>
+        <div className="account-ready" role="status">
+          <div className="account-ready-heading">
+            <CircleCheck size={20} aria-hidden="true" />
             <strong>Your account is ready</strong>
-            <p>Workspace and project screens are coming next.</p>
           </div>
+          <p>Open your workspaces from the sidebar.</p>
         </div>
       ) : (
         <>
@@ -143,10 +144,14 @@ export function AccountPanel() {
           ) : (
             <>
               <p className="success-notice" role="status">
-                <Check size={16} />
-                Code sent. Check your inbox, including spam.
+                <Check size={16} aria-hidden="true" />
+                <span>Code sent. Check your inbox, including spam.</span>
               </p>
-              <form onSubmit={verify} noValidate>
+              <form
+                onSubmit={verify}
+                noValidate
+                className="account-verification-form"
+              >
                 <FormField
                   label="Verification code"
                   name="code"
@@ -175,6 +180,7 @@ export function AccountPanel() {
               </form>
               <Button
                 variant="text"
+                className="account-resend"
                 onClick={() => send.mutate()}
                 disabled={remaining > 0 || busy}
                 loading={send.isPending}
@@ -204,6 +210,7 @@ export function AccountPanel() {
         </div>
         <Button
           variant="text"
+          className="button--logout"
           aria-label="Sign out"
           onClick={() => logout.mutate()}
           loading={logout.isPending}

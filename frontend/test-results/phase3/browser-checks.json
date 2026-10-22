@@ -1,0 +1,69 @@
+{
+  "date": "2026-10-21",
+  "backend": "Unchanged ASP.NET Core source, isolated PostgreSQL, notifications/workflows disabled",
+  "method": "Manual browser verification via CUA against real backend; not an automated browser suite",
+  "checks": [
+    {
+      "name": "Developer signs in and navigates existing workspace/project into Work items",
+      "passed": true
+    },
+    {
+      "name": "Create work item with Owner assignee, due date and project label",
+      "passed": true
+    },
+    {
+      "name": "Post plain-text comment with member-picker mention and readable member name",
+      "passed": true
+    },
+    {
+      "name": "Add dependency and display independent blocked badge",
+      "passed": true
+    },
+    {
+      "name": "Log time using local datetime and show saved entry",
+      "passed": true
+    },
+    {
+      "name": "Concurrent API edit yields 409; draft remains and Save is disabled",
+      "passed": true
+    },
+    {
+      "name": "Reopen editor with current version and save InReview status",
+      "passed": true
+    },
+    {
+      "name": "Upload generated plain-text attachment through native file chooser",
+      "passed": true
+    },
+    {
+      "name": "Download attachment through authenticated Blob flow",
+      "passed": true
+    },
+    {
+      "name": "Full project key search returns the matching item",
+      "passed": true
+    },
+    {
+      "name": "Archive removes collaboration write controls; restore re-enables them",
+      "passed": true
+    },
+    {
+      "name": "Viewer reads metadata/comments/files/time/activity with no write controls",
+      "passed": true
+    },
+    {
+      "name": "Narrow viewport has no horizontal document overflow",
+      "passed": true
+    },
+    {
+      "name": "Browser console has no warning/error in the inspected session",
+      "passed": true
+    }
+  ],
+  "viewportMeasurement": {
+    "innerWidth": 325,
+    "clientWidth": 312,
+    "scrollWidth": 312
+  },
+  "screenshot": "browser-viewer.jpg"
+}

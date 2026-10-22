@@ -74,6 +74,71 @@ namespace FlowForge.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("FlowForge.Domain.Identity.PasswordResetChallenge", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code_hash");
+
+                    b.Property<DateTimeOffset?>("ConfirmedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("confirmed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<int>("FailedAttempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("failed_attempts");
+
+                    b.Property<string>("NormalizedEmail")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)")
+                        .HasColumnName("normalized_email");
+
+                    b.Property<DateTimeOffset?>("ResetTokenExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reset_token_expires_at");
+
+                    b.Property<string>("ResetTokenHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("reset_token_hash");
+
+                    b.Property<DateTimeOffset?>("UsedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("used_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ResetTokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "CreatedAt");
+
+                    b.ToTable("password_reset_challenges", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_password_reset_failed_attempts", "failed_attempts BETWEEN 0 AND 5");
+                        });
+                });
+
             modelBuilder.Entity("FlowForge.Domain.Identity.RefreshSession", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1364,6 +1429,7 @@ namespace FlowForge.Infrastructure.Migrations
                     b.ToTable("workflow_versions", null, t =>
                         {
                             t.HasCheckConstraint("CK_workflow_trigger", "trigger_type IN ('WorkItemCreated', 'WorkItemUpdated', 'WorkItemStatusChanged', 'WorkItemAssignmentChanged', 'CommentAdded', 'WorkItemDueDateReached', 'WorkItemDueDateOverdue')");
+
                             t.HasCheckConstraint("CK_workflow_version_number", "version_number > 0");
                         });
                 });
@@ -1518,6 +1584,17 @@ namespace FlowForge.Infrastructure.Migrations
                 });
 
             modelBuilder.Entity("FlowForge.Domain.Identity.EmailVerificationToken", b =>
+                {
+                    b.HasOne("FlowForge.Domain.Identity.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FlowForge.Domain.Identity.PasswordResetChallenge", b =>
                 {
                     b.HasOne("FlowForge.Domain.Identity.User", "User")
                         .WithMany()

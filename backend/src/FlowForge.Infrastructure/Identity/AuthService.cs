@@ -48,13 +48,19 @@ public sealed class AuthService(FlowForgeDbContext db, IConfiguration configurat
     // login
     public async Task<AuthTokens?> LoginAsync(string email, string password, CancellationToken cancellationToken)
     {
-        var user = await db.Users.SingleOrDefaultAsync(
-            candidate => candidate.NormalizedEmail == NormalizeEmail(email), cancellationToken);
+        // Serialize credential checking/session creation with password reset. NO KEY UPDATE
+        // still permits refresh-session FK checks while reset holds the account lock.
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        var normalizedEmail = NormalizeEmail(email);
+        var user = await db.Users.FromSqlInterpolated(
+            $"SELECT * FROM users WHERE normalized_email = {normalizedEmail} FOR NO KEY UPDATE")
+            .SingleOrDefaultAsync(cancellationToken);
         if (user is null || !user.IsActive || !PasswordHashing.Verify(password, user.PasswordHash)) return null;
 
         var (session, token) = NewSession(user.Id, Guid.NewGuid());
         db.RefreshSessions.Add(session);
         await db.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
         return CreateTokens(user, token);
     }
 

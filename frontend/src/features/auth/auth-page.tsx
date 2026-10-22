@@ -24,7 +24,7 @@ function currentMode(): Mode {
   return window.location.pathname === '/register' ? 'register' : 'sign-in'
 }
 
-export function AuthPage() {
+export function AuthPage({ onAuthenticated }: { onAuthenticated?: () => void }) {
   const [mode, setMode] = useState<Mode>(currentMode)
   const [showPassword, setShowPassword] = useState(false)
   const [fields, setFields] = useState<FieldErrors>({})
@@ -45,6 +45,7 @@ export function AuthPage() {
       client.clear()
       useSessionStore.getState().setTokens(result)
       setCredentials({ email: '', password: '', displayName: '' })
+      onAuthenticated?.()
     },
     onError: (error) => {
       if (error instanceof ApiError && Object.keys(error.fields).length) {
@@ -139,7 +140,7 @@ export function AuthPage() {
               POSSIBILITY.
             </span>
             <h2>
-              Good work.
+              Good work
               <br />
               Great{' '}
               <span className="flow-word">
@@ -152,7 +153,6 @@ export function AuthPage() {
                   <path d="M3 9C40 2 106 1 166 7" />
                 </svg>
               </span>
-              .
             </h2>
             <p>
               Your projects, people, and processes.

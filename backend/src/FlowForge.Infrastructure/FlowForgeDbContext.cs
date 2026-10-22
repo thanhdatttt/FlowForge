@@ -13,6 +13,7 @@ public sealed class FlowForgeDbContext(DbContextOptions<FlowForgeDbContext> opti
     : DbContext(options)
 {
     public DbSet<User> Users => Set<User>();
+    public DbSet<PasswordResetChallenge> PasswordResetChallenges => Set<PasswordResetChallenge>();
     public DbSet<RefreshSession> RefreshSessions => Set<RefreshSession>();
     public DbSet<Workspace> Workspaces => Set<Workspace>();
     public DbSet<WorkspaceMembership> WorkspaceMemberships => Set<WorkspaceMembership>();
@@ -77,6 +78,27 @@ public sealed class FlowForgeDbContext(DbContextOptions<FlowForgeDbContext> opti
             entity.Property(session => session.CreatedAt).HasColumnName("created_at");
             entity.HasOne(session => session.User).WithMany().HasForeignKey(session => session.UserId).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne<RefreshSession>().WithMany().HasForeignKey(session => session.ReplacedById).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<PasswordResetChallenge>(entity =>
+        {
+            entity.ToTable("password_reset_challenges", table => table.HasCheckConstraint(
+                "CK_password_reset_failed_attempts", "failed_attempts BETWEEN 0 AND 5"));
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.UserId).HasColumnName("user_id");
+            entity.Property(x => x.NormalizedEmail).HasColumnName("normalized_email").HasMaxLength(320);
+            entity.Property(x => x.CodeHash).HasColumnName("code_hash").HasMaxLength(64);
+            entity.Property(x => x.FailedAttempts).HasColumnName("failed_attempts");
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at");
+            entity.Property(x => x.ExpiresAt).HasColumnName("expires_at");
+            entity.Property(x => x.ConfirmedAt).HasColumnName("confirmed_at");
+            entity.Property(x => x.ResetTokenHash).HasColumnName("reset_token_hash").HasMaxLength(64);
+            entity.Property(x => x.ResetTokenExpiresAt).HasColumnName("reset_token_expires_at");
+            entity.Property(x => x.UsedAt).HasColumnName("used_at");
+            entity.HasIndex(x => new { x.UserId, x.CreatedAt });
+            entity.HasIndex(x => x.ResetTokenHash).IsUnique();
+            entity.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Workspace>(entity =>
