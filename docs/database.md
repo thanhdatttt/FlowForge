@@ -62,7 +62,7 @@ Workflow triggers, conditions, and actions must match the feature specification.
 | `milestones` / `milestone_work_items` | Milestone: `id`, `project_id`, `name`, `target_date?`, `archived_at?`; join: `milestone_id`, `work_item_id` | Same-project association; calculate completion from linked item states. |
 | `project_documents` | `id`, `project_id`, `title`, `body`, `created_by_user_id`, timestamps, `archived_at?` | Project access control; version history is optional. |
 
-AI proposals need no table initially: validate and preview them, then create work items only after user acceptance. Reporting percentages and counts are calculated from work items rather than stored as editable fields.
+AI proposals need no table: validate and preview them, then create work items only after explicit user acceptance. The AI backend uses protected stateless previews and stores an acceptance content hash/created-ID receipt in existing append-only activity records, atomically with work items, dependencies and outbox. The Ollama Cloud adapter stores no model key in the database; API key and model must be supplied through user configuration. See [ai_backend.md](ai_backend.md). Reporting percentages and counts are calculated from work items rather than stored as editable fields. The Phase 6 basic dashboard uses the existing work-item, status, membership and activity tables/indexes; it adds no schema changes. See [dashboard.md](dashboard.md) for the initial dashboard slice and calculations. Milestone/document tables remain deferred.
 
 ## Essential indexes and checks
 

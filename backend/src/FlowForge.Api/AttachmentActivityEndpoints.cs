@@ -128,11 +128,7 @@ public static class AttachmentActivityEndpoints
             var total = await query.CountAsync(ct);
             var records = await query.OrderByDescending(x => x.OccurredAt).ThenByDescending(x => x.Id)
                 .Skip((number - 1) * size).Take(size).ToListAsync(ct);
-            var items = records.Select(x => new ActivityDto(x.Id, x.ProjectId, x.WorkItemId,
-                x.ActorUserId, x.ActorKind, x.Action, x.EntityType, x.EntityId,
-                x.BeforeValues == null ? null : System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(x.BeforeValues),
-                x.AfterValues == null ? null : System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(x.AfterValues),
-                x.CorrelationId, x.OccurredAt, x.WorkflowExecutionId)).ToList();
+            var items = records.Select(WorkItemSupport.ActivityDto).ToList();
             return Results.Ok(new PageDto<ActivityDto>(items, total, number, size));
         });
         return app;

@@ -96,4 +96,10 @@ internal static partial class WorkItemSupport
     }
     public static Task<List<Guid>> MentionsAsync(FlowForgeDbContext db, Guid workspaceId, Guid projectId, string body, CancellationToken ct) =>
         Infrastructure.WorkItems.WorkResourceRules.MentionsAsync(db, workspaceId, projectId, body, ct);
+
+    public static ActivityDto ActivityDto(ActivityRecord record) => new(record.Id, record.ProjectId, record.WorkItemId,
+        record.ActorUserId, record.ActorKind, record.Action, record.EntityType, record.EntityId,
+        record.BeforeValues == null ? null : JsonSerializer.Deserialize<JsonElement>(record.BeforeValues),
+        record.AfterValues == null ? null : JsonSerializer.Deserialize<JsonElement>(record.AfterValues),
+        record.CorrelationId, record.OccurredAt, record.WorkflowExecutionId);
 }

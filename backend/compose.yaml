@@ -39,6 +39,11 @@ services:
       Notifications__Enabled: ${NOTIFICATIONS_ENABLED:-true}
       Notifications__PollSeconds: ${NOTIFICATIONS_POLL_SECONDS:-5}
       Notifications__OverdueIntervalMinutes: ${NOTIFICATIONS_OVERDUE_INTERVAL_MINUTES:-5}
+      Ai__TimeoutSeconds: ${AI_TIMEOUT_SECONDS:-30}
+      Ai__PreviewLifetimeMinutes: ${AI_PREVIEW_LIFETIME_MINUTES:-15}
+      Ai__MaxContextItems: ${AI_MAX_CONTEXT_ITEMS:-50}
+      Ollama__ApiKey: ${OLLAMA_API_KEY:-}
+      Ollama__Model: ${OLLAMA_MODEL:-}
     ports:
       - "127.0.0.1:${API_PORT:-8080}:8080"
     depends_on:

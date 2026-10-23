@@ -1,0 +1,200 @@
+{
+  "runAt": "2026-10-22T19:25:29.484310+07:00",
+  "environment": "Separate Release API process, isolated PostgreSQL 17, default UnconfiguredAiProvider, no model/vendor/credentials/network adapter",
+  "totals": {
+    "total": 23,
+    "passed": 23,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "kind": "http",
+      "check": "Read liveness",
+      "method": "GET",
+      "path": "/health/live",
+      "expected": 200,
+      "actual": 200,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Liveness",
+      "actual": "Healthy",
+      "expected": "Healthy",
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Read readiness",
+      "method": "GET",
+      "path": "/health/ready",
+      "expected": 200,
+      "actual": 200,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Readiness",
+      "actual": "Healthy",
+      "expected": "Healthy",
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Read OpenAPI",
+      "method": "GET",
+      "path": "/openapi/v1.json",
+      "expected": 200,
+      "actual": 200,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Three AI POST routes",
+      "actual": 3,
+      "expected": 3,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Register owner",
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "expected": 201,
+      "actual": 201,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Create workspace",
+      "method": "POST",
+      "path": "/api/v1/workspaces",
+      "expected": 201,
+      "actual": 201,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Create project",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{id}/projects",
+      "expected": 201,
+      "actual": 201,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Empty summary without model",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/ai/summary",
+      "expected": 200,
+      "actual": 200,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Empty project insufficient data",
+      "actual": "InsufficientData",
+      "expected": "InsufficientData",
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "No fabricated narrative",
+      "actual": null,
+      "expected": null,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "No AI-generated text",
+      "actual": false,
+      "expected": false,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Proposal without model",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/ai/tasks/propose",
+      "expected": 503,
+      "actual": 503,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Configuration error is explicit",
+      "actual": "AI provider is not configured.",
+      "expected": "AI provider is not configured.",
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Anonymous generation denied",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/ai/tasks/propose",
+      "expected": 401,
+      "actual": 401,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Reject unconfirmed acceptance",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/ai/tasks/accept",
+      "expected": 400,
+      "actual": 400,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "No tasks saved by failed AI calls",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/dashboard",
+      "expected": 200,
+      "actual": 200,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Zero created tasks",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Normal task creation still works",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/work-items",
+      "expected": 201,
+      "actual": 201,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Nonempty summary without model",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/ai/summary",
+      "expected": 503,
+      "actual": 503,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Dashboard without model",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/dashboard",
+      "expected": 200,
+      "actual": 200,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Manual task counted",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    }
+  ]
+}

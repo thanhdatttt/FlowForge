@@ -1,0 +1,366 @@
+{
+  "scope": "Phase 6 provider-independent AI backend; no model/vendor/SDK/credentials configured; milestones/documents and advanced metrics remain deferred",
+  "environment": {
+    "dotnetSdk": "10.0.113",
+    "configuration": "Release",
+    "database": "PostgreSQL 17, isolated disposable databases",
+    "ai": "Fake provider only in the test host; default application uses UnconfiguredAiProvider"
+  },
+  "run": {
+    "creation": "2026-10-22T19:23:26.7563549+07:00",
+    "queuing": "2026-10-22T19:23:26.7563550+07:00",
+    "start": "2026-10-22T19:23:25.8790140+07:00",
+    "finish": "2026-10-22T19:23:45.7116478+07:00"
+  },
+  "fullBackend": {
+    "total": 315,
+    "passed": 315,
+    "failed": 0,
+    "skipped": 0
+  },
+  "aiSubset": {
+    "total": 62,
+    "passed": 62,
+    "failed": 0,
+    "skipped": 0,
+    "classes": {
+      "FlowForge.Api.Tests.PhaseSixAiHostTests": 4,
+      "FlowForge.Api.Tests.PhaseSixAiIntegrationTests": 35,
+      "FlowForge.Api.Tests.PhaseSixAiRulesTests": 23
+    }
+  },
+  "sourceTrx": "/tmp/flowforge-phase6-ai-results/backend-phase6-ai.trx",
+  "sourceTrxSha256": "a2947a42ef22ccf959498c7560fad7d3ff02706438a2bee33b6b9c68c9f94d43",
+  "releaseBuild": {
+    "succeeded": true,
+    "warnings": 0,
+    "errors": 0
+  },
+  "composeConfiguration": "PASS with .env.example; no model/provider settings added",
+  "tests": [
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiHostTests.Default_host_has_no_configured_model_or_provider",
+      "outcome": "Passed",
+      "duration": "00:00:01.5814654"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiHostTests.Invalid_ai_limits_prevent_startup(setting: \"MaxContextItems\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.3711149"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiHostTests.Invalid_ai_limits_prevent_startup(setting: \"PreviewLifetimeMinutes\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.4698574"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiHostTests.Invalid_ai_limits_prevent_startup(setting: \"TimeoutSeconds\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.1517203"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Anonymous_outsiders_mismatched_scopes_and_removed_users_are_rejected_before_provider_calls",
+      "outcome": "Passed",
+      "duration": "00:00:00.0679746"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Archived_projects_allow_summaries_but_not_proposals_or_acceptance",
+      "outcome": "Passed",
+      "duration": "00:00:00.1146373"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Bad_provider_output_is_never_previewed_or_saved(output: \"{\")",
+      "outcome": "Passed",
+      "duration": "00:00:01.2563410"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Bad_provider_output_is_never_previewed_or_saved(output: \"{\\\"tasks\\\":[]}\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0631480"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Bad_provider_output_is_never_previewed_or_saved(output: \"{\\\"tasks\\\":[{\\\"id\\\":\\\"task\\\",\\\"title\\\":\\\"Task\\\",\\\"\"\u00b7\u00b7\u00b7)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0647780"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Client_cancellation_reaches_provider_without_creating_tasks",
+      "outcome": "Passed",
+      "duration": "00:00:00.0457199"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Concurrent_different_previews_allocate_distinct_item_numbers",
+      "outcome": "Passed",
+      "duration": "00:00:00.1155287"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Concurrent_replays_create_one_batch_and_modified_replays_conflict",
+      "outcome": "Passed",
+      "duration": "00:00:00.2341307"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Context_limits_description_length_and_derives_dependency_blockers_on_the_server",
+      "outcome": "Passed",
+      "duration": "00:00:00.0804108"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Deferred_commit_failure_rolls_back_tasks_dependencies_counter_receipt_activity_and_events",
+      "outcome": "Passed",
+      "duration": "00:00:00.1027780"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Empty_project_returns_insufficient_data_without_a_provider_and_regular_features_still_work",
+      "outcome": "Passed",
+      "duration": "00:00:00.1812149"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Generation_rate_limit_and_input_validation_apply_before_provider_invocation",
+      "outcome": "Passed",
+      "duration": "00:00:00.1103896"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Invalid_summary_and_unexpected_provider_errors_do_not_leak_messages",
+      "outcome": "Passed",
+      "duration": "00:00:00.1030890"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Openapi_documents_all_three_ai_operations",
+      "outcome": "Passed",
+      "duration": "00:00:00.1356755"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Preview_is_read_only_and_explicit_edited_acceptance_creates_tasks_dependencies_audit_and_outbox",
+      "outcome": "Passed",
+      "duration": "00:00:00.1469287"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Preview_tokens_reject_tampering_expiry_and_different_users_or_projects",
+      "outcome": "Passed",
+      "duration": "00:00:00.0776623"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Proposal_and_acceptance_enforce_current_resource_write_permissions(role: Admin, assigned: False, expected: OK)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0659178"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Proposal_and_acceptance_enforce_current_resource_write_permissions(role: Developer, assigned: False, expected: NotFound)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0437990"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Proposal_and_acceptance_enforce_current_resource_write_permissions(role: Developer, assigned: True, expected: OK)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0825556"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Proposal_and_acceptance_enforce_current_resource_write_permissions(role: Manager, assigned: False, expected: NotFound)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0367062"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Proposal_and_acceptance_enforce_current_resource_write_permissions(role: Manager, assigned: True, expected: OK)",
+      "outcome": "Passed",
+      "duration": "00:00:00.2458056"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Proposal_and_acceptance_enforce_current_resource_write_permissions(role: Viewer, assigned: True, expected: Forbidden)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0675143"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Provider_failures_return_safe_actionable_http_errors(operation: \"summary\", failure: InvalidResponse, expected: BadGateway)",
+      "outcome": "Passed",
+      "duration": "00:00:00.2424653"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Provider_failures_return_safe_actionable_http_errors(operation: \"summary\", failure: RateLimited, expected: TooManyRequests)",
+      "outcome": "Passed",
+      "duration": "00:00:00.2037398"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Provider_failures_return_safe_actionable_http_errors(operation: \"summary\", failure: Timeout, expected: GatewayTimeout)",
+      "outcome": "Passed",
+      "duration": "00:00:00.1372388"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Provider_failures_return_safe_actionable_http_errors(operation: \"summary\", failure: Unavailable, expected: ServiceUnavailable)",
+      "outcome": "Passed",
+      "duration": "00:00:00.1242090"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Provider_failures_return_safe_actionable_http_errors(operation: \"tasks/propose\", failure: InvalidResponse, expected: BadGateway)",
+      "outcome": "Passed",
+      "duration": "00:00:00.1168111"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Provider_failures_return_safe_actionable_http_errors(operation: \"tasks/propose\", failure: RateLimited, expected: TooManyRequests)",
+      "outcome": "Passed",
+      "duration": "00:00:00.1052946"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Provider_failures_return_safe_actionable_http_errors(operation: \"tasks/propose\", failure: Timeout, expected: GatewayTimeout)",
+      "outcome": "Passed",
+      "duration": "00:00:00.1162469"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Provider_failures_return_safe_actionable_http_errors(operation: \"tasks/propose\", failure: Unavailable, expected: ServiceUnavailable)",
+      "outcome": "Passed",
+      "duration": "00:00:00.1069693"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Revocation_during_generation_prevents_preview_and_acceptance_rechecks_permissions",
+      "outcome": "Passed",
+      "duration": "00:00:00.0570193"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Selection_rejects_dangling_dependencies_and_foreign_ids_but_accepts_valid_subset",
+      "outcome": "Passed",
+      "duration": "00:00:00.0888283"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Summary_facts_match_dashboard_and_context_is_bounded_scoped_and_separate_from_interpretation",
+      "outcome": "Passed",
+      "duration": "00:00:00.5069506"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Summary_rechecks_access_after_provider_completes",
+      "outcome": "Passed",
+      "duration": "00:00:00.1943424"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiIntegrationTests.Timeout_cancels_cooperative_provider_and_bounds_noncooperative_calls",
+      "outcome": "Passed",
+      "duration": "00:00:02.0823312"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Acceptance_requires_explicit_confirmation_and_a_token",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004539"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Invalid_task_content_and_dependency_graphs_are_rejected(kind: \"cycle\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0012390"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Invalid_task_content_and_dependency_graphs_are_rejected(kind: \"dependencies\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000652"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Invalid_task_content_and_dependency_graphs_are_rejected(kind: \"description\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000224"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Invalid_task_content_and_dependency_graphs_are_rejected(kind: \"duplicate\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000818"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Invalid_task_content_and_dependency_graphs_are_rejected(kind: \"id\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000121"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Invalid_task_content_and_dependency_graphs_are_rejected(kind: \"missing\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000189"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Invalid_task_content_and_dependency_graphs_are_rejected(kind: \"null\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002749"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Invalid_task_content_and_dependency_graphs_are_rejected(kind: \"priority\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000361"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Invalid_task_content_and_dependency_graphs_are_rejected(kind: \"self\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000122"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Invalid_task_content_and_dependency_graphs_are_rejected(kind: \"title\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000617"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Invalid_task_content_and_dependency_graphs_are_rejected(kind: \"too-many\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009932"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Malformed_or_unexpected_provider_output_is_rejected(output: \"\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002505"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Malformed_or_unexpected_provider_output_is_rejected(output: \"[]\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010048"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Malformed_or_unexpected_provider_output_is_rejected(output: \"not json\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000639"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Malformed_or_unexpected_provider_output_is_rejected(output: \"null\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000270"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Malformed_or_unexpected_provider_output_is_rejected(output: \"{\\\"tasks\\\":[],\\\"script\\\":\\\"run\\\"}\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000947"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Malformed_or_unexpected_provider_output_is_rejected(output: \"{\\\"tasks\\\":[],\\\"tasks\\\":[]}\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003530"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Malformed_or_unexpected_provider_output_is_rejected(output: \"{\\\"tasks\\\":[{\\\"id\\\":\\\"base\\\",\\\"commands\\\":[]}]}\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003668"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Malformed_or_unexpected_provider_output_is_rejected(output: \"{\\\"tasks\\\":\\\"invalid\\\"}\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000802"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Narrative_has_required_bounded_fields",
+      "outcome": "Passed",
+      "duration": "00:00:00.0008742"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Oversized_output_is_rejected_before_deserialization",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004348"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiRulesTests.Valid_proposals_and_empty_risk_list_are_supported",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003286"
+    }
+  ],
+  "liveUnconfigured": {
+    "total": 23,
+    "passed": 23,
+    "failed": 0
+  },
+  "workflowLiveRegression": {
+    "checks": 66,
+    "passed": 66,
+    "failed": 0,
+    "recordedHttpChecks": 47,
+    "stateChecks": 19,
+    "allHttpRequests": 63,
+    "pollingHttpRequests": 16
+  }
+}
