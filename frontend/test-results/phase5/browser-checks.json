@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-10-23T01:54:59.855442+00:00",
+  "disposable": true,
+  "checks": [
+    {
+      "name": "Create/validate disabled project rule in browser; change action type and reorder actions",
+      "passed": true
+    },
+    {
+      "name": "Enable rule and observe real event execution in history",
+      "passed": true
+    },
+    {
+      "name": "Inspect pinned execution version and follow work-item Activity link back to details",
+      "passed": true
+    },
+    {
+      "name": "Keep unsaved draft when remote workflow version changes; Save is blocked",
+      "passed": true
+    },
+    {
+      "name": "Disable rule; dialog closes and focus returns to trigger",
+      "passed": true
+    },
+    {
+      "name": "Developer deep link after logout/account switch hides workflow content and navigation",
+      "passed": true
+    },
+    {
+      "name": "390px iframe builder and Escape dismissal with trigger focus return",
+      "passed": true
+    },
+    {
+      "name": "Reconnect/refetch after disposable backend restart",
+      "passed": true
+    }
+  ],
+  "limitations": [
+    "390px browser iframe, not a physical device audit",
+    "Real SMTP inbox delivery not exercised"
+  ]
+}

@@ -42,14 +42,42 @@ export function frontendInvitationLink(
 }
 export type Route = {
   workspaceId?: string
-  section: 'projects' | 'members' | 'invitations' | 'settings'
+  section: 'projects' | 'members' | 'invitations' | 'settings' | 'workflows'
   projectId?: string
-  projectSection?: 'work-items' | 'labels' | 'activity'
+  projectSection?: 'work-items' | 'labels' | 'activity' | 'workflows'
   itemId?: string
+  workflowId?: string
+  executionId?: string
 }
 export function parseRoute(path: string): Route {
+  const workflow =
+    /^\/workspaces\/([^/]+)\/workflows(?:\/([^/]+)(?:\/executions\/([^/]+))?)?\/?$/.exec(
+      path,
+    )
+  if (
+    workflow &&
+    workflow
+      .slice(1)
+      .filter(Boolean)
+      .every((id) => uuid.test(id))
+  )
+    return {
+      workspaceId: workflow[1],
+      section: 'workflows',
+      workflowId: workflow[2],
+      executionId: workflow[3],
+    }
+  const execution =
+    /^\/workspaces\/([^/]+)\/workflow-executions\/([^/]+)\/?$/.exec(path)
+  if (execution && uuid.test(execution[1]) && uuid.test(execution[2]))
+    return {
+      workspaceId: execution[1],
+      section: 'workflows',
+      executionId: execution[2],
+    }
+
   const match =
-    /^\/workspaces\/([^/]+)(?:\/(projects|members|invitations|settings))?(?:\/([^/]+))?(?:\/(work-items|labels|activity)(?:\/([^/]+))?)?\/?$/.exec(
+    /^\/workspaces\/([^/]+)(?:\/(projects|members|invitations|settings))?(?:\/([^/]+))?(?:\/(work-items|labels|activity|workflows)(?:\/([^/]+))?)?\/?$/.exec(
       path,
     )
   if (

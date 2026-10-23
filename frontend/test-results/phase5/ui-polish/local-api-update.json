@@ -1,0 +1,9 @@
+{
+  "checkedAt": "2026-10-23T14:01:25.476Z",
+  "origin": "http://localhost:8080",
+  "readyStatus": 200,
+  "lookupInOpenApi": true,
+  "anonymousLookupStatus": 401,
+  "updateCommand": "docker compose up -d --build --no-deps api",
+  "databaseServiceRecreated": false
+}

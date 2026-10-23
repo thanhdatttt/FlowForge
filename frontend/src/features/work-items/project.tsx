@@ -8,6 +8,8 @@ import { WorkLink } from './shared'
 import { WorkList } from './list'
 import { WorkDetail } from './detail'
 import { Labels } from './labels'
+import { Workflows } from '@/features/workflows/workflows'
+import { canBrowseWorkflows } from '@/features/workflows/rules'
 import { ActivityFeed } from './activity'
 
 export function ProjectWork({
@@ -57,6 +59,9 @@ export function ProjectWork({
               ['/work-items', 'Work items'],
               ['/labels', 'Labels'],
               ['/activity', 'Activity'],
+              ...(canBrowseWorkflows(workspace.role)
+                ? [['/workflows', 'Workflows']]
+                : []),
             ].map(([suffix, label]) => (
               <WorkLink
                 key={suffix}
@@ -96,10 +101,21 @@ export function ProjectWork({
                 navigate={navigate}
               />
             )
+          ) : route.projectSection === 'workflows' ? (
+            <Workflows
+              workspace={workspace}
+              userId={userId}
+              projectId={projectId}
+              navigate={navigate}
+            />
           ) : route.projectSection === 'labels' ? (
             <Labels workspace={workspace} project={project} />
           ) : route.projectSection === 'activity' ? (
-            <ActivityFeed scope={{ workspaceId: workspace.id, projectId }} />
+            <ActivityFeed
+              scope={{ workspaceId: workspace.id, projectId }}
+              navigate={navigate}
+              inspectWorkflows={canBrowseWorkflows(workspace.role)}
+            />
           ) : (
             <ProjectDetail workspace={workspace} projectId={projectId} />
           )}

@@ -1,6 +1,6 @@
 # Phase 5: workflow engine backend
 
-Phase 5 implements the backend/API. The React workflow builder is deferred with the rest of the frontend. Definitions use validated JSON; arbitrary expressions, scripts, OR conditions, drag-and-drop configuration, and release-note actions are outside this release.
+Phase 5 initially delivered the backend/API. The React form-based workflow builder and execution views are now implemented; see [Phase 5 frontend](phase5_frontend.md). Definitions use validated JSON; arbitrary expressions, scripts, OR conditions, drag-and-drop configuration, and release-note actions are outside this release.
 
 ## Permissions and lifecycle
 
@@ -26,6 +26,7 @@ Base: `/api/v1/workspaces/{workspaceId}/workflows`; all operations require Beare
 | POST | `/{workflowId}/enable` | Body `{ "version": 1 }`. |
 | POST | `/{workflowId}/disable` | Body `{ "version": 1 }`; cancel unfinished actions. |
 | GET | `/{workflowId}/executions` | Paginated history. |
+| GET | `/executions/{executionId}` | Read-only lookup for Activity links; same execution DTO and workflow-management authorization, returning 404 for inaccessible or wrong-workspace executions. |
 | GET | `/{workflowId}/executions/{executionId}` | Pinned version ID/number and full definition, triggering event/actor, correlation/origin/depth, item/project, state, condition result, attempts, timestamps, ordered action results, safe errors, and queued workflow email delivery states. |
 
 Pagination follows existing defaults (page 1, page size 20, maximum size 100). Validation returns field-specific `400 application/problem+json`. A successful validation response is `{ "valid": true }`.

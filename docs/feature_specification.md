@@ -173,7 +173,7 @@ executions when a workflow is disabled.
 
 ### Phase 5 agreed backend policy
 
-Phase 5 delivers backend/API support; the workflow builder UI is deferred with the frontend. Owners/Admins manage workspace rules. Owners/Admins and explicitly assigned Managers manage project rules. Execution uses the creator's current project resource-write authority, rechecked before every action; creator and scope are immutable.
+Phase 5 initially delivered backend/API support. The workflow builder UI is now implemented as documented in [phase5_frontend.md](phase5_frontend.md). Owners/Admins manage workspace rules. Owners/Admins and explicitly assigned Managers manage project rules. Execution uses the creator's current project resource-write authority, rechecked before every action; creator and scope are immutable.
 
 Pin the configuration version at scheduling. Evaluate ALL conditions against current item state once when execution starts; the actor comes from the triggering event. Disabling prevents new scheduling and cancels unfinished actions while preserving committed actions. Enablement does not replay earlier events. Retries preserve completed actions; action effects, audit and completion records commit atomically. Generated events carry server-owned execution ancestry and bounded depth to stop recursive rules.
 

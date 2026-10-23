@@ -667,12 +667,16 @@
   width: fit-content;
   text-align: left;
 }
-.project-members-heading {
-  flex-direction: column;
-  align-items: stretch;
+.workspace-section-heading.project-members-heading {
+  align-items: flex-start;
+  flex-direction: row;
+}
+.project-members-heading > div {
+  flex: 1;
+  min-width: 0;
 }
 .project-members-heading > .button {
-  align-self: center;
+  margin-top: 0;
 }
 .project-member-dialog .workspace-form > fieldset > .button {
   display: flex;
@@ -707,4 +711,34 @@
 .workspace-entry-card:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 3px;
+}
+
+/* Intent colors use the same palettes as existing success/error notices. */
+.button.button--enable:not(:disabled) {
+  color: #216347;
+  background: #edf7f1;
+  border: 1px solid #cde5d7;
+}
+.button.button--enable:hover:not(:disabled) {
+  background: #dff0e6;
+  border-color: #9ac9ad;
+}
+.button.button--disable:not(:disabled) {
+  color: #805416;
+  background: #fff7e6;
+  border: 1px solid #ecd8ac;
+}
+.button.button--disable:hover:not(:disabled) {
+  background: #fff0cd;
+  border-color: #d5b575;
+}
+.button.button--danger:not(:disabled) {
+  color: #a22d40;
+  background: #fff3f4;
+  border: 1px solid #f2d8dd;
+}
+.button.button--danger:hover:not(:disabled) {
+  color: #912637;
+  background: #fde5e9;
+  border-color: #e6b9c2;
 }

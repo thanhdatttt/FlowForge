@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-10-23T14:01:05.396206+00:00",
+  "frontend": {
+    "total": 71,
+    "failed": 0,
+    "source": "ui-polish/frontend-tests.xml"
+  },
+  "backend": {
+    "passed": 352,
+    "failed": 0,
+    "skipped": 0,
+    "source": "backend-suite.json"
+  },
+  "checks": {
+    "lint": "passed",
+    "typecheck": "passed via tsc -b in build",
+    "productionBuild": "passed"
+  },
+  "live": {
+    "scenariosPassed": 10,
+    "requests": 84,
+    "source": "live-backend.json"
+  }
+}
