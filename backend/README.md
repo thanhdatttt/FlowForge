@@ -271,7 +271,7 @@ Use `/api/v1/workspaces/{workspaceId}/workflows` to list/create rules; `/{workfl
 
 The `PhaseFiveWorkflows` migration preserves existing notification work and checkpoints historical events without replaying them into workflows. A separate scheduler checkpoint ensures notification dispatch cannot consume workflow events. Calendar triggers include unassigned items. Workflow execution, event scheduling, and calendar scanning have independent background loops; notification live delivery and workflow email use the existing notification worker.
 
-See [workflow engine contracts and operations](../docs/workflow_engine.md) for the full JSON example, endpoint/condition/action contracts, versioning, permissions, date semantics, disable/recovery behavior, email delivery diagnostics, configuration, and migration rollback limits. The workflow builder UI remains deferred with the frontend.
+See [workflow engine contracts and operations](../docs/workflow_engine.md) for the full JSON example, endpoint/condition/action contracts, versioning, permissions, date semantics, disable/recovery behavior, email delivery diagnostics, configuration, and migration rollback limits. The frontend now includes the structured workflow builder and execution views; see [Phase 5 frontend](../docs/phase5_frontend.md). The read-only `/api/v1/workspaces/{workspaceId}/workflows/executions/{executionId}` lookup supports Activity links and enforces the same workflow-management permission as nested execution details.
 
 
 ### Live workflow HTTP checks

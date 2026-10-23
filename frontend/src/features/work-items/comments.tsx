@@ -135,7 +135,11 @@ export function Comments({
       (member) => member.userId.toLowerCase() === id.toLowerCase(),
     )?.displayName || `Previous or unavailable member (${id})`
   return (
-    <section className="workspace-card" id="work-comments" tabIndex={-1}>
+    <section
+      className="workspace-card work-comments-card"
+      id="work-comments"
+      tabIndex={-1}
+    >
       <h2>Comments</h2>
       {writable && <CommentEditor scope={scope} itemId={itemId} />}
       <QueryState
@@ -177,6 +181,7 @@ export function Comments({
                           title="Delete comment?"
                           description="The comment will be removed from this thread. Its history is preserved in activity."
                           label="Delete comment"
+                          triggerClassName="button--danger"
                           run={() =>
                             workApi.deleteComment(scope, itemId, comment.id)
                           }

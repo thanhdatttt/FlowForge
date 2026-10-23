@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name="sign-in does not apply new-password complexity rules to existing accounts" time="0.002449" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/auth.test.ts"/>
+	<testcase name="registration validates missing name, email, and password complexity" time="0.000983" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/auth.test.ts"/>
+	<testcase name="whitespace is not a password symbol; Unicode punctuation is accepted" time="0.000848" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/auth.test.ts"/>
+	<testcase name="sign-in sends only the documented login fields" time="0.016403" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/auth.test.ts"/>
+	<testcase name="registration uses the documented endpoint and response" time="0.000470" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/auth.test.ts"/>
+	<testcase name="invalid credentials remain generic and never trigger token refresh" time="0.000661" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/auth.test.ts"/>
+	<testcase name="validation problem responses retain field errors" time="0.000357" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/auth.test.ts"/>
+	<testcase name="duplicate registration returns a useful conflict" time="0.000343" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/auth.test.ts"/>
+	<testcase name="expired tokens rotate once for concurrent authenticated reads" time="0.006151" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/auth.test.ts"/>
+	<testcase name="401 on a protected resource refreshes and retries once" time="0.001147" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/auth.test.ts"/>
+	<testcase name="invalid refresh credentials clear the session" time="0.000364" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/auth.test.ts"/>
+	<testcase name="a refresh that completes after sign-out cannot restore the session" time="0.000412" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/auth.test.ts"/>
+	<testcase name="persistent authorization failure retries only once and clears the session" time="0.000595" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/auth.test.ts"/>
+	<testcase name="a transient refresh failure keeps the session available for retry" time="0.000305" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/auth.test.ts"/>
+	<testcase name="protected requests without a session never reach the server" time="0.000190" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/auth.test.ts"/>
+	<testcase name="verification and logout handle empty 204 responses and preserve leading zeroes" time="0.000389" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/auth.test.ts"/>
+	<testcase name="rate limits, offline failures, and unavailable services have actionable messages" time="0.000522" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/auth.test.ts"/>
+	<testcase name="password recovery verifies OTP anonymously before resetting the password" time="0.000547" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/auth.test.ts"/>
+	<testcase name="recovery reports expired codes, invalid grants, and weak-password field errors" time="0.000901" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/auth.test.ts"/>
+	<testcase name="notification pagination, unread total and bodyless read mutations follow the backend contract" time="0.000618" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/notifications.test.ts"/>
+	<testcase name="resource navigation ignores resourceUrl; invitations never invent tokens; unknown types are readable" time="0.000188" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/notifications.test.ts"/>
+	<testcase name="notification mutation failures retain the session and are never blindly retried" time="0.000554" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/notifications.test.ts"/>
+	<testcase name="HTTP and SignalR share one refresh rotation and use the current token" time="0.001493" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/notifications.test.ts"/>
+	<testcase name="invalid realtime refresh clears session and a late refresh cannot restore logout" time="0.000536" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/notifications.test.ts"/>
+	<testcase name="deduplication bounds memory and does not remember empty IDs" time="0.000234" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/notifications.test.ts"/>
+	<testcase name="live subscriptions precede REST recovery and rejoin after connection loss" time="0.001103" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/notifications.test.ts"/>
+	<testcase name="initial start retries and denied subscriptions still refetch current access" time="0.000449" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/notifications.test.ts"/>
+	<testcase name="scope switching leaves old groups and ignores stale/duplicate events" time="0.000787" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/notifications.test.ts"/>
+	<testcase name="rapid navigation during pending joins recovers only the final scope" time="0.000443" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/notifications.test.ts"/>
+	<testcase name="cleanup during start stops late connections and removes event handlers" time="0.000362" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/notifications.test.ts"/>
+	<testcase name="transient background refetch errors keep the existing form visible with a retry action" time="0.010011" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/work-items-ui.test.ts"/>
+	<testcase name="authorization and missing-resource errors hide stale content even when a previous read succeeded" time="0.001472" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/work-items-ui.test.ts"/>
+	<testcase name="initial query failure never exposes children without a successful result" time="0.000794" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/work-items-ui.test.ts"/>
+	<testcase name="work routes preserve deep links and reject misplaced or invalid nested IDs" time="0.001016" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/work-items.test.ts"/>
+	<testcase name="Developer can write work but Viewer and archived resources remain read only; moderation is separate" time="0.000451" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/work-items.test.ts"/>
+	<testcase name="full-key search normalizes only keys in the current project" time="0.000466" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/work-items.test.ts"/>
+	<testcase name="parent choices exclude descendants beyond the first level and archived items" time="0.000406" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/work-items.test.ts"/>
+	<testcase name="mentions preserve plain text and exact member IDs without interpreting HTML" time="0.000464" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/work-items.test.ts"/>
+	<testcase name="time input round trips local times to UTC and keeps empty values nullable" time="0.000297" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/work-items.test.ts"/>
+	<testcase name="editing only a time-entry note preserves timestamp precision after native-input normalization" time="0.001076" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/work-items.test.ts"/>
+	<testcase name="an unchanged local time retains the original instant in a repeated DST hour" time="0.000580" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/work-items.test.ts"/>
+	<testcase name="file validation enforces the backend MIME and size limits" time="0.005545" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/work-items.test.ts"/>
+	<testcase name="all JSON work/collaboration operations use existing routes and exact DTO fields" time="0.001406" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/work-items.test.ts"/>
+	<testcase name="server filters encode Unicode, ampersands, dates, booleans and pagination" time="0.000769" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/work-items.test.ts"/>
+	<testcase name="multipart uploads and binary downloads retain auth and survive a 401 refresh" time="0.001429" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/work-items.test.ts"/>
+	<testcase name="all-page pickers include later project members plus implicit Owners/Admins without duplicates" time="0.001186" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/work-items.test.ts"/>
+	<testcase name="relation discovery reads every active and archived page; incomplete pagination fails visibly" time="0.000834" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/work-items.test.ts"/>
+	<testcase name="work and comment conflicts, permission failures and unavailable files propagate without blind write retries" time="0.000760" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/work-items.test.ts"/>
+	<testcase name="all workflow operations retain auth, exact DTOs, versions and pagination" time="0.001612" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workflows.test.ts"/>
+	<testcase name="workflow validation errors and conflicts preserve server fields without blindly retrying mutations" time="0.000999" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workflows.test.ts"/>
+	<testcase name="workspace workflow, project workflow and activity execution routes resolve validated UUIDs" time="0.000496" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workflows.test.ts"/>
+	<testcase name="workflow permissions distinguish workspace management from explicit project assignment" time="0.000349" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workflows.test.ts"/>
+	<testcase name="operator transitions enforce empty/list/single arity without parsing text delimiters" time="0.000321" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workflows.test.ts"/>
+	<testcase name="ordered actions keep UUIDs; changing action type removes irrelevant parameters" time="0.000339" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workflows.test.ts"/>
+	<testcase name="execution views use pinned configuration, distinguish skips and email delivery from queue success, and escape content" time="0.016838" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workflows.test.ts"/>
+	<testcase name="workflow editor has structured controls, mention picker, immutable scope and named order buttons" time="0.007934" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workflows.test.ts"/>
+	<testcase name="unassigned Manager editor blocks save while explicitly assigned Manager can save" time="0.006430" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workflows.test.ts"/>
+	<testcase name="archived project editor keeps draft visible inside disabled fields with an explanation" time="0.003283" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workflows.test.ts"/>
+	<testcase name="Owner UI controls reflect workspace and project permission boundaries" time="0.000251" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workspaces.test.ts"/>
+	<testcase name="Admin UI controls reflect workspace and project permission boundaries" time="0.000132" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workspaces.test.ts"/>
+	<testcase name="Manager UI controls reflect workspace and project permission boundaries" time="0.000115" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workspaces.test.ts"/>
+	<testcase name="Developer UI controls reflect workspace and project permission boundaries" time="0.000116" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workspaces.test.ts"/>
+	<testcase name="Viewer UI controls reflect workspace and project permission boundaries" time="0.000104" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workspaces.test.ts"/>
+	<testcase name="frontend and existing API invitation links round trip tokens in fragments only" time="0.000451" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workspaces.test.ts"/>
+	<testcase name="invalid, missing and query-string invitation tokens are rejected" time="0.000259" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workspaces.test.ts"/>
+	<testcase name="workspace routes validate nested project IDs and preserve section identity" time="0.000200" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workspaces.test.ts"/>
+	<testcase name="all Phase 2 operations use authenticated existing backend routes, payloads and pagination" time="0.001224" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workspaces.test.ts"/>
+	<testcase name="project filters encode user input and omit unset filters instead of inventing defaults" time="0.000628" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workspaces.test.ts"/>
+	<testcase name="permission and version conflicts propagate without retrying writes or clearing the session" time="0.000776" classname="test" file="/media/thanhdat/DATA/Code/Dotnet/FlowForge/frontend/tests/workspaces.test.ts"/>
+	<!-- tests 69 -->
+	<!-- suites 0 -->
+	<!-- pass 69 -->
+	<!-- fail 0 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 0 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 914.168978 -->
+</testsuites>

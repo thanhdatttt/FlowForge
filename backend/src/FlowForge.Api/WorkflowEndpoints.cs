@@ -117,6 +117,15 @@ public static class WorkflowEndpoints
                 }
                 return Results.Ok(await DtoAsync(db, workflow, ct));
             });
+        group.MapGet("/executions/{executionId:guid}", async (Guid workspaceId, Guid executionId,
+            HttpContext http, WorkflowAccess access, FlowForgeDbContext db, CancellationToken ct) =>
+        {
+            var execution = await db.WorkflowExecutions.AsNoTracking()
+                .SingleOrDefaultAsync(x => x.Id == executionId && x.WorkspaceId == workspaceId, ct);
+            ApiRules.Require(execution != null, 404, "Resource not found.");
+            await FindAsync(db, access, workspaceId, execution!.WorkflowId, ApiRules.UserId(http), ct);
+            return Results.Ok(await ExecutionDtoAsync(db, execution, ct));
+        });
         group.MapGet("/{workflowId:guid}/executions", async (Guid workspaceId, Guid workflowId, int? page, int? pageSize,
             HttpContext http, WorkflowAccess access, FlowForgeDbContext db, CancellationToken ct) =>
         {

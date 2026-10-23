@@ -1,0 +1,48 @@
+{
+  "checkedAt": "2026-10-23T13:55:52.160Z",
+  "disposable": true,
+  "requests": 84,
+  "checks": [
+    {
+      "name": "real disposable accounts, workspace, project and explicit role memberships",
+      "passed": true
+    },
+    {
+      "name": "validate, create-disabled, read and list follow actual workflow contracts",
+      "passed": true
+    },
+    {
+      "name": "real SignalR subscribes and workflow execution invalidation event is delivered",
+      "passed": true
+    },
+    {
+      "name": "ordered effects, pinned detail, lookup, activity link and workflow notification are persisted",
+      "passed": true
+    },
+    {
+      "name": "execution lookup denies developer, viewer, outsider, anonymous and wrong workspace",
+      "passed": true
+    },
+    {
+      "name": "assigned Manager manages project rules but cannot create or inspect workspace rules",
+      "passed": true
+    },
+    {
+      "name": "editing creates immutable versions, rejects stale writes and preserves the definition that ran",
+      "passed": true
+    },
+    {
+      "name": "nonmatching conditions expose skipped actions rather than successful side effects",
+      "passed": true
+    },
+    {
+      "name": "missing SMTP produces visible permanent action diagnostics without claiming sent email",
+      "passed": true
+    },
+    {
+      "name": "disable stops future scheduling and preserves committed effects and history",
+      "passed": true
+    }
+  ],
+  "workflowEvents": 1
+}

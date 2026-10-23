@@ -1,0 +1,50 @@
+{
+  "checkedAt": "2026-10-23T14:01:05.396206+00:00",
+  "frontendTests": {
+    "total": 71,
+    "failed": 0
+  },
+  "lint": "passed",
+  "typecheck": "passed via build",
+  "build": "passed",
+  "liveChecks": {
+    "passed": 10,
+    "requests": 84
+  },
+  "browserChecks": [
+    {
+      "name": "Project Add member aligned with block heading",
+      "passed": true
+    },
+    {
+      "name": "Validation success has green background and border; invalid configuration shows errors",
+      "passed": true
+    },
+    {
+      "name": "Workflow summary contains only updated timestamp; definition uses distinct labeled sections",
+      "passed": true
+    },
+    {
+      "name": "Enable and Disable use distinct colors; confirmation actions are centered",
+      "passed": true
+    },
+    {
+      "name": "Post comment has separation from thread; Delete comment uses destructive color",
+      "passed": true
+    },
+    {
+      "name": "Notification filter and action controls align",
+      "passed": true
+    },
+    {
+      "name": "Activity comparison aligns identical fields and preserves unrecorded versus null values",
+      "passed": true
+    },
+    {
+      "name": "Activity execution link resolves on current API without changing authorization",
+      "passed": true
+    }
+  ],
+  "businessLogicChanged": false,
+  "localApiUpdate": "passed; see local-api-update.json"
+}

@@ -47,6 +47,56 @@ public sealed class PhaseFiveIntegrationTests(PhaseFiveFixture fixture) : IClass
     }
 
     [PostgresFact]
+    public async Task Execution_lookup_by_id_preserves_workflow_authorization_and_workspace_isolation()
+    {
+        var s = await SetupAsync();
+        using var owner = fixture.Client(s.Owner);
+        var workflow = await WorkflowAsync(owner, s, "WorkItemCreated", [Action("Unassign")]);
+        await ItemAsync(owner, s);
+        await DrainAsync();
+        var history = await owner.GetFromJsonAsync<PageDto<WorkflowExecutionDto>>(s.WorkflowPath + $"/{workflow.Id}/executions");
+        var expected = Assert.Single(history!.Items);
+        var path = s.WorkflowPath + $"/executions/{expected.Id}";
+        var actual = await owner.GetFromJsonAsync<WorkflowExecutionDto>(path);
+        Assert.Equal(expected.Id, actual!.Id);
+        Assert.Equal(workflow.Id, actual.WorkflowId);
+        Assert.Equal(expected.WorkflowVersionId, actual.WorkflowVersionId);
+        Assert.Equal(expected.Version, actual.Version);
+        Assert.Equal(expected.Definition.Trigger, actual.Definition.Trigger);
+        Assert.Equal(expected.Actions.Select(x => x.ActionId), actual.Actions.Select(x => x.ActionId));
+        using var developer = fixture.Client(s.Member);
+        using var anonymous = fixture.Client();
+        var stranger = await fixture.UserAsync();
+        using var outsider = fixture.Client(stranger);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync(path)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await developer.GetAsync(path)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await outsider.GetAsync(path)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await owner.GetAsync(s.WorkflowPath + $"/executions/{Guid.NewGuid()}")).StatusCode);
+        var other = await SetupAsync();
+        Assert.Equal(HttpStatusCode.NotFound, (await owner.GetAsync(other.WorkflowPath + $"/executions/{expected.Id}")).StatusCode);
+        var manager = await fixture.UserAsync();
+        await fixture.InDb(async db =>
+        {
+            var membership = new WorkspaceMembership { WorkspaceId = s.Project.WorkspaceId, UserId = manager.Id, Role = WorkspaceRole.Manager };
+            db.WorkspaceMemberships.Add(membership);
+            db.ProjectMemberships.Add(new ProjectMembership { WorkspaceId = s.Project.WorkspaceId, ProjectId = s.Project.Id, WorkspaceMembershipId = membership.Id });
+            await db.SaveChangesAsync();
+        });
+        using var managerClient = fixture.Client(manager);
+        Assert.Equal(HttpStatusCode.OK, (await managerClient.GetAsync(path)).StatusCode);
+        var workspaceRule = await WorkflowAsync(owner, s, "WorkItemCreated", [Action("Unassign")], workspaceScope: true);
+        await ItemAsync(owner, s); await DrainAsync();
+        var workspaceHistory = await owner.GetFromJsonAsync<PageDto<WorkflowExecutionDto>>(s.WorkflowPath + $"/{workspaceRule.Id}/executions");
+        Assert.Equal(HttpStatusCode.NotFound, (await managerClient.GetAsync(s.WorkflowPath + $"/executions/{Assert.Single(workspaceHistory!.Items).Id}")).StatusCode);
+        await fixture.InDb(async db =>
+        {
+            var membership = await db.ProjectMemberships.SingleAsync(x => x.ProjectId == s.Project.Id && x.WorkspaceMembership.UserId == manager.Id);
+            membership.RemovedAt = DateTimeOffset.UtcNow; await db.SaveChangesAsync();
+        });
+        Assert.Equal(HttpStatusCode.NotFound, (await managerClient.GetAsync(path)).StatusCode);
+    }
+
+    [PostgresFact]
     public async Task All_ordered_actions_preserve_versions_audit_mentions_notifications_and_email()
     {
         var s = await SetupAsync();

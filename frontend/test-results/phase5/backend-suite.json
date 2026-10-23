@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-10-23T01:53:55.816215+00:00",
+  "source": "/tmp/flowforge-fe-phase5-test-results/backend-phase5-frontend.trx",
+  "total": 352,
+  "passed": 352,
+  "failed": 0,
+  "notExecuted": 0,
+  "executionLookupTest": [
+    {
+      "name": "FlowForge.Api.Tests.PhaseFiveIntegrationTests.Execution_lookup_by_id_preserves_workflow_authorization_and_workspace_isolation",
+      "outcome": "Passed"
+    }
+  ]
+}

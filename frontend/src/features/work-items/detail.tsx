@@ -16,6 +16,7 @@ import { ItemEditor } from './editor'
 import { Comments } from './comments'
 import { Attachments } from './attachments'
 import { TimeEntries } from './time-entries'
+import { canBrowseWorkflows } from '@/features/workflows/rules'
 import { ActivityFeed } from './activity'
 
 function Relations({
@@ -373,7 +374,12 @@ export function WorkDetail({
             role={workspace.role}
             writable={writable}
           />
-          <ActivityFeed scope={scope} itemId={item.id} />
+          <ActivityFeed
+            scope={scope}
+            itemId={item.id}
+            navigate={navigate}
+            inspectWorkflows={canBrowseWorkflows(workspace.role)}
+          />
         </div>
       )}
     </QueryState>

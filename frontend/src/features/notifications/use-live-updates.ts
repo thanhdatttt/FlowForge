@@ -27,6 +27,9 @@ export function useLiveUpdates({ workspaceId, projectId }: LiveScope) {
       notifications = false
       for (const scope of projects.values()) {
         void client.invalidateQueries({
+          queryKey: ['phase5', scope.workspaceId],
+        })
+        void client.invalidateQueries({
           queryKey: ['phase3', scope.workspaceId, scope.projectId],
         })
         void client.invalidateQueries({
@@ -35,22 +38,31 @@ export function useLiveUpdates({ workspaceId, projectId }: LiveScope) {
       }
       projects.clear()
     }
-    const queue = () => { timer ??= setTimeout(flush, 150) }
+    const queue = () => {
+      timer ??= setTimeout(flush, 150)
+    }
 
     async function initialize() {
-      if (controller) { controller.retry(); return }
+      if (controller) {
+        controller.retry()
+        return
+      }
       if (initializing) return
       initializing = true
       try {
         // Load the transport only for signed-in users.
-        const { HubConnectionBuilder, LogLevel } = await import('@microsoft/signalr')
+        const { HubConnectionBuilder, LogLevel } = await import(
+          '@microsoft/signalr'
+        )
         if (!active) return
         const connection = new HubConnectionBuilder()
           .withUrl('/hubs/updates', { accessTokenFactory: accessToken })
           .configureLogging(LogLevel.None)
           .build()
         controller = createLiveUpdates(connection, {
-          state: value => { if (active) setState(value) },
+          state: (value) => {
+            if (active) setState(value)
+          },
           recover: async () => {
             if (!active || !useSessionStore.getState().tokens) return
             // Active queries refetch missed events and current permissions.
@@ -58,11 +70,15 @@ export function useLiveUpdates({ workspaceId, projectId }: LiveScope) {
             await Promise.all([
               client.invalidateQueries({ queryKey: ['phase2'] }),
               client.invalidateQueries({ queryKey: ['phase3'] }),
+              client.invalidateQueries({ queryKey: ['phase5'] }),
               client.invalidateQueries({ queryKey: notificationKey }),
             ])
           },
-          notification: () => { notifications = true; queue() },
-          project: event => {
+          notification: () => {
+            notifications = true
+            queue()
+          },
+          project: (event) => {
             projects.set(`${event.workspaceId}/${event.projectId}`, {
               workspaceId: event.workspaceId,
               projectId: event.projectId || undefined,
@@ -71,8 +87,7 @@ export function useLiveUpdates({ workspaceId, projectId }: LiveScope) {
           },
         })
         live.current = controller
-        if (scopeRef.current.workspaceId)
-          controller.setScope(scopeRef.current)
+        if (scopeRef.current.workspaceId) controller.setScope(scopeRef.current)
         else controller.start()
       } catch {
         if (active) setState('offline')
@@ -80,7 +95,9 @@ export function useLiveUpdates({ workspaceId, projectId }: LiveScope) {
         initializing = false
       }
     }
-    retryRef.current = () => { void initialize() }
+    retryRef.current = () => {
+      void initialize()
+    }
     void initialize()
     const resume = () => retryRef.current()
     const visible = () => {

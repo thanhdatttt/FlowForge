@@ -1,6 +1,13 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { FolderKanban, LogOut, Mail, Settings, Users } from 'lucide-react'
+import {
+  FolderKanban,
+  LogOut,
+  Mail,
+  Settings,
+  Users,
+  Workflow,
+} from 'lucide-react'
 import { Brand } from '@/components/brand'
 import { Button } from '@/components/ui/button'
 import { FormField } from '@/components/ui/form-field'
@@ -22,6 +29,8 @@ import { WorkspaceSettings } from './workspace-settings'
 import { WorkspaceMembers } from './workspace-members'
 import { WorkspaceInvitations } from './workspace-invitations'
 import { Projects } from './projects'
+import { Workflows } from '@/features/workflows/workflows'
+import { canBrowseWorkflows } from '@/features/workflows/rules'
 import { ProjectWork } from '@/features/work-items/project'
 import { InvitationEntry, InvitationPage } from './invitation-page'
 import {
@@ -148,6 +157,17 @@ export function WorkspaceApp({
               >
                 <FolderKanban size={18} aria-hidden="true" /> Projects
               </Nav>
+              {workspace && canBrowseWorkflows(workspace.role) && (
+                <Nav
+                  path={`/workspaces/${workspace.id}/workflows`}
+                  active={
+                    route.section === 'workflows' && !invitation && !account
+                  }
+                  navigate={navigate}
+                >
+                  <Workflow size={18} aria-hidden="true" /> Workflows
+                </Nav>
+              )}
               <Nav
                 path={`/workspaces/${route.workspaceId}/members`}
                 active={route.section === 'members' && !invitation && !account}
@@ -231,6 +251,7 @@ export function WorkspaceApp({
                 void client.invalidateQueries({ queryKey: ['phase2'] })
                 void client.invalidateQueries({ queryKey: ['phase3'] })
                 void client.invalidateQueries({ queryKey: ['phase4'] })
+                void client.invalidateQueries({ queryKey: ['phase5'] })
                 void user.refetch()
               }}
             >
@@ -426,6 +447,16 @@ function WorkspaceContent({
   route: ReturnType<typeof parseRoute>
   navigate: (path: string) => void
 }) {
+  if (route.section === 'workflows')
+    return (
+      <Workflows
+        workspace={workspace}
+        userId={user.id}
+        workflowId={route.workflowId}
+        executionId={route.executionId}
+        navigate={navigate}
+      />
+    )
   if (route.section === 'members')
     return <WorkspaceMembers workspace={workspace} />
   if (route.section === 'settings')
