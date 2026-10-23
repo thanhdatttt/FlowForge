@@ -1,0 +1,209 @@
+{
+  "environment": {
+    "dotnetSdk": "10.0.113",
+    "configuration": "Release",
+    "database": "PostgreSQL 17, isolated disposable databases",
+    "transport": "ASP.NET Core TestServer HTTP and SignalR WebSocket framing"
+  },
+  "run": {
+    "creation": "2026-10-22T19:03:07.1032897+07:00",
+    "queuing": "2026-10-22T19:03:07.1032899+07:00",
+    "start": "2026-10-22T19:03:04.7436447+07:00",
+    "finish": "2026-10-22T19:03:24.9557871+07:00"
+  },
+  "fullBackend": {
+    "total": 253,
+    "passed": 253,
+    "failed": 0,
+    "skipped": 0
+  },
+  "phase6": {
+    "total": 26,
+    "passed": 26,
+    "failed": 0,
+    "skipped": 0
+  },
+  "classes": {
+    "FlowForge.Api.Tests.BackendCoverageTests": 16,
+    "FlowForge.Api.Tests.EmailVerificationMigrationTests": 1,
+    "FlowForge.Api.Tests.GmailSmtpEmailSenderTests": 5,
+    "FlowForge.Api.Tests.GmailSmtpEmailSenderTests.Missing_credentials_fail_before_attempting_delivery(username: \"sender@example": 2,
+    "FlowForge.Api.Tests.HostConfigurationTests": 3,
+    "FlowForge.Api.Tests.PasswordHashingTests": 1,
+    "FlowForge.Api.Tests.PasswordResetTests": 10,
+    "FlowForge.Api.Tests.PhaseFiveHostTests": 5,
+    "FlowForge.Api.Tests.PhaseFiveIntegrationTests": 29,
+    "FlowForge.Api.Tests.PhaseFiveMigrationTests": 1,
+    "FlowForge.Api.Tests.PhaseFiveRealtimeTests": 1,
+    "FlowForge.Api.Tests.PhaseFiveRulesTests": 31,
+    "FlowForge.Api.Tests.PhaseFourIntegrationTests": 7,
+    "FlowForge.Api.Tests.PhaseFourLoggingTests": 1,
+    "FlowForge.Api.Tests.PhaseFourMigrationTests": 1,
+    "FlowForge.Api.Tests.PhaseFourRealtimeTests": 5,
+    "FlowForge.Api.Tests.PhaseFourReliabilityTests": 12,
+    "FlowForge.Api.Tests.PhaseSixIntegrationTests": 26,
+    "FlowForge.Api.Tests.PhaseThreeCoverageTests": 5,
+    "FlowForge.Api.Tests.PhaseThreeIntegrationTests": 2,
+    "FlowForge.Api.Tests.PhaseThreeMigrationTests": 2,
+    "FlowForge.Api.Tests.PhaseTwoIntegrationTests": 17,
+    "FlowForge.Api.Tests.PhaseTwoRulesTests": 8,
+    "FlowForge.Api.Tests.RegisterRequestValidationTests": 13,
+    "FlowForge.Api.Tests.RequestValidationTests": 35,
+    "FlowForge.Api.Tests.ScaffoldSmokeTests": 1,
+    "FlowForge.Api.Tests.SystemAuditTests": 7,
+    "FlowForge.Api.Tests.WorkspacePermissionsTests": 6
+  },
+  "sourceTrx": "/tmp/flowforge-phase6-retest/backend-retest.trx",
+  "sourceTrxSha256": "7215f0a8e0f089f931cfe14f67afd8493a546f0f4b621ce667d24f37b0dc40cc",
+  "tests": [
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Anonymous_outsiders_removed_and_inactive_members_cannot_read_any_dashboard_route",
+      "outcome": "Passed",
+      "duration": "00:00:01.5660340"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Archived_project_remains_readable_and_reporting_does_not_write_activity_or_events",
+      "outcome": "Passed",
+      "duration": "00:00:00.1922576"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Committed_updates_archive_restore_and_rollback_are_reflected_without_stored_metrics",
+      "outcome": "Passed",
+      "duration": "00:00:00.3159251"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Completion_uses_status_category_including_inactive_statuses_with_items",
+      "outcome": "Passed",
+      "duration": "00:00:00.2561449"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Dashboard_operations_are_exposed_in_development_openapi",
+      "outcome": "Passed",
+      "duration": "00:00:00.1142556"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Dashboard_routes_use_existing_project_read_permissions(role: Admin, assigned: False, expected: OK)",
+      "outcome": "Passed",
+      "duration": "00:00:00.1231135"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Dashboard_routes_use_existing_project_read_permissions(role: Developer, assigned: False, expected: NotFound)",
+      "outcome": "Passed",
+      "duration": "00:00:00.1149202"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Dashboard_routes_use_existing_project_read_permissions(role: Developer, assigned: True, expected: OK)",
+      "outcome": "Passed",
+      "duration": "00:00:00.1683779"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Dashboard_routes_use_existing_project_read_permissions(role: Manager, assigned: False, expected: NotFound)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0749146"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Dashboard_routes_use_existing_project_read_permissions(role: Manager, assigned: True, expected: OK)",
+      "outcome": "Passed",
+      "duration": "00:00:00.1595824"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Dashboard_routes_use_existing_project_read_permissions(role: Viewer, assigned: False, expected: NotFound)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0973967"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Dashboard_routes_use_existing_project_read_permissions(role: Viewer, assigned: True, expected: OK)",
+      "outcome": "Passed",
+      "duration": "00:00:00.1713270"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Empty_project_has_zero_metrics_zero_buckets_and_empty_lists",
+      "outcome": "Passed",
+      "duration": "00:00:00.3257341"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Invalid_pagination_returns_field_specific_problem_details(suffix: \"/overdue\", query: \"page=1000001\", field: \"page\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0769112"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Invalid_pagination_returns_field_specific_problem_details(suffix: \"/overdue\", query: \"pageSize=0\", field: \"pageSize\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0982117"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Invalid_pagination_returns_field_specific_problem_details(suffix: \"/workload\", query: \"page=0\", field: \"page\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0856285"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Invalid_pagination_returns_field_specific_problem_details(suffix: \"/workload\", query: \"pageSize=101\", field: \"pageSize\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0730524"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Malformed_pagination_is_rejected_by_http_binding(suffix: \"/overdue?pageSize=invalid\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0534578"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Malformed_pagination_is_rejected_by_http_binding(suffix: \"/workload?page=abc\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0490085"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Metrics_count_tasks_issues_and_subtasks_once_and_exclude_archived_items",
+      "outcome": "Passed",
+      "duration": "00:00:00.5222240"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Metrics_lists_and_activity_are_isolated_from_other_projects_and_workspaces",
+      "outcome": "Passed",
+      "duration": "00:00:00.2750153"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Overdue_and_workload_paging_have_stable_order_totals_and_empty_out_of_range_pages",
+      "outcome": "Passed",
+      "duration": "00:00:00.5029563"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Overdue_uses_utc_date_and_includes_unassigned_but_not_today_future_done_or_archived",
+      "outcome": "Passed",
+      "duration": "00:00:00.2217196"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Recent_activity_is_bounded_ordered_and_matches_authorized_activity_feed",
+      "outcome": "Passed",
+      "duration": "00:00:00.5729257"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Workload_keeps_retained_assignments_instead_of_treating_removed_members_as_unassigned",
+      "outcome": "Passed",
+      "duration": "00:00:00.1626285"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixIntegrationTests.Workload_sums_estimates_as_int64_and_does_not_duplicate_items_with_labels_or_dependencies",
+      "outcome": "Passed",
+      "duration": "00:00:00.1892500"
+    }
+  ],
+  "releaseBuild": {
+    "succeeded": true,
+    "warnings": 0,
+    "errors": 0
+  },
+  "liveWorkflow": {
+    "checks": 66,
+    "passed": 66,
+    "failed": 0,
+    "recordedHttpChecks": 47,
+    "stateChecks": 19,
+    "allHttpRequests": 60,
+    "pollingHttpRequests": 13
+  },
+  "liveDashboard": {
+    "total": 56,
+    "passed": 56,
+    "failed": 0
+  }
+}

@@ -1,0 +1,463 @@
+{
+  "runAt": "2026-10-22T19:04:39.853019+07:00",
+  "environment": "Release API, separate process, disposable PostgreSQL 17, SMTP unset",
+  "totals": {
+    "total": 56,
+    "passed": 56,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "kind": "http",
+      "check": "Development OpenAPI",
+      "method": "GET",
+      "path": "/openapi/v1.json",
+      "actual": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "All three dashboard operations documented",
+      "actual": 3,
+      "expected": 3,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Register owner",
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "actual": 201,
+      "expected": 201,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Register viewer",
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "actual": 201,
+      "expected": 201,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Viewer identity",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "actual": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Create workspace",
+      "method": "POST",
+      "path": "/api/v1/workspaces",
+      "actual": 201,
+      "expected": 201,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Create project",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{id}/projects",
+      "actual": 201,
+      "expected": 201,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Empty overview",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/dashboard",
+      "actual": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Empty completion",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Empty total",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Five default statuses",
+      "actual": 5,
+      "expected": 5,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Four priorities",
+      "actual": 4,
+      "expected": 4,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Anonymous denied ",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/dashboard",
+      "actual": 401,
+      "expected": 401,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Outsider denied ",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/dashboard",
+      "actual": 404,
+      "expected": 404,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Anonymous denied /workload",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/dashboard/workload",
+      "actual": 401,
+      "expected": 401,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Outsider denied /workload",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/dashboard/workload",
+      "actual": 404,
+      "expected": 404,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Anonymous denied /overdue",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/dashboard/overdue",
+      "actual": 401,
+      "expected": 401,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Outsider denied /overdue",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/dashboard/overdue",
+      "actual": 404,
+      "expected": 404,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Add workspace Viewer",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{id}/members",
+      "actual": 201,
+      "expected": 201,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Add project Viewer",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/members",
+      "actual": 201,
+      "expected": 201,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Create Unfinished",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/work-items",
+      "actual": 201,
+      "expected": 201,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Create Completed",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/work-items",
+      "actual": 201,
+      "expected": 201,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Create Archived",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/work-items",
+      "actual": 201,
+      "expected": 201,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Archive work item",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/work-items/{id}/archive",
+      "actual": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Viewer overview",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/dashboard",
+      "actual": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Archive excluded from total",
+      "actual": 2,
+      "expected": 2,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Completed count",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Completion percentage",
+      "actual": 50,
+      "expected": 50,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Overdue count excludes Done and archive",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Recent activity included",
+      "actual": true,
+      "expected": true,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Viewer workload",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/dashboard/workload?pageSize=1",
+      "actual": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "One workload group",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Unassigned user",
+      "actual": null,
+      "expected": null,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Unassigned label",
+      "actual": "Unassigned",
+      "expected": "Unassigned",
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Only unfinished estimate counted",
+      "actual": 60,
+      "expected": 60,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Viewer overdue",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/dashboard/overdue",
+      "actual": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "One overdue row",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Overdue key matches created work",
+      "actual": "DASH-1",
+      "expected": "DASH-1",
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Overdue due date",
+      "actual": "2026-10-21",
+      "expected": "2026-10-21",
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Reject bad page /workload",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/dashboard/workload?page=0",
+      "actual": 400,
+      "expected": 400,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Page field error /workload",
+      "actual": true,
+      "expected": true,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Out of range /workload",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/dashboard/workload?page=2&pageSize=1",
+      "actual": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Out of range empty /workload",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Out of range retains total /workload",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Reject bad page /overdue",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/dashboard/overdue?page=0",
+      "actual": 400,
+      "expected": 400,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Page field error /overdue",
+      "actual": true,
+      "expected": true,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Out of range /overdue",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/dashboard/overdue?page=2&pageSize=1",
+      "actual": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Out of range empty /overdue",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Out of range retains total /overdue",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Archive project",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/archive",
+      "actual": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Archived overview",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/dashboard",
+      "actual": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Archived project overview",
+      "actual": 2,
+      "expected": 2,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Archived workload",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/dashboard/workload",
+      "actual": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Archived project workload",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    },
+    {
+      "kind": "http",
+      "check": "Archived overdue",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{id}/projects/{id}/dashboard/overdue",
+      "actual": 200,
+      "expected": 200,
+      "passed": true
+    },
+    {
+      "kind": "state",
+      "check": "Archived project overdue",
+      "actual": 1,
+      "expected": 1,
+      "passed": true
+    }
+  ]
+}

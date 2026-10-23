@@ -1,0 +1,240 @@
+{
+  "environment": {
+    "dotnetSdk": "10.0.113",
+    "configuration": "Release",
+    "database": "PostgreSQL 17, disposable isolated databases",
+    "cloudTransport": "In-memory HTTP message handler only; no Ollama Cloud calls or real key/model configured"
+  },
+  "run": {
+    "creation": "2026-10-22T20:26:29.6825055+07:00",
+    "queuing": "2026-10-22T20:26:29.6825056+07:00",
+    "start": "2026-10-22T20:26:28.8753441+07:00",
+    "finish": "2026-10-22T20:26:49.8236111+07:00"
+  },
+  "fullBackend": {
+    "total": 351,
+    "passed": 351,
+    "failed": 0,
+    "skipped": 0
+  },
+  "ollamaAdapterAndHost": {
+    "total": 40,
+    "passed": 40,
+    "failed": 0,
+    "skipped": 0,
+    "classes": {
+      "FlowForge.Api.Tests.OllamaCloudAiProviderTests": 30,
+      "FlowForge.Api.Tests.PhaseSixAiHostTests": 10
+    }
+  },
+  "sourceTrx": "/tmp/flowforge-ollama-results/backend-ollama.trx",
+  "sourceTrxSha256": "4ae48c736b6c1d15352ddc6235375bea509ad31f02f985b632015c5048a2961b",
+  "composeConfiguration": "PASS using .env.example with OLLAMA_API_KEY and OLLAMA_MODEL empty",
+  "tests": [
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Body_limit_also_applies_when_content_length_is_unknown",
+      "outcome": "Passed",
+      "duration": "00:00:00.0033221"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Cloud_requests_use_user_model_bearer_auth_nonstreaming_chat_and_exact_content(summary: False)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0089713"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Cloud_requests_use_user_model_bearer_auth_nonstreaming_chat_and_exact_content(summary: True)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0253156"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Malformed_or_incomplete_envelopes_are_rejected(json: \"not JSON\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002698"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Malformed_or_incomplete_envelopes_are_rejected(json: \"null\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000670"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Malformed_or_incomplete_envelopes_are_rejected(json: \"{\\\"done\\\":false,\\\"message\\\":{\\\"role\\\":\\\"assistant\\\"\u00b7\u00b7\u00b7)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000643"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Malformed_or_incomplete_envelopes_are_rejected(json: \"{\\\"done\\\":true,\\\"message\\\":{\\\"role\\\":\\\"assistant\\\"\"\u00b7\u00b7\u00b7)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000712"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Malformed_or_incomplete_envelopes_are_rejected(json: \"{\\\"done\\\":true,\\\"message\\\":{\\\"role\\\":\\\"assistant\\\"\"\u00b7\u00b7\u00b7)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001358"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Malformed_or_incomplete_envelopes_are_rejected(json: \"{\\\"done\\\":true,\\\"message\\\":{\\\"role\\\":\\\"tool\\\",\\\"co\"\u00b7\u00b7\u00b7)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010388"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Malformed_or_incomplete_envelopes_are_rejected(json: \"{}\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0362571"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Missing_configuration_never_sends_a_request(key: \" \", model: \"user-selected-model\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000217"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Missing_configuration_never_sends_a_request(key: \"\", model: \"\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009214"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Missing_configuration_never_sends_a_request(key: \"\", model: \"user-selected-model\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000257"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Missing_configuration_never_sends_a_request(key: \"test-key\", model: \"\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001916"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Oversized_completions_and_response_bodies_are_rejected",
+      "outcome": "Passed",
+      "duration": "00:00:00.0089174"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Provider_http_failures_are_classified_without_exposing_response_bodies(status: 302, failure: InvalidResponse)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002474"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Provider_http_failures_are_classified_without_exposing_response_bodies(status: 400, failure: InvalidResponse)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009061"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Provider_http_failures_are_classified_without_exposing_response_bodies(status: 401, failure: Unavailable)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002194"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Provider_http_failures_are_classified_without_exposing_response_bodies(status: 403, failure: Unavailable)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0277521"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Provider_http_failures_are_classified_without_exposing_response_bodies(status: 404, failure: Unavailable)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004429"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Provider_http_failures_are_classified_without_exposing_response_bodies(status: 408, failure: Timeout)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004047"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Provider_http_failures_are_classified_without_exposing_response_bodies(status: 422, failure: InvalidResponse)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002837"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Provider_http_failures_are_classified_without_exposing_response_bodies(status: 500, failure: Unavailable)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002140"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Provider_http_failures_are_classified_without_exposing_response_bodies(status: 503, failure: Unavailable)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002398"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Provider_http_failures_are_classified_without_exposing_response_bodies(status: 504, failure: Timeout)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002336"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Rate_limit_without_header_defaults_to_sixty_seconds",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009634"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Rate_limits_preserve_bounded_retry_after_without_retries(seconds: 0, expected: 1)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000552"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Rate_limits_preserve_bounded_retry_after_without_retries(seconds: 7, expected: 7)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0037570"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Rate_limits_preserve_bounded_retry_after_without_retries(seconds: 9999, expected: 3600)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003977"
+    },
+    {
+      "name": "FlowForge.Api.Tests.OllamaCloudAiProviderTests.Transport_failure_is_safe_and_cancellation_reaches_http_handler",
+      "outcome": "Passed",
+      "duration": "00:00:00.0099501"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiHostTests.Default_host_has_no_configured_model_or_provider",
+      "outcome": "Passed",
+      "duration": "00:00:01.3112911"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiHostTests.Invalid_ai_limits_prevent_startup(setting: \"MaxContextItems\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.2507053"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiHostTests.Invalid_ai_limits_prevent_startup(setting: \"PreviewLifetimeMinutes\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.2513255"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiHostTests.Invalid_ai_limits_prevent_startup(setting: \"TimeoutSeconds\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.1655429"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiHostTests.Invalid_ollama_header_or_model_configuration_is_rejected(setting: \"ApiKey\", value: \"bad\\r\\nkey\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.3005383"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiHostTests.Invalid_ollama_header_or_model_configuration_is_rejected(setting: \"Model\", value: \"bad model name\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.2385740"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiHostTests.Ollama_configuration_is_bound_without_selecting_a_default_model(key: \"\", model: \"user-selected-model\", expected: False)",
+      "outcome": "Passed",
+      "duration": "00:00:01.1446562"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiHostTests.Ollama_configuration_is_bound_without_selecting_a_default_model(key: \"test-key\", model: \"\", expected: False)",
+      "outcome": "Passed",
+      "duration": "00:00:01.0274891"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiHostTests.Ollama_configuration_is_bound_without_selecting_a_default_model(key: \"test-key\", model: \"user-selected-model\", expected: True)",
+      "outcome": "Passed",
+      "duration": "00:00:00.9747482"
+    },
+    {
+      "name": "FlowForge.Api.Tests.PhaseSixAiHostTests.Registered_ollama_adapter_and_api_validation_work_with_mocked_cloud_transport",
+      "outcome": "Passed",
+      "duration": "00:00:00.6178483"
+    }
+  ],
+  "releaseBuild": {
+    "succeeded": true,
+    "warnings": 0,
+    "errors": 0
+  }
+}

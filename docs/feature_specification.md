@@ -237,6 +237,12 @@ time. Define each metric before displaying it and collect the required
 historical data. Calculate numeric metrics in application/database
 logic, not through AI.
 
+### Phase 6 agreed dashboard-only scope
+
+Deliver the basic project dashboard backend/API only. Exclude AI, milestones/documents and advanced metrics for this slice. Count each non-archived task, issue and subtask once. Completion uses status category `Done` divided by included items (empty project: 0%). Overdue means unfinished work with `dueDate < UTC today`, including unassigned work. Workload groups unfinished item counts and summed estimate minutes by assignee, including Unassigned. Archived projects remain readable under existing project permissions. Recent activity preserves audit history, including archived-item changes.
+
+See [dashboard.md](dashboard.md) for exact metric definitions, rounding, read consistency, pagination, permissions, API contracts and verification scope.
+
 ## 12. Milestones and Documents
 
 Deliver after core work-item management if scope requires: -
@@ -272,6 +278,10 @@ code. Handle insufficient data gracefully.
 
 Never expose cross-workspace information through AI prompts, caches, or
 retrieval indexes.
+
+### Phase 6 provider-independent AI backend policy
+
+Task proposals, explicit edited acceptance and project summaries are implemented through `IAiProvider`. The user-selected transport is Ollama Cloud; its HTTP adapter leaves API key and model empty for user configuration, makes no call until both are supplied and uses no vendor SDK. Core features remain usable without AI. Acceptance validates a user/project-bound expiring preview and atomically creates normal work items/dependencies with audit/outbox, with idempotent retries. Summary facts are calculated by the server, scoped context is bounded, and narrative is explicitly AI-generated. See [ai_backend.md](ai_backend.md) for configuration, exact JSON/API contracts, failure behavior and tests. Milestones/documents and advanced metrics remain deferred; the initial dashboard-only scope above describes the earlier slice.
 
 ## 14. Background Jobs and Search
 

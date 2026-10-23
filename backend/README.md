@@ -1,6 +1,6 @@
 # FlowForge backend
 
-This is the .NET 10 modular-monolith backend. It includes authentication, Gmail SMTP email verification, workspaces, invitations, ownership transfer, projects, work items and collaboration, Phase 4 notifications and SignalR, Phase 5 workflow automation, OpenAPI, and health checks.
+This is the .NET 10 modular-monolith backend. It includes authentication, Gmail SMTP email verification, workspaces, invitations, ownership transfer, projects, work items and collaboration, Phase 4 notifications and SignalR, Phase 5 workflow automation, Phase 6 basic project dashboards and provider-independent AI APIs (no model configured), OpenAPI, and health checks.
 
 ## Projects
 
@@ -285,3 +285,25 @@ dotnet run --project backend/tests/FlowForge.Api.SmokeTests -- \
 ```
 
 It creates disposable accounts/workspace/project/workflows, checks all nine workflow operations through real HTTP, verifies 47 HTTP responses plus 19 state assertions, and archives its project. It writes a sanitized JSON ledger even on an unexpected response and exits nonzero on failure. Polling requests are recorded separately. This runner uses only the .NET SDK and standard libraries; it runs explicitly after starting the API. See [test results](TEST_RESULTS.md) for the latest run and parity evidence.
+
+## Phase 6: project dashboard (backend only)
+
+All dashboard routes require existing project read access, including for archived projects:
+
+- `GET /api/v1/workspaces/{workspaceId}/projects/{projectId}/dashboard`: work-item totals, completion, counts by status/priority, overdue count and ten recent activity records.
+- `GET /api/v1/workspaces/{workspaceId}/projects/{projectId}/dashboard/workload`: paginated unfinished item counts and estimate-minute totals per assignee, including Unassigned where applicable.
+- `GET /api/v1/workspaces/{workspaceId}/projects/{projectId}/dashboard/overdue`: paginated unfinished items due before UTC today, including unassigned work.
+
+Only non-archived work items contribute to metrics; tasks, issues and subtasks each count once. Completion uses status category `Done`; empty projects return 0%. Each response reads a consistent database snapshot. Metrics are computed from existing data with no new migration or worker. Pagination defaults to page 1/size 20, with maximum size 100. See [dashboard definitions and contracts](../docs/dashboard.md) and [verification results](TEST_RESULTS.md).
+
+This slice excludes AI, milestones/documents, advanced reporting metrics and dashboard frontend work.
+
+## Phase 6: AI extension points (no model configured)
+
+The subsequent backend slice adds provider-independent AI APIs under `/api/v1/workspaces/{workspaceId}/projects/{projectId}/ai`:
+
+- `POST /tasks/propose`: validate a feature description, return editable proposals and an expiring preview token; create no tasks.
+- `POST /tasks/accept`: explicitly accept edited/selected proposals; atomically create normal tasks/dependencies, audit and outbox with idempotent confirmation.
+- `POST /summary`: return authoritative project metrics separately from a validated AI narrative; empty projects return `InsufficientData` without a provider call.
+
+Ollama Cloud is supported by the built-in HTTP adapter; no model or API key is selected/supplied. Set `OLLAMA_API_KEY` and `OLLAMA_MODEL` yourself in `backend/.env` for Compose, then run `docker compose up --build -d api`. For a host .NET process use `Ollama__ApiKey` and `Ollama__Model` instead; `.env` is not automatically loaded. Both values default to empty, and generation remains unavailable (`503`) until both are configured. No local Ollama install, provider SDK, migration or extra dependency is required. The interface remains replaceable. See [configuration, adapter behavior and JSON contracts](../docs/ai_backend.md). Milestones/documents, advanced metrics and AI frontend screens remain deferred.

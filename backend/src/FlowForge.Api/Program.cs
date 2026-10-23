@@ -4,6 +4,7 @@ using FlowForge.Api.Realtime;
 using FlowForge.Application.Notifications;
 using FlowForge.Infrastructure.Notifications;
 using FlowForge.Infrastructure.Workflows;
+using FlowForge.Infrastructure.Ai;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpLogging;
 using System.Text;
@@ -28,6 +29,13 @@ var audience = builder.Configuration["Jwt:Audience"] ?? "flowforge-api";
 // sign services
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<AttachmentFileActions>();
+builder.Services.AddOptions<AiOptions>().BindConfiguration("Ai").ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<OllamaCloudOptions>().BindConfiguration("Ollama").ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddHttpClient<OllamaCloudAiProvider>(client => client.Timeout = Timeout.InfiniteTimeSpan)
+    .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
+builder.Services.AddScoped<AiProviderCalls>();
+builder.Services.AddScoped<AiPreviewTokens>();
+builder.Services.AddScoped<AiTaskAcceptance>();
 builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
 builder.Services.AddHttpLogging(options =>
@@ -83,6 +91,9 @@ builder.Services.AddAuthorization();
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("ai", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
     options.AddPolicy("verification", context => RateLimitPartition.GetFixedWindowLimiter(
         context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
@@ -173,6 +184,8 @@ app.MapCollaborationEndpoints();
 app.MapAttachmentActivityEndpoints();
 app.MapNotificationEndpoints();
 app.MapWorkflowEndpoints();
+app.MapDashboardEndpoints();
+app.MapAiEndpoints();
 app.MapHub<UpdatesHub>("/hubs/updates", options => options.CloseOnAuthenticationExpiration = true);
 
 app.Run();

@@ -1,8 +1,88 @@
 # Backend test results
 
+## Latest verification: configurable Ollama Cloud adapter — 2026-10-22 (+07)
+
+The full Release backend suite passes **351/351 tests**, **0 failed, 0 skipped**, with .NET SDK 10.0.113 and disposable PostgreSQL 17. This adds 36 cases to the previous 315-case suite. The adapter has **30 HTTP transport cases**, and the AI host class now has **10 cases** (40 total adapter/host outcomes, including four existing host cases). Release build succeeds with zero warnings/errors; Compose validates with `.env.example` and both Ollama values empty.
+
+The selected provider transport is Ollama Cloud. `OllamaCloudAiProvider` is registered by default, but **`OLLAMA_API_KEY` and `OLLAMA_MODEL` remain blank**, with no fallback/default model and no real key installed. Missing either value disables generation without an HTTP request. Configuration is supplied by the user; see [Ollama setup](../docs/ai_backend.md#configure-ollama-cloud-yourself).
+
+Verified with in-memory HTTP handlers: official HTTPS endpoint, Bearer key and user-selected model binding, `stream: false`, separate system/data messages, task/summary completion extraction, omission of unsupported Cloud structured-output parameters/tools, malformed/incomplete envelopes, text/body limits including unknown Content-Length, status classification, bounded Retry-After, no automatic retries, transport failures and cancellation. A configured host test exercises DI → real Ollama adapter → existing API output validation without external network access. Existing PostgreSQL feature, acceptance, dashboard and workflow tests remain green. This does not verify real Cloud connectivity, key validity, account/model access or model output quality; no request was sent to Ollama Cloud.
+
+Evidence: [ollama-results.json](test-results/phase6/ollama-results.json), generated from `/tmp/flowforge-ollama-results/backend-ollama.trx`, with source SHA-256, timestamps and all 40 adapter/host outcomes. No schema or dependency changes are needed. Prior AI/dashboard results below are historical runs before the Cloud adapter was added.
+
+Reproduce from `backend/`, with `FLOWFORGE_TEST_CONNECTION` targeting isolated PostgreSQL with create/drop database permission:
+
+```sh
+dotnet build FlowForge.sln --configuration Release --no-restore -m:1 /p:UseSharedCompilation=false
+dotnet test FlowForge.sln --configuration Release --no-restore -m:1 /p:UseSharedCompilation=false \
+  --logger 'trx;LogFileName=backend-ollama.trx' --results-directory /tmp/flowforge-ollama-results
+```
+
+## Historical verification: Phase 6 AI extension backend — 2026-10-22 (+07)
+
+The full Release backend suite passes **315/315 tests**, **0 failures and 0 skips**, using .NET SDK 10.0.113 and disposable PostgreSQL 17. This includes **62 new AI extension cases**, all 26 dashboard cases and the other 227 existing cases. Standalone Release build: **0 warnings, 0 errors**. Compose configuration validates with `.env.example`. No migration or new dependency is added.
+
+The AI backend is **provider-independent**: no model/vendor/SDK, external AI endpoint or credentials are selected/configured. Only the test host injects a fake provider. The real default application continues to use `UnconfiguredAiProvider`; missing AI configuration is an expected `503`, not fabricated success. Milestones/documents, advanced metrics and frontend UI remain deferred. See [AI contracts and adapter integration](../docs/ai_backend.md).
+
+| Category | Result |
+| --- | --- |
+| AI output/request rules | PASS: 23 cases covering strict JSON, duplicate/unknown properties, size limits, title/priority/description limits, dependency IDs/cycles, explicit acceptance and bounded narrative. |
+| Startup/adapter boundary | PASS: 4 cases covering validated limits and the actual unconfigured default provider; no model/network adapter is registered. |
+| HTTP/PostgreSQL integration | PASS: 35 cases covering preview without writes, edited/selected confirmation, transactional tasks/dependencies/audit/outbox, concurrent retries and counters, token tampering/expiry/scope, deferred-commit rollback, permissions/revocation, bounded/scoped context and server facts, unavailable provider, sanitized failures, throttling, timeout and client cancellation. |
+| Existing backend regressions | PASS: all 253 prior dashboard/auth/workspace/work-item/notification/workflow cases. |
+| Live default no-model API | PASS: 23 HTTP/state checks against a separate Release API/database verify OpenAPI, liveness/readiness, empty-summary fallback, expected unconfigured `503`, anonymous denial, unconfirmed acceptance rejection, no AI-created tasks and manual-task/dashboard availability. |
+| Existing live workflow journey | PASS: 66 checks (47 HTTP + 19 state); 16 polling requests recorded separately. |
+
+Evidence: [all AI automated outcomes and Release summary](test-results/phase6/ai-automated-results.json), [live unconfigured API checks](test-results/phase6/ai-live-unconfigured.json), [live workflow regression](test-results/phase6/ai-workflow-regression.json). Source TRX: `/tmp/flowforge-phase6-ai-results/backend-phase6-ai.trx`; its SHA-256 and timestamps are recorded in the summary. Temporary API/database resources are stopped after verification. No real AI service or SMTP provider is used. Real model quality/provider transport remains unverified until a user-supplied adapter is added.
+
+Reproduce from `backend/`, with `FLOWFORGE_TEST_CONNECTION` targeting isolated PostgreSQL with database-create/drop permission:
+
+```sh
+dotnet build FlowForge.sln --configuration Release --no-restore -m:1 /p:UseSharedCompilation=false
+dotnet test FlowForge.sln --configuration Release --no-restore -m:1 /p:UseSharedCompilation=false \
+  --logger 'trx;LogFileName=backend-phase6-ai.trx' --results-directory /tmp/flowforge-phase6-ai-results
+```
+
+Add `--filter 'FullyQualifiedName~PhaseSixAi'` for the AI extension subset. PostgreSQL tests skip without the test connection; skipped runs do not verify this slice. The earlier dashboard results below predate this AI extension.
+
+## Historical verification: Phase 6 basic dashboard backend — 2026-10-22 (+07)
+
+The full backend suite was rerun in **Release** and passes **253/253 tests**, with **0 failures and 0 skips**, using .NET SDK 10.0.113 and an isolated disposable PostgreSQL 17 server. This includes **26 Phase 6 HTTP/integration cases** and all 227 existing cases. The standalone Release solution build passes with **zero warnings/errors**. The initial Debug run also passed all 253 cases.
+
+The separate rebuilt Release API then passed the existing workflow smoke journey (**66/66 checks**, 47 HTTP checks and 19 state assertions; 13 polling requests recorded separately) and **56/56 dashboard live checks**. Dashboard live checks cover all three GET operations, OpenAPI, empty metrics, task creation/completion/archive effects, unassigned estimates, overdue rows, anonymous/outsider denial, authorized Viewer reads, pagination errors/out-of-range pages and archived-project reads. The API used a separate disposable database, actual hosted workers and empty SMTP credentials.
+
+Latest retest evidence: [Release suite/build summary and outcomes](test-results/phase6/release-retest.json), [dashboard HTTP/state checks](test-results/phase6/live-retest.json) and [workflow HTTP/state checks](test-results/phase6/workflow-live-retest.json). Source TRX: `/tmp/flowforge-phase6-retest/backend-retest.trx`; its SHA-256 and timestamps are recorded in the Release summary. The temporary API and PostgreSQL container are stopped after verification. These checks complete the agreed basic dashboard backend scope; deferred AI/optional features remain excluded.
+
+Scope: basic project dashboard backend/API only. AI, milestone/document management, advanced reporting metrics and frontend work are excluded by agreement. No schema migration or new external dependency is needed. See [dashboard contracts and metric definitions](../docs/dashboard.md).
+
+| Verification | Result |
+| --- | --- |
+| Overview API | PASS: totals, status/priority zero buckets, completion rounding, empty projects, ten recent activity records and OpenAPI route. |
+| Overdue API | PASS: unfinished/non-archived items, UTC date boundary, unassigned work, stable earliest-date/item-number ordering and pagination. |
+| Workload API | PASS: unfinished counts, null estimates, 64-bit estimate sums, Unassigned, retained assignments, stable ordering and pagination. |
+| Counts and lifecycle | PASS: tasks/issues/subtasks counted once; category-based completion including inactive statuses; labels/dependencies do not inflate counts; committed updates, archive/restore and rolled-back writes. |
+| Authorization/isolation | PASS: Owner/Admin, assigned Manager/Developer/Viewer, unassigned roles, anonymous callers, outsiders, removed/inactive users, cross-project/workspace pairs and archived-project reads. |
+| Activity/read behavior | PASS: bounded recent activity matches existing authorized feed, deterministic timestamp/ID order, before/after metadata; reads emit no activity/domain events. |
+| Input validation | PASS: field-specific pagination range errors and HTTP binding failures for malformed integers. |
+| Full backend regressions | PASS: 253 passed, 0 failed, 0 skipped. |
+
+Initial Debug evidence: [automated-results.json](test-results/phase6/automated-results.json), generated from `/tmp/flowforge-phase6-results/backend-phase6.trx`, with source SHA-256, run timestamps and all 26 dashboard outcomes. Automated dashboard cases use real PostgreSQL and the ASP.NET Core TestServer HTTP pipeline; the separate live checks above use an external Release API process. Neither run is a browser, load or production deployment test. Existing SMTP tests continue to use test senders; this change adds no AI or SMTP integration.
+
+The first focused run exposed an EF translation failure when ordering a grouped workload after constructing a positional DTO. Ordering/paging now operates on an anonymous SQL projection before the DTO is constructed. The next run passed 25/26 cases; the remaining test incorrectly assumed an empty project had only its creation activity, overlooking the existing member-added audit record. That assertion was corrected. The final full run above passed all 26 dashboard cases.
+
+To reproduce from `backend/`, set `FLOWFORGE_TEST_CONNECTION` to an isolated PostgreSQL server with permission to create/drop test databases:
+
+```sh
+dotnet build FlowForge.sln --configuration Release --no-restore -m:1 /p:UseSharedCompilation=false
+dotnet test FlowForge.sln --configuration Release --no-restore -m:1 /p:UseSharedCompilation=false \
+  --logger 'trx;LogFileName=backend-retest.trx' --results-directory /tmp/flowforge-phase6-retest
+```
+
+Add `--filter 'FullyQualifiedName~PhaseSix'` for the dashboard subset. Without the test connection, PostgreSQL-dependent cases are skipped and do not establish dashboard correctness. The older Phase 5 and Phase 1–4 results below are historical evidence for their respective runs.
+
 Phase 5: [Endpoint matrix](#phase-5-rest-endpoint-matrix) · [Automated cases](#phase-5-automated-cases-by-category) · [Live HTTP results](#phase-5-live-release-api-individual-http-responses) · [Evidence and reproduction](#phase-5-evidence-and-reproduction).
 
-## Latest verification: Phase 5 backend — 2026-10-18 (+07)
+## Historical verification: Phase 5 backend — 2026-10-18 (+07)
 
 The latest Phase 5 endpoint/integration re-verification passes **210/210 tests**, with **zero failures and zero skips**, using .NET SDK 10.0.112 and disposable PostgreSQL 17. This includes the existing 143 cases and **67 Phase 5 cases**. The audit corrected exhausted-claim attempt counting, pre-enable comment mention validation and culture-dependent ISO dates, and exposed pinned definitions in execution history. See [the task-by-task completion audit](../docs/workflow_engine_audit.md).
 

@@ -48,4 +48,4 @@ dotnet run --project src/FlowForge.Api --urls http://localhost:8080
 
 See [backend/README.md](backend/README.md) for the connection string, build and test commands, and project structure. The product design is in [docs/](docs/feature_specification.md).
 
-Phase 5 backend behavior and API contracts are documented in [docs/workflow_engine.md](docs/workflow_engine.md). Dashboard/reporting/AI and production delivery remain later phases.
+Phase 5 backend behavior and API contracts are documented in [docs/workflow_engine.md](docs/workflow_engine.md). Phase 6 basic dashboard backend APIs and metric definitions are documented in [docs/dashboard.md](docs/dashboard.md). AI task proposal/acceptance and summary APIs include a configurable Ollama Cloud adapter; set your own `OLLAMA_API_KEY` and `OLLAMA_MODEL` as described in [docs/ai_backend.md](docs/ai_backend.md). Both default to empty; no model is chosen automatically. Milestones/documents, advanced reporting metrics and production delivery remain deferred.

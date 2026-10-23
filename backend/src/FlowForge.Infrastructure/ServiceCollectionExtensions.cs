@@ -6,6 +6,9 @@ using FlowForge.Infrastructure.Workspaces;
 using FlowForge.Infrastructure.Projects;
 using FlowForge.Infrastructure.Notifications;
 using FlowForge.Infrastructure.Workflows;
+using FlowForge.Infrastructure.Ai;
+using FlowForge.Application.Ai;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace FlowForge.Infrastructure;
 
@@ -40,6 +43,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<WorkflowActions>();
         services.AddScoped<WorkflowRunner>();
         services.AddScoped<WorkflowDateScanner>();
+        services.TryAddScoped<IAiProvider>(provider => provider.GetRequiredService<OllamaCloudAiProvider>());
+        services.AddScoped<AiProjectContextReader>();
         return services;
     }
 }
