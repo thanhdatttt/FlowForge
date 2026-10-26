@@ -12,12 +12,20 @@ import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ApiError } from '@/lib/api'
 import { cn } from '@/lib/utils'
+import { useFieldValidation } from '@/components/ui/use-field-validation'
 
-export function ErrorNotice({ error }: { error: unknown }) {
+export function ErrorNotice({
+  error,
+  message,
+}: {
+  error: unknown
+  message?: string
+}) {
   if (!error) return null
   const status = error instanceof ApiError ? error.status : 0
-  const hint =
-    status === 403
+  const hint = message
+    ? ''
+    : status === 403
       ? 'Your permissions may have changed. Refresh to check your access.'
       : status === 404
         ? 'This resource is unavailable, or you no longer have access.'
@@ -27,7 +35,8 @@ export function ErrorNotice({ error }: { error: unknown }) {
   return (
     <div className="error-notice" role="alert">
       <div>
-        {error instanceof Error ? error.message : 'The request failed.'}
+        {message ||
+          (error instanceof Error ? error.message : 'The request failed.')}
         {hint && <p>{hint}</p>}
       </div>
     </div>
@@ -72,26 +81,37 @@ export function QueryState({
 export function SelectField({
   label,
   children,
-  error,
+  error: serverError,
+  onChange,
+  onInvalid,
   ...props
 }: SelectHTMLAttributes<HTMLSelectElement> & {
   label: string
   error?: string
 }) {
   const id = useId()
+  const validation = useFieldValidation<HTMLSelectElement>(
+    label,
+    serverError,
+    onChange,
+    onInvalid,
+  )
+  const error = validation.error
   return (
     <div className="form-field">
       <label htmlFor={id}>{label}</label>
       <select
         id={id}
         {...props}
+        onChange={validation.onChange}
+        onInvalid={validation.onInvalid}
         aria-invalid={!!error}
         aria-describedby={error ? `${id}-error` : undefined}
       >
         {children}
       </select>
       {error && (
-        <p id={`${id}-error`} className="field-error">
+        <p id={`${id}-error`} className="field-error" role="alert">
           {error}
         </p>
       )}
@@ -185,6 +205,8 @@ export function ActionForm({
   invalidateKeys = [['phase2']],
   disabled = false,
   submitClassName,
+  actions,
+  errorMessage,
 }: {
   children: (fieldError: (name: string) => string | undefined) => ReactNode
   submit: (data: FormData) => Promise<unknown>
@@ -194,6 +216,8 @@ export function ActionForm({
   invalidateKeys?: readonly (readonly unknown[])[]
   disabled?: boolean
   submitClassName?: string
+  actions?: (busy: boolean) => ReactNode
+  errorMessage?: (error: unknown) => string | undefined
 }) {
   const client = useQueryClient()
   const [busy, setBusy] = useState(false)
@@ -203,7 +227,10 @@ export function ActionForm({
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (busy || disabled) return
-    const data = new FormData(event.currentTarget)
+    const data = new FormData(
+      event.currentTarget,
+      (event.nativeEvent as SubmitEvent).submitter,
+    )
     setBusy(true)
     setError(null)
     try {
@@ -247,7 +274,7 @@ export function ActionForm({
     >
       <fieldset disabled={busy}>
         {children(fieldError)}
-        <ErrorNotice error={error} />
+        <ErrorNotice error={error} message={errorMessage?.(error)} />
         {error instanceof ApiError && Object.keys(error.fields).length > 0 && (
           <ul role="alert" className="error-notice error-summary">
             {Object.entries(error.fields).map(([name, messages]) => (
@@ -257,14 +284,18 @@ export function ActionForm({
             ))}
           </ul>
         )}
-        <Button
-          type="submit"
-          loading={busy}
-          disabled={disabled}
-          className={submitClassName}
-        >
-          {label}
-        </Button>
+        {actions ? (
+          actions(busy)
+        ) : (
+          <Button
+            type="submit"
+            loading={busy}
+            disabled={disabled}
+            className={submitClassName}
+          >
+            {label}
+          </Button>
+        )}
       </fieldset>
     </form>
   )

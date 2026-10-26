@@ -344,3 +344,36 @@
 .work-comments-card > .workspace-form {
   margin-bottom: 28px;
 }
+
+.work-upload-picker input[type='file'] {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  min-height: 58px;
+  padding: 8px;
+  border: 1px dashed var(--input);
+  border-radius: 9px;
+  background: var(--muted);
+  cursor: pointer;
+}
+.work-upload-picker input[type='file']::file-selector-button {
+  margin-right: 12px;
+  padding: 11px 16px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+.work-upload-picker input[type='file']:hover:not(:disabled) {
+  border-color: var(--primary);
+}
+.work-upload-picker input[type='file']:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.work-upload-picker .input-wrap {
+  display: block;
+}

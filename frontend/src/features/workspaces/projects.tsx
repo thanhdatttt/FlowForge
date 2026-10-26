@@ -11,7 +11,7 @@ import {
   type ProjectInput,
   type Workspace,
 } from './api'
-import { managesProject, managesWorkspace } from './rules'
+import { managesProject, managesWorkspace, memberErrorMessage } from './rules'
 import {
   ActionForm,
   ConfirmAction,
@@ -511,6 +511,7 @@ function ProjectMembers({
               >
                 <ActionForm
                   label="Add member"
+                  errorMessage={(error) => memberErrorMessage(error, 'project')}
                   submit={(data) =>
                     projectApi.addMember(
                       workspace.id,
@@ -527,6 +528,7 @@ function ProjectMembers({
                         name="userId"
                         required
                         defaultValue=""
+                        error={error('userId')}
                       >
                         <option value="" disabled>
                           Select a member
@@ -537,9 +539,6 @@ function ProjectMembers({
                           </option>
                         ))}
                       </SelectField>
-                      {error('userId') && (
-                        <p className="field-error">{error('userId')}</p>
-                      )}
                     </>
                   )}
                 </ActionForm>

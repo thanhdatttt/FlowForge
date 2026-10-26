@@ -7,6 +7,7 @@ import {
 import { ActionForm, ConfirmAction } from '@/features/workspaces/shared'
 import type { Scope, WorkItem } from './api'
 import { invalidateKeys } from './queries'
+import { useFieldValidation } from '@/components/ui/use-field-validation'
 
 export function WorkForm({
   scope,
@@ -26,8 +27,10 @@ export function WorkConfirm({
 }
 export function TextArea({
   label,
-  error,
+  error: serverError,
   hint,
+  onChange,
+  onInvalid,
   ...props
 }: TextareaHTMLAttributes<HTMLTextAreaElement> & {
   label: string
@@ -35,11 +38,20 @@ export function TextArea({
   hint?: string
 }) {
   const id = useId()
+  const validation = useFieldValidation<HTMLTextAreaElement>(
+    label,
+    serverError,
+    onChange,
+    onInvalid,
+  )
+  const error = validation.error
   return (
     <div className="form-field workspace-textarea">
       <label htmlFor={id}>{label}</label>
       <textarea
         {...props}
+        onChange={validation.onChange}
+        onInvalid={validation.onInvalid}
         id={id}
         aria-invalid={!!error}
         aria-describedby={error || hint ? `${id}-description` : undefined}
@@ -48,6 +60,7 @@ export function TextArea({
         <p
           id={`${id}-description`}
           className={error ? 'field-error' : 'field-hint'}
+          role={error ? 'alert' : undefined}
         >
           {error || hint}
         </p>

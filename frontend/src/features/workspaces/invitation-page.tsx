@@ -7,6 +7,7 @@ import { invitationApi } from './api'
 import { parseInvitationLink, type InvitationLink } from './rules'
 import { ActionForm, QueryState } from './shared'
 import { text } from './rules'
+import { Check, X } from 'lucide-react'
 
 export function InvitationEntry({
   open,
@@ -28,9 +29,7 @@ export function InvitationEntry({
             text(new FormData(event.currentTarget), 'link'),
           )
           if (!link) {
-            setError(
-              'Invalid invitation link.',
-            )
+            setError('Invalid invitation link.')
             return
           }
           setError('')
@@ -127,6 +126,34 @@ export function InvitationPage({
               ) : (
                 <ActionForm
                   label="Confirm response"
+                  actions={(busy) => (
+                    <>
+                      <div className="workspace-invitation-actions">
+                        <Button
+                          type="submit"
+                          name="response"
+                          value="accept"
+                          variant="secondary"
+                          className="button--enable"
+                          disabled={busy}
+                        >
+                          <Check size={18} aria-hidden="true" /> Accept
+                          invitation
+                        </Button>
+                        <Button
+                          type="submit"
+                          name="response"
+                          value="reject"
+                          variant="secondary"
+                          className="button--danger"
+                          disabled={busy}
+                        >
+                          <X size={18} aria-hidden="true" /> Decline invitation
+                        </Button>
+                      </div>
+                      {busy && <p role="status">Saving your response…</p>}
+                    </>
+                  )}
                   submit={async (data) => {
                     const accept = text(data, 'response') === 'accept'
                     await invitationApi.respond(invitation.token, accept)
@@ -135,24 +162,7 @@ export function InvitationPage({
                     setResult(accept ? 'accepted' : 'rejected')
                   }}
                 >
-                  {() => (
-                    <fieldset className="workspace-response">
-                      <legend>Your response</legend>
-                      <label>
-                        <input
-                          type="radio"
-                          name="response"
-                          value="accept"
-                          defaultChecked
-                        />{' '}
-                        Accept invitation
-                      </label>
-                      <label>
-                        <input type="radio" name="response" value="reject" />{' '}
-                        Decline invitation
-                      </label>
-                    </fieldset>
-                  )}
+                  {() => null}
                 </ActionForm>
               )}
             </>

@@ -663,9 +663,21 @@
   align-items: center;
   gap: 16px;
 }
-.workspace-invitation .workspace-response {
-  width: fit-content;
-  text-align: left;
+.workspace-invitation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+}
+.workspace-invitation-actions .button {
+  min-width: 190px;
+}
+@media (max-width: 480px) {
+  .workspace-invitation-actions .button {
+    width: 100%;
+    min-width: 0;
+  }
 }
 .workspace-section-heading.project-members-heading {
   align-items: flex-start;
