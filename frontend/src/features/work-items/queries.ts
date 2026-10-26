@@ -6,6 +6,7 @@ export const workKey = (s: Scope) =>
 export const invalidateKeys = (s: Scope) => [
   workKey(s),
   ['phase2', s.workspaceId],
+  ['phase6', s.workspaceId, s.projectId],
 ]
 export function useMembers(scope: Scope) {
   return useQuery({

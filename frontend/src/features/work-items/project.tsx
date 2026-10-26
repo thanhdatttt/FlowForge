@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { lazy, Suspense } from 'react'
 import { projectApi, type Workspace } from '@/features/workspaces/api'
 import { ProjectDetail } from '@/features/workspaces/projects'
 import { QueryState } from '@/features/workspaces/shared'
@@ -11,6 +12,17 @@ import { Labels } from './labels'
 import { Workflows } from '@/features/workflows/workflows'
 import { canBrowseWorkflows } from '@/features/workflows/rules'
 import { ActivityFeed } from './activity'
+
+const ProjectDashboard = lazy(() =>
+  import('@/features/dashboard/dashboard').then((module) => ({
+    default: module.ProjectDashboard,
+  })),
+)
+const AiAssistant = lazy(() =>
+  import('@/features/ai/assistant').then((module) => ({
+    default: module.AiAssistant,
+  })),
+)
 
 export function ProjectWork({
   workspace,
@@ -56,6 +68,8 @@ export function ProjectWork({
           <nav className="work-project-nav" aria-label="Project navigation">
             {[
               ['', 'Overview'],
+              ['/dashboard', 'Dashboard'],
+              ['/ai', 'AI Assistant'],
               ['/work-items', 'Work items'],
               ['/labels', 'Labels'],
               ['/activity', 'Activity'],
@@ -101,6 +115,22 @@ export function ProjectWork({
                 navigate={navigate}
               />
             )
+          ) : route.projectSection === 'dashboard' ? (
+            <Suspense fallback={<p role="status">Loading dashboard…</p>}>
+              <ProjectDashboard
+                scope={{ workspaceId: workspace.id, projectId }}
+                navigate={navigate}
+                inspectWorkflows={canBrowseWorkflows(workspace.role)}
+              />
+            </Suspense>
+          ) : route.projectSection === 'ai' ? (
+            <Suspense fallback={<p role="status">Loading AI Assistant…</p>}>
+              <AiAssistant
+                workspace={workspace}
+                project={project}
+                navigate={navigate}
+              />
+            </Suspense>
           ) : route.projectSection === 'workflows' ? (
             <Workflows
               workspace={workspace}

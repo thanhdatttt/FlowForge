@@ -1,5 +1,7 @@
 # Phase 6: project dashboard backend
 
+The matching React dashboard is now implemented separately; see [Phase 6 frontend](phase6_frontend.md) for UI scope and verification. The backend-only slice described below remains unchanged.
+
 This slice delivers only the basic project dashboard backend/API. AI task breakdown, AI summaries and provider integrations are excluded. Milestones, project documents, velocity, burndown, cycle time and lead time are deferred. No frontend changes are included.
 
 ## Metric definitions

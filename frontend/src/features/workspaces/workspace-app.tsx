@@ -252,6 +252,7 @@ export function WorkspaceApp({
                 void client.invalidateQueries({ queryKey: ['phase3'] })
                 void client.invalidateQueries({ queryKey: ['phase4'] })
                 void client.invalidateQueries({ queryKey: ['phase5'] })
+                void client.invalidateQueries({ queryKey: ['phase6'] })
                 void user.refetch()
               }}
             >

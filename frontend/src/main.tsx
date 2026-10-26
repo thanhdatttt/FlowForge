@@ -4,6 +4,8 @@ import './index.css'
 import './features/workspaces/workspace.css'
 import './features/work-items/work-items.css'
 import './features/workflows/workflows.css'
+import './features/dashboard/dashboard.css'
+import './features/ai/ai.css'
 import App from '@/App'
 import { Providers } from '@/app/providers'
 

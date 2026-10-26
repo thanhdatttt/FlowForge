@@ -1,0 +1,76 @@
+.ai-form {
+  max-width: none;
+}
+.ai-preview {
+  border-top: 1px solid var(--border);
+  margin-top: 28px;
+  padding-top: 12px;
+}
+.ai-proposal-list {
+  display: grid;
+  gap: 24px;
+}
+.workspace-form .ai-proposal {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}
+.ai-proposal legend {
+  padding: 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.ai-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 14px 0;
+  overflow-wrap: anywhere;
+}
+.ai-check input {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--primary);
+}
+.workspace-form .ai-proposal-fields {
+  margin-top: 20px;
+}
+.workspace-form .ai-dependencies {
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+  padding-top: 12px;
+}
+.ai-dependencies legend {
+  font-weight: 500;
+}
+.ai-summary h4 {
+  margin: 22px 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.ai-summary ul,
+.ai-created ul {
+  padding-left: 20px;
+}
+.ai-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ai-created {
+  margin: 24px 0;
+}
+@media (max-width: 760px) {
+  .workspace-form .ai-proposal {
+    padding: 12px;
+  }
+  .ai-form input:not([type='checkbox']),
+  .ai-form textarea,
+  .ai-form select {
+    font-size: 16px;
+  }
+}

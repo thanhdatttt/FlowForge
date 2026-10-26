@@ -1,0 +1,75 @@
+{
+  "verifiedOn": "2026-10-24",
+  "recordedAtUtc": "2026-10-24T14:14:44.142649+00:00",
+  "frontend": {
+    "passed": 83,
+    "failed": 0,
+    "skipped": 0,
+    "existingTests": 71,
+    "phase6Tests": 12,
+    "typecheck": "passed",
+    "lint": "passed without warnings",
+    "productionBuild": "passed without warnings",
+    "mainJsBytesApprox": 488530
+  },
+  "backend": {
+    "build": "passed, zero warnings/errors",
+    "passed": 352,
+    "failed": 0,
+    "skipped": 0,
+    "sourceAndBusinessLogicChanges": false
+  },
+  "liveBackendReport": "live-backend.json",
+  "browser": {
+    "realBackendChecks": [
+      "Overview retained",
+      "Dashboard totals/status/priority/overdue/workload/activity",
+      "Unconfigured AI message",
+      "Reload/sign-in preserves AI deep link",
+      "Viewer cannot propose/accept but can request summary",
+      "Active dashboard SignalR refresh after external archive: total 4 -> 3, percentage 25 -> 33.33, Unassigned estimate 75 -> 60"
+    ],
+    "aiTestDoubleChecks": [
+      "Editable title retained",
+      "Deselect prerequisite shows dependency validation and disables create",
+      "Explicit review checkbox required",
+      "Ambiguous confirmation freezes exact selection; identical retry returns receipt",
+      "Expired preview disables create",
+      "429 Retry-After displays disabled 2-second cooldown",
+      "Cancel generation suppresses late preview",
+      "Facts separated from AI narrative",
+      "Context truncation visible",
+      "Manual Refresh marks summary stale without automatic AI generation",
+      "Script-looking narrative renders literally; zero script nodes"
+    ],
+    "fixtureFinalCounters": {
+      "propose": 6,
+      "accept": 4,
+      "summary": 3,
+      "receipts": 2
+    },
+    "confirmationRetryDelta": {
+      "requests": 2,
+      "receipts": 1
+    },
+    "fixtureCreatesBusinessData": false,
+    "realProviderCalled": false,
+    "mobile": {
+      "viewportCssWidth": 390,
+      "clientWidth": 375,
+      "scrollWidth": 375,
+      "overflowingContent": [],
+      "screens": [
+        "proposal editor",
+        "summary"
+      ]
+    },
+    "finalFreshLoadConsoleWarningsErrors": 0
+  },
+  "limitations": [
+    "No real Cloud connectivity/model-quality check",
+    "AI browser responses and receipts are test doubles; real persistence/idempotency is covered by unchanged backend tests",
+    "No production deployment or load test",
+    "Viewport checks are not physical-device tests"
+  ]
+}

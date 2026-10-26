@@ -1,0 +1,45 @@
+{
+  "passed": true,
+  "scenarios": 8,
+  "requests": 44,
+  "checks": [
+    {
+      "name": "empty dashboard and summary return zeros/InsufficientData without AI configuration",
+      "passed": true
+    },
+    {
+      "name": "real SignalR updates follow committed work-item creation",
+      "passed": true
+    },
+    {
+      "name": "dashboard counts task/issue/subtask and uses category-based completion and UTC overdue",
+      "passed": true
+    },
+    {
+      "name": "unconfigured AI reports 503, input errors 400, and never creates work items",
+      "passed": true
+    },
+    {
+      "name": "pagination out of range remains empty with true totals",
+      "passed": true
+    },
+    {
+      "name": "Viewer reads dashboard/summary but cannot propose or accept",
+      "passed": true
+    },
+    {
+      "name": "outsider cannot read dashboard or summary",
+      "passed": true
+    },
+    {
+      "name": "archived project remains readable and rejects AI writes",
+      "passed": true
+    }
+  ],
+  "realtimeEvents": 3,
+  "realtimeEventTypes": [
+    "WorkItemCreated"
+  ],
+  "aiProvider": "Unconfigured; no external call",
+  "backend": "Disposable PostgreSQL/API via Vite proxy"
+}

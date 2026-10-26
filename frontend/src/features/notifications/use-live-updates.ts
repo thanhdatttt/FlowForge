@@ -27,6 +27,11 @@ export function useLiveUpdates({ workspaceId, projectId }: LiveScope) {
       notifications = false
       for (const scope of projects.values()) {
         void client.invalidateQueries({
+          queryKey: scope.projectId
+            ? ['phase6', scope.workspaceId, scope.projectId]
+            : ['phase6', scope.workspaceId],
+        })
+        void client.invalidateQueries({
           queryKey: ['phase5', scope.workspaceId],
         })
         void client.invalidateQueries({
@@ -71,6 +76,7 @@ export function useLiveUpdates({ workspaceId, projectId }: LiveScope) {
               client.invalidateQueries({ queryKey: ['phase2'] }),
               client.invalidateQueries({ queryKey: ['phase3'] }),
               client.invalidateQueries({ queryKey: ['phase5'] }),
+              client.invalidateQueries({ queryKey: ['phase6'] }),
               client.invalidateQueries({ queryKey: notificationKey }),
             ])
           },

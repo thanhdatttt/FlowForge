@@ -4,6 +4,8 @@ A modular project management platform. The backend includes authentication, Gmai
 
 ## Frontend setup
 
+Phase 6 frontend adds project dashboards, overdue/workload/activity views, AI task proposal editing with explicit acceptance, and project summaries. See [Phase 6 frontend scope and verification](docs/phase6_frontend.md). AI remains optional and uses server-side configuration.
+
 The `frontend/` folder uses React, TypeScript, TanStack Query, Zustand, and shadcn/ui with Vite. With Node.js 24 LTS installed, run:
 
 ```sh
