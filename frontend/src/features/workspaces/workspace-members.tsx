@@ -1,7 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { FormField } from '@/components/ui/form-field'
 import { workspaceApi, type Role, type Workspace } from './api'
-import { assignableRoles, canManageMember, managesWorkspace } from './rules'
+import {
+  assignableRoles,
+  canManageMember,
+  managesWorkspace,
+  memberErrorMessage,
+} from './rules'
 import {
   ActionForm,
   ConfirmAction,
@@ -33,6 +38,7 @@ export function WorkspaceMembers({ workspace }: { workspace: Workspace }) {
             {(close) => (
               <ActionForm
                 label="Add member"
+                errorMessage={(error) => memberErrorMessage(error, 'workspace')}
                 submit={(data) =>
                   workspaceApi.addMember(
                     workspace.id,

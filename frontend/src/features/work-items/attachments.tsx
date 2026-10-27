@@ -81,15 +81,19 @@ export function Attachments({
           }}
         >
           {(error) => (
-            <FormField
-              label="Attach a file"
-              name="file"
-              type="file"
-              required
-              accept="image/png,image/jpeg,application/pdf,text/plain"
-              hint="PNG, JPEG, PDF or TXT. Maximum 10 MiB per file."
-              error={error('file') || error('contentType') || error('fileName')}
-            />
+            <div className="work-upload-picker">
+              <FormField
+                label="Attach a file"
+                name="file"
+                type="file"
+                required
+                accept="image/png,image/jpeg,application/pdf,text/plain"
+                hint="PNG, JPEG, PDF or TXT. Maximum 10 MiB per file."
+                error={
+                  error('file') || error('contentType') || error('fileName')
+                }
+              />
+            </div>
           )}
         </WorkForm>
       )}

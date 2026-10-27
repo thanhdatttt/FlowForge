@@ -1,4 +1,32 @@
 import type { Role } from './api'
+import { ApiError } from '@/lib/api'
+
+export function memberErrorMessage(
+  error: unknown,
+  scope: 'workspace' | 'project',
+) {
+  if (!(error instanceof ApiError)) return undefined
+  if (error.status === 403)
+    return 'You don’t have permission to add this member or assign this role. Ask a workspace Owner or Admin for help.'
+  if (error.status === 404)
+    return scope === 'workspace'
+      ? 'We couldn’t find an active account with this email, or you no longer have access to this workspace. Check the email, or send an invitation if they haven’t joined FlowForge yet.'
+      : 'This project or member is no longer available to you. Refresh the page and choose an active workspace member.'
+  if (error.status === 409) {
+    if (scope === 'workspace')
+      return 'This person is already a member of this workspace. You can find them in the member list.'
+    if (/already.*member/i.test(error.message))
+      return 'This person is already a member of this project. You can find them in the member list.'
+    if (/archiv/i.test(error.message))
+      return 'This project is archived. Restore it before adding members.'
+    return 'The project changed while you were adding a member. Refresh the member list and try again.'
+  }
+  if (error.status === 400)
+    return scope === 'workspace'
+      ? 'Check the email address and selected role, then try again.'
+      : 'Choose an active workspace member. Add them to the workspace first if needed.'
+  return undefined
+}
 
 export const managesWorkspace = (role: Role) =>
   role === 'Owner' || role === 'Admin'
@@ -44,7 +72,13 @@ export type Route = {
   workspaceId?: string
   section: 'projects' | 'members' | 'invitations' | 'settings' | 'workflows'
   projectId?: string
-  projectSection?: 'work-items' | 'labels' | 'activity' | 'workflows'
+  projectSection?:
+    | 'work-items'
+    | 'labels'
+    | 'activity'
+    | 'workflows'
+    | 'dashboard'
+    | 'ai'
   itemId?: string
   workflowId?: string
   executionId?: string
@@ -77,7 +111,7 @@ export function parseRoute(path: string): Route {
     }
 
   const match =
-    /^\/workspaces\/([^/]+)(?:\/(projects|members|invitations|settings))?(?:\/([^/]+))?(?:\/(work-items|labels|activity|workflows)(?:\/([^/]+))?)?\/?$/.exec(
+    /^\/workspaces\/([^/]+)(?:\/(projects|members|invitations|settings))?(?:\/([^/]+))?(?:\/(work-items|labels|activity|workflows|dashboard|ai)(?:\/([^/]+))?)?\/?$/.exec(
       path,
     )
   if (

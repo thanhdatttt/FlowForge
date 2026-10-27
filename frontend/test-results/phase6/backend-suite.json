@@ -1,0 +1,26 @@
+{
+  "passed": 352,
+  "failed": 0,
+  "total": 352,
+  "skipped": 0,
+  "sourceTrx": "/tmp/flowforge-fe-phase6-results/backend-phase6-frontend.trx",
+  "sha256": "9f58439be7bab16c7c25505f9b35c833d70e6745ed5812508392c0d0b7a783a1",
+  "counters": {
+    "total": "352",
+    "executed": "352",
+    "passed": "352",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  }
+}

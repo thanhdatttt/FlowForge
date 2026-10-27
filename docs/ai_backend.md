@@ -1,5 +1,7 @@
 # Phase 6: provider-independent AI backend
 
+The React task proposal/editor/confirmation and project-summary screens are now implemented; see [Phase 6 frontend](phase6_frontend.md). This document describes their unchanged backend contracts.
+
 The backend supports AI task proposals and project summaries through `FlowForge.Application.Ai.IAiProvider`. The selected transport is now **Ollama Cloud**, using the built-in `OllamaCloudAiProvider` and the native HTTPS chat API. **No API key or model is supplied or selected automatically.** With either setting missing, the adapter is unconfigured and makes no network calls; generation returns `503`. Existing project management, dashboards, workflows and notifications continue to work without AI. No vendor SDK or new dependency is installed.
 
 Milestones/documents, advanced metrics and AI/frontend UI remain outside this slice. The provider interface remains replaceable.
@@ -92,7 +94,7 @@ Validation applies both to provider output and the accepted client-edited task l
 - `dependsOn` is a required array (empty is valid), containing at most 19 unique local IDs. Reject null/missing dependencies, self-dependencies, missing references and cycles.
 - On acceptance, IDs must belong to that preview. Users can edit title/description/priority/dependencies and select a subset, but dependencies must stay inside the final selected set. Client-supplied assignees, statuses, external resource IDs and executable actions are not part of this contract.
 
-The API preview is the backend equivalent of a preview screen; a later client displays it and lets the user edit/select tasks. Sending `accepted: false`, omitting acceptance, or sending an invalid list returns `400 ValidationProblem` and creates nothing. The default application does not simulate AI content. Without both an Ollama key and model configured (or a configured replacement adapter), proposing tasks returns `503`.
+The API preview is displayed by the frontend and lets the user edit/select tasks before explicit confirmation. Sending `accepted: false`, omitting acceptance, or sending an invalid list returns `400 ValidationProblem` and creates nothing. The default application does not simulate AI content. Without both an Ollama key and model configured (or a configured replacement adapter), proposing tasks returns `503`.
 
 Preview tokens use ASP.NET Core Data Protection with a dedicated purpose. Tokens contain only batch/user/workspace/project IDs, local proposal IDs and expiration. They are bound to the requesting user and exact project, valid for 15 minutes by default. Missing/malformed/tampered tokens return `400`; a different user/project returns `404`; expired tokens return `410`. Persist Data Protection keys (the existing Compose key volume) to retain previews across restarts. Sharing keys/application name is necessary for multiple instances.
 

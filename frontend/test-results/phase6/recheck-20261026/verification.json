@@ -1,0 +1,121 @@
+{
+  "verifiedOn": "2026-10-26",
+  "scope": "FE6-01 through FE6-14",
+  "newBlockingDefectsFound": [],
+  "productSourceChangedDuringRecheck": false,
+  "frontend": {
+    "passed": 83,
+    "failed": 0,
+    "skipped": 0,
+    "typecheck": "passed",
+    "lint": "passed without warnings",
+    "build": "passed without warnings"
+  },
+  "backend": {
+    "passed": 352,
+    "failed": 0,
+    "skipped": 0,
+    "total": 352,
+    "trx": "/tmp/flowforge-phase6-recheck-20261026-results/backend-recheck.trx",
+    "sha256": "124fad1d4c7fb1ed22511a64319a1b81d5beda9aea808174a236f2831be29d6f"
+  },
+  "live": {
+    "passed": true,
+    "scenarios": 8,
+    "requests": 44,
+    "checks": [
+      {
+        "name": "empty dashboard and summary return zeros/InsufficientData without AI configuration",
+        "passed": true
+      },
+      {
+        "name": "real SignalR updates follow committed work-item creation",
+        "passed": true
+      },
+      {
+        "name": "dashboard counts task/issue/subtask and uses category-based completion and UTC overdue",
+        "passed": true
+      },
+      {
+        "name": "unconfigured AI reports 503, input errors 400, and never creates work items",
+        "passed": true
+      },
+      {
+        "name": "pagination out of range remains empty with true totals",
+        "passed": true
+      },
+      {
+        "name": "Viewer reads dashboard/summary but cannot propose or accept",
+        "passed": true
+      },
+      {
+        "name": "outsider cannot read dashboard or summary",
+        "passed": true
+      },
+      {
+        "name": "archived project remains readable and rejects AI writes",
+        "passed": true
+      }
+    ],
+    "realtimeEvents": 3,
+    "realtimeEventTypes": [
+      "WorkItemCreated"
+    ],
+    "aiProvider": "Unconfigured; no external call",
+    "backend": "Disposable PostgreSQL/API via Vite proxy"
+  },
+  "browser": {
+    "realDashboard": {
+      "initialItems": 3,
+      "createdItems": 4,
+      "archivedItems": 3,
+      "completionPercentages": [
+        33.33,
+        25,
+        33.33
+      ],
+      "manualRefreshRequired": false
+    },
+    "deepLinkAndReload": "passed",
+    "viewer": {
+      "generationEnabled": false,
+      "summaryEnabled": true
+    },
+    "fixtureChecks": [
+      "edit title",
+      "deselect prerequisite blocks creation",
+      "explicit confirmation",
+      "uncertain confirmation locks selection",
+      "retry returns same receipt",
+      "summary facts separated",
+      "context truncation",
+      "Refresh marks summary stale without generation",
+      "script-like text remains literal",
+      "expired preview blocks creation",
+      "429 cooldown",
+      "cancel generation suppresses late preview"
+    ],
+    "fixtureCounters": {
+      "propose": 5,
+      "accept": 2,
+      "summary": 1,
+      "receipts": 1
+    },
+    "fixtureCreatesBusinessData": false,
+    "mobile": {
+      "viewportCssWidth": 390,
+      "clientWidth": 375,
+      "scrollWidth": 375,
+      "overflow": []
+    },
+    "consoleWarningsErrors": 0
+  },
+  "realAiModelCalled": false,
+  "realProviderConnectivityVerified": false,
+  "limits": [
+    "No end-to-end real-provider success journey",
+    "No hosted CI execution claim",
+    "No full accessibility certification or physical-device audit",
+    "No SMTP inbox/deployment/load verification"
+  ]
+}

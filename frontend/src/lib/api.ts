@@ -3,14 +3,17 @@ import { useSessionStore, type AuthTokens } from '@/features/auth/session-store'
 export class ApiError extends Error {
   status: number
   fields: Record<string, string[]>
+  retryAfterSeconds?: number
   constructor(
     message: string,
     status: number,
     fields: Record<string, string[]> = {},
+    retryAfterSeconds?: number,
   ) {
     super(message)
     this.status = status
     this.fields = fields
+    this.retryAfterSeconds = retryAfterSeconds
   }
 }
 
@@ -52,6 +55,9 @@ async function request<T>(
       response.status >= 500 ? fallback : problem?.title || fallback,
       response.status,
       problem?.errors,
+      response.status === 429
+        ? retryAfter(response.headers.get('Retry-After'))
+        : undefined,
     )
   }
   return response.status === 204
@@ -59,6 +65,17 @@ async function request<T>(
     : ((responseType === 'blob'
         ? response.blob()
         : response.json()) as Promise<T>)
+}
+
+// Optional response metadata; existing request, refresh and error behavior is unchanged.
+function retryAfter(value: string | null): number | undefined {
+  if (!value) return undefined
+  const seconds = /^\d+$/.test(value)
+    ? Number(value)
+    : Math.ceil((Date.parse(value) - Date.now()) / 1000)
+  return Number.isFinite(seconds)
+    ? Math.min(3600, Math.max(1, seconds))
+    : undefined
 }
 
 let refreshPromise: Promise<AuthTokens> | null = null

@@ -6,6 +6,8 @@ The first product slice implements responsive sign-in, registration, account con
 
 ## Run locally
 
+Phase 6 adds project Dashboard and AI Assistant tabs. Dashboard metrics use the server's definitions; AI task suggestions require review and explicit acceptance. Summaries separate project facts from AI interpretation. See [Phase 6 scope and verification](../docs/phase6_frontend.md), including the opt-in `npm run test:phase6:live` runner and browser fixture. Provider configuration stays on the backend; the client works without AI.
+
 Use Node.js 24 LTS and npm. From this directory:
 
 ```sh

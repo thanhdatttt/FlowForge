@@ -61,3 +61,9 @@ Center the account card within the application content and align account heading
 Extend the existing project with Overview, Work items, Labels and Activity navigation. Continue the workspace theme and native controls/Base UI dialogs. Use readable keys, wrapping item rows, explicit status/priority text and subtle badges. Label colors appear as small swatches with readable names rather than arbitrary text/background combinations. Keep dependency blocking separate from the item's status.
 
 Item details group metadata, related work, comments, files, time and activity into the existing bordered surfaces, with anchor links for long pages. Comments are plain text with member mentions. Archived projects/items and Viewer access explicitly show read-only behavior. Snapshot item/comment forms preserve drafts on conflict and require reopening with the current version before saving. Scope, routes, API limitations and verification are in [phase3_frontend.md](phase3_frontend.md).
+
+## Phase 6 dashboard and AI
+
+Keep project Overview intact and add Dashboard and AI Assistant tabs. Use the existing bordered surfaces, theme, typography and native controls. Metrics use a four-column definition list on desktop and two columns on mobile, with a labeled completion progress bar and readable status/priority breakdowns. Overdue, workload and activity remain separate sections with server pagination where supported.
+
+AI is an explicit form flow: describe, review/edit/select, confirm, then navigate to created tasks. Proposals retain stable local IDs and use named checkboxes for dependencies. An unresolved confirmation locks the submitted selection for a safe explicit retry. Facts and AI interpretation have separate headings; sample limitations and potentially stale summaries are visible. AI text renders as plain text, and generation is never triggered by background refresh. Detailed scope and verification are in [phase6_frontend.md](phase6_frontend.md).
