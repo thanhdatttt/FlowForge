@@ -113,9 +113,6 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddHealthChecks()
     .AddCheck<DatabaseHealthCheck>("postgresql", tags: ["ready"]);
 
-// build and migrate db
-var app = builder.Build();
-
 // add cors for frontend
 var frontendOrigin = builder.Configuration["Frontend:Origin"];
 builder.Services.AddCors(options =>
@@ -132,6 +129,9 @@ builder.Services.AddCors(options =>
         }
     });
 });
+
+// build and migrate db after all services have been registered
+var app = builder.Build();
 
 if (builder.Configuration.GetValue<bool>("Database:AutoMigrate"))
 {
@@ -210,3 +210,4 @@ app.MapHub<UpdatesHub>("/hubs/updates", options => options.CloseOnAuthentication
 app.Run();
 
 public partial class Program;
+
