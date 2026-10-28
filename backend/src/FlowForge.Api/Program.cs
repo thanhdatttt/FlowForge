@@ -115,6 +115,24 @@ builder.Services.AddHealthChecks()
 
 // build and migrate db
 var app = builder.Build();
+
+// add cors for frontend
+var frontendOrigin = builder.Configuration["Frontend:Origin"];
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        if (!string.IsNullOrWhiteSpace(frontendOrigin))
+        {
+            policy.WithOrigins(frontendOrigin)
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials()
+                .WithExposedHeaders("Retry-After");
+        }
+    });
+});
+
 if (builder.Configuration.GetValue<bool>("Database:AutoMigrate"))
 {
     await using var scope = app.Services.CreateAsyncScope();
@@ -155,6 +173,7 @@ app.UseStatusCodePages(async statusContext =>
     await Results.Problem(statusCode: statusContext.HttpContext.Response.StatusCode)
         .ExecuteAsync(statusContext.HttpContext);
 });
+app.UseCors("Frontend");
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();

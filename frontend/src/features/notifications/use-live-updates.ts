@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { accessToken } from '@/lib/api'
+import { accessToken, API_ORIGIN } from '@/lib/api'
 import { useSessionStore } from '@/features/auth/session-store'
 import { notificationKey } from './api'
 import { createLiveUpdates, type LiveScope, type LiveState } from './realtime'
@@ -61,7 +61,7 @@ export function useLiveUpdates({ workspaceId, projectId }: LiveScope) {
         )
         if (!active) return
         const connection = new HubConnectionBuilder()
-          .withUrl('/hubs/updates', { accessTokenFactory: accessToken })
+          .withUrl(`${API_ORIGIN}/hubs/updates`, { accessTokenFactory: accessToken })
           .configureLogging(LogLevel.None)
           .build()
         controller = createLiveUpdates(connection, {
