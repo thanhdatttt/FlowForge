@@ -7,6 +7,42 @@ namespace FlowForge.Api.Tests;
 
 public sealed class HostConfigurationTests
 {
+    [Theory]
+    [InlineData("http://localhost:5173", "http://localhost:5173", true)]
+    [InlineData("http://localhost:5173", "https://untrusted.example", false)]
+    [InlineData("", "http://localhost:5173", false)]
+    public async Task Cors_preflight_allows_only_the_configured_frontend(string configuredOrigin, string requestOrigin, bool allowed)
+    {
+        using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+        {
+            builder.UseSetting("ConnectionStrings:FlowForge", "Host=127.0.0.1;Port=1;Database=unavailable;Username=test;Password=test;Timeout=1");
+            builder.UseSetting("Jwt:SigningKey", PhaseTwoFixture.SigningKey);
+            builder.UseSetting("Database:AutoMigrate", "false");
+            builder.UseSetting("Notifications:Enabled", "false");
+            builder.UseSetting("Workflows:Enabled", "false");
+            builder.UseSetting("Frontend:Origin", configuredOrigin);
+        });
+        using var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Options, "/api/v1/auth/session");
+        request.Headers.Add("Origin", requestOrigin);
+        request.Headers.Add("Access-Control-Request-Method", "POST");
+        request.Headers.Add("Access-Control-Request-Headers", "content-type,x-flowforge-session");
+
+        using var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        if (allowed)
+        {
+            Assert.Equal(requestOrigin, Assert.Single(response.Headers.GetValues("Access-Control-Allow-Origin")));
+            Assert.Equal("true", Assert.Single(response.Headers.GetValues("Access-Control-Allow-Credentials")));
+        }
+        else
+        {
+            Assert.False(response.Headers.Contains("Access-Control-Allow-Origin"));
+            Assert.False(response.Headers.Contains("Access-Control-Allow-Credentials"));
+        }
+    }
+
     [Fact]
     public async Task Browser_session_without_cookie_is_unauthorized_without_using_database()
     {

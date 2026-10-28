@@ -59,6 +59,11 @@ public sealed class WorkflowApiJourney(SmokeSession session)
         var history = await session.CallAsync("Read execution history", "GET", wid + "/executions", token: token);
         session.State("Hosted worker completes workflow", history["total"]!.GetValue<int>() == 1);
         var execution = await session.CallAsync("Execution details", "GET", wid + "/executions/" + Text(history["items"]![0]!, "id"), token: token);
+        var executionPath = workflows + "/executions/" + Text(execution, "id");
+        var lookup = await session.CallAsync("Look up execution from activity", "GET", executionPath, token: token);
+        session.State("Activity lookup returns the same execution details", JsonNode.DeepEquals(execution, lookup));
+        await session.CallAsync("Hide execution lookup from developer", "GET", executionPath, token: developerToken, expected: 404);
+        await session.CallAsync("Hide execution lookup from outsider", "GET", executionPath, token: outsiderToken, expected: 404);
         session.State("Execution exposes pinned version and definition", execution["version"]!.GetValue<int>() == 1 && Text(execution["definition"]!, "trigger") == "WorkItemCreated");
         session.State("Execution exposes original actor and source metadata", Text(execution, "actorUserId") == Text(owner, "id") &&
             !string.IsNullOrEmpty(Text(execution, "correlationId")) && execution["originExecutionId"] == null && execution["depth"]!.GetValue<int>() == 0);
@@ -114,7 +119,7 @@ public sealed class WorkflowApiJourney(SmokeSession session)
             .SelectMany(p => methods.Where(m => p.Value!.AsObject().ContainsKey(m)).Select(m => (m.ToUpperInvariant(), p.Key.TrimEnd('/')))).ToHashSet();
         var exercised = session.Requests.Where(r => (int)r.Actual is >= 200 and < 300)
             .Select(r => (r.Method!, r.Path!.Split('?')[0].TrimEnd('/'))).ToHashSet();
-        session.State("All nine workflow OpenAPI operations succeed over HTTP", operations.Count == 9 && operations.IsSubsetOf(exercised));
+        session.State("All ten workflow OpenAPI operations succeed over HTTP", operations.Count == 10 && operations.IsSubsetOf(exercised));
     }
     private Task<JsonNode> RegisterAsync(string name, string prefix, string displayName) =>
         session.CallAsync(name, "POST", "/api/v1/auth/register", new { email = prefix + Guid.NewGuid().ToString("N") + "@example.com",

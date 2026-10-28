@@ -1,6 +1,28 @@
 # Backend test results
 
-## Latest verification: configurable Ollama Cloud adapter — 2026-10-22 (+07)
+## Latest verification: startup and workflow smoke fixes — 2026-10-28 (+07)
+
+The full Debug backend suite passes **362/362 tests, 0 failed, 0 skipped**, using .NET SDK 10.0.113 and a disposable PostgreSQL 17 server. The live workflow smoke runner passes **70/70 checks** (50 HTTP responses and 20 state assertions), covering all ten workflow OpenAPI operations. Ten additional polling requests were recorded separately.
+
+Root causes and fixes:
+
+- CORS services were registered after `builder.Build()`, which makes the service collection read-only and prevents API startup. Register CORS before building the host. Three new host cases verify allowed, untrusted and unconfigured frontend origins.
+- The smoke runner still expected nine workflow operations and omitted the Activity execution lookup. Exercise that lookup, compare its result with the nested execution endpoint, verify developer/outsider denial, and require successful coverage of all ten operations.
+
+Reproduce from the repository root, with `FLOWFORGE_TEST_CONNECTION` pointing to an isolated PostgreSQL server with create/drop database permission:
+
+```sh
+dotnet test backend/FlowForge.sln --no-restore -m:1 /p:UseSharedCompilation=false \
+  --logger 'trx;LogFileName=backend-fixed.trx' --results-directory /tmp/flowforge-backend-test-results
+# Start a separate Development API against a disposable database with workers enabled.
+# Use a fresh API process for each smoke run to avoid sharing registration rate limits.
+dotnet run --project backend/tests/FlowForge.Api.SmokeTests --no-restore -- \
+  --base-url http://127.0.0.1:5187 --output /tmp/flowforge-backend-test-results/live-http.json
+```
+
+Evidence for this run: `/tmp/flowforge-backend-test-results/backend-fixed.trx` and `/tmp/flowforge-backend-test-results/live-http.json`. Tests use simulated SMTP and AI transports; no real email or AI request was sent. The test API and PostgreSQL container were stopped after verification.
+
+## Historical verification: configurable Ollama Cloud adapter — 2026-10-22 (+07)
 
 The full Release backend suite passes **351/351 tests**, **0 failed, 0 skipped**, with .NET SDK 10.0.113 and disposable PostgreSQL 17. This adds 36 cases to the previous 315-case suite. The adapter has **30 HTTP transport cases**, and the AI host class now has **10 cases** (40 total adapter/host outcomes, including four existing host cases). Release build succeeds with zero warnings/errors; Compose validates with `.env.example` and both Ollama values empty.
 

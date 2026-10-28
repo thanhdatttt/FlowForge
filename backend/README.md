@@ -287,7 +287,7 @@ dotnet run --project backend/tests/FlowForge.Api.SmokeTests -- \
   --output backend/test-results/phase5/live-http.json
 ```
 
-It creates disposable accounts/workspace/project/workflows, checks all nine workflow operations through real HTTP, verifies 47 HTTP responses plus 19 state assertions, and archives its project. It writes a sanitized JSON ledger even on an unexpected response and exits nonzero on failure. Polling requests are recorded separately. This runner uses only the .NET SDK and standard libraries; it runs explicitly after starting the API. See [test results](TEST_RESULTS.md) for the latest run and parity evidence.
+It creates disposable accounts/workspace/project/workflows, checks all ten workflow operations through real HTTP, verifies 50 HTTP responses plus 20 state assertions, and archives its project. This includes the execution lookup used by Activity links and its access restrictions. It writes a sanitized JSON ledger even on an unexpected response and exits nonzero on failure. Polling requests are recorded separately. This runner uses only the .NET SDK and standard libraries; it runs explicitly after starting the API. See [test results](TEST_RESULTS.md) for the latest run and parity evidence.
 
 ## Phase 6: project dashboard (backend only)
 
