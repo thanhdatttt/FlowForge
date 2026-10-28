@@ -210,3 +210,4 @@ app.MapHub<UpdatesHub>("/hubs/updates", options => options.CloseOnAuthentication
 app.Run();
 
 public partial class Program;
+
