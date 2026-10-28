@@ -1,5 +1,11 @@
 import { useSessionStore, type AuthTokens } from '@/features/auth/session-store'
 
+export const API_ORIGIN = (
+  import.meta.env?.VITE_API_BASE_URL ?? ''
+)
+  .trim()
+  .replace(/\/+$/, '')
+
 export class ApiError extends Error {
   status: number
   fields: Record<string, string[]>
@@ -24,7 +30,7 @@ async function request<T>(
 ): Promise<T> {
   let response: Response
   try {
-    response = await fetch(`/api/v1${path}`, {
+    response = await fetch(`${API_ORIGIN}/api/v1${path}`, {
       ...init,
       headers: {
         ...(init.body && !(init.body instanceof FormData)
