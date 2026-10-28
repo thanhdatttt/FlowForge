@@ -96,6 +96,16 @@ public sealed class AuthService(FlowForgeDbContext db, IConfiguration configurat
         return CreateTokens(current.User, replacementToken);
     }
 
+    public async Task<bool> IsSameSessionFamilyAsync(string first, string second, CancellationToken cancellationToken)
+    {
+        if (first == second) return true;
+        var hashes = new[] { HashToken(first), HashToken(second) };
+        var families = await db.RefreshSessions.AsNoTracking()
+            .Where(session => hashes.Contains(session.TokenHash))
+            .Select(session => session.FamilyId).ToListAsync(cancellationToken);
+        return families.Count == 2 && families[0] == families[1];
+    }
+
     public async Task LogoutAsync(string token, CancellationToken cancellationToken)
     {
         var hash = HashToken(token);

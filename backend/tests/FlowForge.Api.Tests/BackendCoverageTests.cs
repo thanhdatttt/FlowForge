@@ -20,6 +20,72 @@ public sealed class BackendCoverageTests(PhaseTwoFixture fixture) : IClassFixtur
     private const string Password = "BackendTest1!";
 
     [PostgresFact]
+    public async Task Stale_browser_tab_cannot_adopt_or_log_out_another_session()
+    {
+        using var client = fixture.Client();
+        var original = await RegisterAsync(client, Guid.NewGuid().ToString("N") + "@example.com");
+        var otherEmail = Guid.NewGuid().ToString("N") + "@example.com";
+        await RegisterAsync(client, otherEmail);
+        client.DefaultRequestHeaders.Add("X-FlowForge-Session", "browser");
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.PostAsJsonAsync("/api/v1/auth/refresh",
+            new { refreshToken = original.RefreshToken })).StatusCode);
+        var logout = await client.PostAsJsonAsync("/api/v1/auth/logout", new { refreshToken = original.RefreshToken });
+        Assert.Equal(HttpStatusCode.NoContent, logout.StatusCode);
+        Assert.False(logout.Headers.Contains("Set-Cookie"));
+        using var oldClient = fixture.Client();
+        Assert.Equal(HttpStatusCode.Unauthorized, (await oldClient.PostAsJsonAsync("/api/v1/auth/refresh",
+            new { refreshToken = original.RefreshToken })).StatusCode);
+        var restored = await ReadAsync<AuthTokenResponseDto>(await client.PostAsync("/api/v1/auth/session", null), HttpStatusCode.OK);
+        client.DefaultRequestHeaders.Authorization = new("Bearer", restored.AccessToken);
+        Assert.Equal(otherEmail, (await client.GetFromJsonAsync<CurrentUserResponseDto>("/api/v1/auth/me"))!.Email);
+    }
+
+    [PostgresFact]
+    public async Task Browser_reload_restores_rotates_and_logs_out_using_HttpOnly_cookie()
+    {
+        using var client = fixture.Client();
+        var email = Guid.NewGuid().ToString("N") + "@example.com";
+        var registration = await client.PostAsJsonAsync("/api/v1/auth/register", new RegisterRequestDto(email, Password, "Browser Tester"));
+        var initial = await ReadAsync<AuthTokenResponseDto>(registration, HttpStatusCode.Created);
+        var cookie = Assert.Single(registration.Headers.GetValues("Set-Cookie"));
+        Assert.Contains("httponly", cookie, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("samesite=strict", cookie, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("path=/api/v1/auth", cookie, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("max-age=2592000", cookie, StringComparison.OrdinalIgnoreCase);
+        client.DefaultRequestHeaders.Add("X-FlowForge-Session", "browser");
+
+        // A new JS runtime has no tokens: only the cookie is sent after a reload.
+        var restored = await ReadAsync<AuthTokenResponseDto>(await client.PostAsync("/api/v1/auth/session", null), HttpStatusCode.OK);
+        Assert.NotEqual(initial.RefreshToken, restored.RefreshToken);
+        client.DefaultRequestHeaders.Authorization = new("Bearer", restored.AccessToken);
+        Assert.Equal(email, (await client.GetFromJsonAsync<CurrentUserResponseDto>("/api/v1/auth/me"))!.Email);
+        client.DefaultRequestHeaders.Authorization = null;
+
+        // An older tab must use the latest cookie rather than replay its old in-memory token.
+        var refreshed = await ReadAsync<AuthTokenResponseDto>(await client.PostAsJsonAsync("/api/v1/auth/refresh",
+            new { refreshToken = initial.RefreshToken }), HttpStatusCode.OK);
+        Assert.NotEqual(restored.RefreshToken, refreshed.RefreshToken);
+        Assert.Equal(HttpStatusCode.OK, (await client.PostAsync("/api/v1/auth/session", null)).StatusCode);
+        var logout = await client.PostAsJsonAsync("/api/v1/auth/logout", new { refreshToken = initial.RefreshToken });
+        Assert.Equal(HttpStatusCode.NoContent, logout.StatusCode);
+        Assert.Contains("expires=", Assert.Single(logout.Headers.GetValues("Set-Cookie")), StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.PostAsync("/api/v1/auth/session", null)).StatusCode);
+
+        var login = await client.PostAsJsonAsync("/api/v1/auth/login", new { email, password = Password });
+        var loggedIn = await ReadAsync<AuthTokenResponseDto>(login, HttpStatusCode.OK);
+        Assert.True(login.Headers.Contains("Set-Cookie"));
+        await fixture.InDb(async db =>
+        {
+            var session = await db.RefreshSessions.SingleAsync(x => x.TokenHash == SecureTokens.Hash(loggedIn.RefreshToken));
+            session.ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(-1);
+            await db.SaveChangesAsync();
+        });
+        var expired = await client.PostAsync("/api/v1/auth/session", null);
+        Assert.Equal(HttpStatusCode.Unauthorized, expired.StatusCode);
+        Assert.Contains("expires=", Assert.Single(expired.Headers.GetValues("Set-Cookie")), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [PostgresFact]
     public async Task Registration_normalizes_identity_and_persists_only_password_and_refresh_hashes()
     {
         using var client = fixture.Client();
