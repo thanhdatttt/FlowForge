@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { validateCredentials } from '../src/features/auth/validation.ts'
 import { authApi } from '../src/features/auth/api.ts'
 import { api, ApiError } from '../src/lib/api.ts'
+import * as apiModule from '../src/lib/api.ts'
 import {
   useSessionStore,
   type AuthTokens,
@@ -33,6 +34,36 @@ const json = (body: unknown, status = 200) =>
 afterEach(() => {
   globalThis.fetch = originalFetch
   useSessionStore.getState().clear()
+})
+
+test('reload restores the in-memory session from the browser cookie before protected reads', async () => {
+  const calls: string[] = []
+  globalThis.fetch = async (url, init) => {
+    calls.push(String(url))
+    if (url === '/api/v1/auth/session') {
+      assert.equal(init?.method, 'POST')
+      assert.equal(init?.body, undefined)
+      return json(rotated)
+    }
+    assert.equal((init?.headers as Record<string, string> | undefined)?.Authorization, 'Bearer rotated-access')
+    return json(user)
+  }
+  assert.equal(typeof apiModule.restoreSession, 'function')
+  await Promise.all([apiModule.restoreSession(), apiModule.restoreSession()])
+  assert.deepEqual(await authApi.me(), user)
+  assert.deepEqual(calls, ['/api/v1/auth/session', '/api/v1/auth/me'])
+})
+
+test('missing browser session allows sign-in, while server failure remains retryable', async () => {
+  assert.equal(typeof apiModule.restoreSession, 'function')
+  globalThis.fetch = async () => json({}, 401)
+  await apiModule.restoreSession()
+  assert.equal(useSessionStore.getState().tokens, null)
+  globalThis.fetch = async () => json({}, 503)
+  await assert.rejects(apiModule.restoreSession(), { status: 503 })
+  globalThis.fetch = async () => json(tokens)
+  await apiModule.restoreSession()
+  assert.deepEqual(useSessionStore.getState().tokens, tokens)
 })
 
 test('sign-in does not apply new-password complexity rules to existing accounts', () => {
