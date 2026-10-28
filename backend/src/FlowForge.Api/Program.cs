@@ -130,6 +130,23 @@ builder.Services.AddCors(options =>
     });
 });
 
+// add cors for frontend
+var frontendOrigin = builder.Configuration["Frontend:Origin"];
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        if (!string.IsNullOrWhiteSpace(frontendOrigin))
+        {
+            policy.WithOrigins(frontendOrigin)
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials()
+                .WithExposedHeaders("Retry-After");
+        }
+    });
+});
+
 // build and migrate db after all services have been registered
 var app = builder.Build();
 
