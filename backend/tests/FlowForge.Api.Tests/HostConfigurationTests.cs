@@ -8,6 +8,21 @@ namespace FlowForge.Api.Tests;
 public sealed class HostConfigurationTests
 {
     [Fact]
+    public async Task Browser_session_without_cookie_is_unauthorized_without_using_database()
+    {
+        using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+        {
+            builder.UseSetting("ConnectionStrings:FlowForge", "Host=127.0.0.1;Port=1;Database=unavailable;Username=test;Password=test;Timeout=1");
+            builder.UseSetting("Jwt:SigningKey", PhaseTwoFixture.SigningKey);
+            builder.UseSetting("Database:AutoMigrate", "false");
+        });
+        using var client = factory.CreateClient();
+        var response = await client.PostAsync("/api/v1/auth/session", null);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Contains("no-store", response.Headers.CacheControl!.ToString());
+    }
+
+    [Fact]
     public async Task Production_hides_openapi_and_unavailable_database_fails_readiness_but_not_liveness()
     {
         using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>

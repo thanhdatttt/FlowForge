@@ -53,8 +53,11 @@ Endpoints under `/api/v1/auth`:
 | POST | `/register` | `email`, `password`, `displayName` | 201 and tokens |
 | POST | `/login` | `email`, `password` | 200 and tokens |
 | POST | `/refresh` | `refreshToken` | 200 and rotated tokens |
+| POST | `/session` | HttpOnly refresh cookie; no body | 200 and rotated tokens, or 401 |
 | POST | `/logout` | `refreshToken` | 204; revokes that session family |
 | GET | `/me` | `Authorization: Bearer <accessToken>` | Current user, including `emailVerified` |
+
+Register, login, refresh and session restoration set a 30-day HttpOnly, SameSite=Strict refresh cookie scoped to `/api/v1/auth`; logout removes it. The cookie is Secure on HTTPS and in all non-Development environments. Token responses use `Cache-Control: no-store`. Browser refresh/logout calls include `X-FlowForge-Session: browser` to use the latest shared cookie when available, provided it belongs to the supplied token's session family. A stale tab cannot adopt or log out a different session; its logout revokes only its own old family and preserves the newer cookie. Other JSON-token clients retain their existing request contract. The frontend serializes session requests across tabs with Web Locks to prevent simultaneous reuse of rotating cookies. Serve browser traffic on the same origin; production requires HTTPS even when TLS terminates at a reverse proxy.
 
 Registration requires an 8–128 character password containing an uppercase letter, a lowercase letter, a digit, and a special character (punctuation or symbol; whitespace does not count). Access tokens expire after 15 minutes; refresh tokens expire after 30 days and rotate on use. The API stores only hashes of passwords and refresh tokens. Reusing a rotated refresh token revokes its entire session family. Refresh, reuse detection, and logout serialize through a PostgreSQL transaction advisory lock per family, so concurrent rotation cannot escape revocation. JWT authentication also requires a non-empty GUID `sub` claim. Logout revokes refresh sessions; issued access tokens remain valid until expiry. Use HTTPS outside local development and keep tokens out of logs.
 

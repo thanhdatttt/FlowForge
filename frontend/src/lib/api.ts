@@ -85,12 +85,43 @@ function retryAfter(value: string | null): number | undefined {
 }
 
 let refreshPromise: Promise<AuthTokens> | null = null
+// Serialize cookie rotation across tabs as well as React StrictMode/HTTP/SignalR.
+export function sessionApi<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const send = () =>
+    request<T>(path, {
+      ...init,
+      headers: { ...init.headers, 'X-FlowForge-Session': 'browser' },
+    })
+  return globalThis.navigator?.locks
+    ? navigator.locks.request('flowforge-session', send)
+    : send()
+}
+
+let restorePromise: Promise<void> | null = null
+export function restoreSession(): Promise<void> {
+  if (!restorePromise) {
+    const initial = useSessionStore.getState().tokens
+    restorePromise = sessionApi<AuthTokens>('/auth/session', { method: 'POST' })
+      .then((tokens) => {
+        if (useSessionStore.getState().tokens === initial)
+          useSessionStore.getState().setTokens(tokens)
+      })
+      .catch((error: unknown) => {
+        if (!(error instanceof ApiError) || error.status !== 401) throw error
+      })
+      .finally(() => {
+        restorePromise = null
+      })
+  }
+  return restorePromise
+}
+
 async function refresh() {
   const tokens = useSessionStore.getState().tokens
   if (!tokens)
     throw new ApiError('Your session has ended. Please sign in again.', 401)
   if (!refreshPromise) {
-    refreshPromise = request<AuthTokens>('/auth/refresh', {
+    refreshPromise = sessionApi<AuthTokens>('/auth/refresh', {
       method: 'POST',
       body: JSON.stringify({ refreshToken: tokens.refreshToken }),
     })

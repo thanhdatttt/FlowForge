@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Mail;
+using System.Net.Mime;
+using System.Text;
 using FlowForge.Application.Email;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -34,6 +36,8 @@ public sealed class GmailSmtpEmailSender(IConfiguration configuration, ILogger<G
             IsBodyHtml = false
         };
         message.To.Add(recipient);
+        message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(
+            EmailTemplate.Render(subject, body), Encoding.UTF8, MediaTypeNames.Text.Html));
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(20));
         try { await client.SendMailAsync(message, timeout.Token); }

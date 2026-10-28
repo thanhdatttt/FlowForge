@@ -6,8 +6,7 @@ export type AuthTokens = {
   refreshToken: string
 }
 
-// Tokens deliberately live only in memory. Reloading requires a new sign-in;
-// persistent browser storage is not a secure substitute for an HttpOnly cookie.
+// Tokens live in memory. Startup restores them using the backend's HttpOnly cookie.
 export const useSessionStore = create<{
   tokens: AuthTokens | null
   setTokens: (tokens: AuthTokens) => void

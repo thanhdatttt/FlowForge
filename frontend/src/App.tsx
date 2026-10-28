@@ -3,12 +3,24 @@ import { useQueryClient } from '@tanstack/react-query'
 import { AuthPage } from '@/features/auth/auth-page'
 import { useSessionStore } from '@/features/auth/session-store'
 import { WorkspaceApp } from '@/features/workspaces/workspace-app'
+import { restoreSession } from '@/lib/api'
+import { Button } from '@/components/ui/button'
 import {
   parseInvitationLink,
   type InvitationLink,
 } from '@/features/workspaces/rules'
 
 export default function App() {
+  const [restoring, setRestoring] = useState(true)
+  const [restoreError, setRestoreError] = useState<Error | null>(null)
+  function restore() {
+    void restoreSession()
+      .then(() => setRestoring(false))
+      .catch((error: Error) => setRestoreError(error))
+  }
+  useEffect(() => {
+    restore()
+  }, [])
   const tokens = useSessionStore((state) => state.tokens)
   const client = useQueryClient()
   const authenticated = !!tokens
@@ -57,6 +69,24 @@ export default function App() {
       } else document.getElementById('workspace-content')?.focus()
     })
   }
+  if (restoring)
+    return (
+      <main className="workspace-card" aria-busy={!restoreError}>
+        {restoreError ? (
+          <>
+            <p role="alert">{restoreError.message}</p>
+            <Button onClick={() => {
+              setRestoreError(null)
+              restore()
+            }}>
+              Try again
+            </Button>
+          </>
+        ) : (
+          <p role="status">Restoring your session…</p>
+        )}
+      </main>
+    )
   if (!tokens)
     return (
       <>
