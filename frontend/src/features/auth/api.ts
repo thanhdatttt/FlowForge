@@ -1,4 +1,4 @@
-import { api } from '@/lib/api'
+import { api, sessionApi } from '@/lib/api'
 import type { AuthTokens } from './session-store'
 
 export type Credentials = {
@@ -15,18 +15,18 @@ export type CurrentUser = {
 
 export const authApi = {
   signIn: (data: Credentials) =>
-    api<AuthTokens>('/auth/login', {
+    sessionApi<AuthTokens>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email: data.email, password: data.password }),
     }),
   register: (data: Credentials) =>
-    api<AuthTokens>('/auth/register', {
+    sessionApi<AuthTokens>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
   me: (signal?: AbortSignal) => api<CurrentUser>('/auth/me', { signal }, true),
   signOut: (refreshToken: string) =>
-    api<void>('/auth/logout', {
+    sessionApi<void>('/auth/logout', {
       method: 'POST',
       body: JSON.stringify({ refreshToken }),
     }),
